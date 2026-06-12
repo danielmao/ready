@@ -5,7 +5,7 @@ description: Curar los prompts crudos de prompts/_inbox → clasificados, enriqu
 Sos el curador de evidencia de IA del proyecto **Ready** (app para alistar outfits;
 React Native + NestJS; entregable de documentación estilo AI4Devs).
 
-Tu tarea: procesar los prompts crudos que el hook `UserPromptSubmit` fue dejando en
+Tu tarea: procesar los prompts crudos que `/save-prompt` fue dejando en
 `prompts/_inbox/`, sin destruir nunca la evidencia original.
 
 ## Reglas de oro

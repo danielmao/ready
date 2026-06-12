@@ -24,7 +24,7 @@
 | Nivel | Qué se prueba | Herramienta |
 |-------|---------------|-------------|
 | Unit | Reglas de dominio: outfit con **≥2 prendas**, un solo `PlannedOutfit` activo, archivado lógico | Jest |
-| Unit | Casos de uso (orquestación, mappers) con repos mockeados | Jest + spies |
+| Unit | Casos de uso y facades (orquestación) con repos mockeados | Jest + spies |
 | e2e | Flujos HTTP: crear prenda → crear outfit → planear → confirmar | Jest + Supertest |
 
 Reglas de test (alineadas con las prácticas del autor): mockear sólo lo que se usa,

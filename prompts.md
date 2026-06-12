@@ -13,6 +13,8 @@ Ver [`prompts/README.md`](prompts/README.md) para el funcionamiento del sistema.
    Se define la carpeta `prompts/` y un hook `UserPromptSubmit` que captura cada
    prompt crudo; la clasificación/corrección/enriquecimiento se hace on-demand con
    `/curate-prompts`. Resultado: pipeline captura + curación funcionando.
+   > Evolución posterior: el hook automático se **eliminó** y la captura pasó a ser
+   > manual con `/save-prompt` (solo se graba lo marcado como importante).
 
 2. **Kickoff del proyecto Ready** —
    [detalle](prompts/meta/02-kickoff-proyecto-ready.md) ·
@@ -39,4 +41,19 @@ Ver [`prompts/README.md`](prompts/README.md) para el funcionamiento del sistema.
    > tenía como project root `le-projects` (no este workspace), así que el hook de Ready
    > no estaba activo. Se preservó la evidencia de forma manual.
 
-<!-- Próximas categorías (backend, mobile, infra, data-model) se agregan al curar. -->
+## backend
+
+1. **Arquitectura DDD por capas del backend** —
+   [detalle](prompts/backend/01-arquitectura-ddd-por-capas.md) ·
+   [crudo](prompts/_inbox/20260612-042626-voy-a-modificar-el-prompt-por-este.md).
+   Encargo de "arquitecto de software": diseñar la estructura del backend (contratos,
+   límites, wiring) **sin** lógica de negocio, con preguntas abiertas en vez de
+   asunciones. Segunda versión de un prompt previo que asumía el stack de
+   `ms-subscriptions` (TypeORM + Kafka), reescrita para el stack real de Ready
+   (**Prisma + PostgreSQL**). Define las tres capas por bounded context
+   (`domain` / `application` / `infrastructure`), la regla `infra → application → domain`,
+   contratos con token de DI y cruce entre dominios **solo vía facade**. Resultado:
+   `docs/02-ARCHITECTURE.md` (§1, §3, §3 bis) + README §2 reescritos según este patrón.
+
+<!-- Próximas categorías (mobile, infra, data-model) se agregan al curar. -->
+

@@ -1,3 +1,11 @@
+---
+captured_at: 2026-06-12T04:13:04+00:00
+source: manual (reconstruido)
+status: curated
+curated: true
+category: docs
+---
+
 @"/Users/daniel/projects/AI4devs/ready"
 Siguiendo esta estructura de proyecto deseado y las referencias que tienes, ayudame a armar la documentación para el entregable 1, preguntame cosas si necesitas aclarar funcionalidades o temas. La idea es construir el MVP, pero que también podamos dejar abierto a mas funcionalidades si alcanzamos
 

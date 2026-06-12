@@ -55,19 +55,23 @@ ready/
 
 ## 4. Sistema de prompts (evidencia de uso de IA)
 
-Modo **captura + curación on-demand** (ya construido y probado):
+Modo **grabado manual + curación on-demand**. La captura **ya no es automática**: solo
+se guarda lo que el usuario marca como importante.
 
-- **Captura** (automática, determinista): el hook `UserPromptSubmit`
-  (`.claude/settings.json` → `.claude/hooks/capture-prompt.py`) guarda cada prompt
-  **crudo e intacto** en `prompts/_inbox/`. Sin LLM, no bloquea, ignora comandos `/...`.
+- **Grabado** (manual, on-demand): el comando **`/save-prompt`** guarda **un** prompt
+  **crudo e intacto** en `prompts/_inbox/` con `important: true`. Sin argumentos graba el
+  prompt anterior; con argumentos (`/save-prompt <texto>`) graba ese texto. Sin LLM.
 - **Curación** (on-demand): el comando **`/curate-prompts`** clasifica, corrige y
   enriquece los crudos en `prompts/{meta,docs,backend,mobile,infra,data-model}/` y
   actualiza `prompts.md`. **La evidencia cruda nunca se edita ni se borra.**
 - Detalle completo: [`prompts/README.md`](prompts/README.md).
 
-> ⚠️ El hook está en el `.claude/settings.json` **del workspace**: solo captura cuando
-> Claude Code se abre **desde esta carpeta** (`/Users/daniel/projects/AI4devs/ready`).
+> ⚠️ Los comandos viven en `.claude/commands/` **del workspace**: solo están disponibles
+> cuando Claude Code se abre **desde esta carpeta** (`/Users/daniel/projects/AI4devs/ready`).
 > Trabajar Ready siempre desde su propia raíz.
+>
+> El hook automático `UserPromptSubmit` (`capture-prompt.py`) fue **eliminado** a propósito
+> para evitar ruido; la evidencia ahora es curada desde el origen vía `/save-prompt`.
 
 ## 5. Referencias de documentación
 

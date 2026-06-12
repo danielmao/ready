@@ -19,6 +19,14 @@ hook de forma determinista vs. qué requiere un modelo, se eligió el modo
 y la clasificación/corrección/enriquecimiento ocurre después vía `/curate-prompts`,
 preservando siempre el original como evidencia.
 
+**Evolución (estado actual).** La captura automática se **eliminó** a propósito: el hook
+`UserPromptSubmit` (`capture-prompt.py`) generaba demasiado ruido al guardar *todos* los
+prompts. Se reemplazó por un grabado **manual y on-demand** con el comando `/save-prompt`,
+que guarda solo el prompt que el usuario marca como importante (con `important: true`),
+en el mismo formato crudo de `_inbox/`. La curación con `/curate-prompts` se mantiene
+igual. Resultado: la decisión de fondo (crudo intacto + curación on-demand) sigue vigente;
+lo único que cambió es que la entrada al `_inbox/` ya no es automática sino deliberada.
+
 ## Prompt (versión corregida)
 
 > Antes de empezar quiero hacer unos ajustes. Hay que crear una carpeta `prompts`

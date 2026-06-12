@@ -210,17 +210,21 @@ graph LR
 ```
 
 **Patrón:** cliente móvil (RN) ↔ API REST (NestJS) ↔ PostgreSQL (Prisma). Arquitectura
-**monolito modular** organizado por dominios (DDD ligero). MVP single-user: el backend
-asume un `userId` fijo inyectado por un guard/decorator; cuando se incorpore auth
-(Épica 1), ese guard pasa a resolver el usuario desde el JWT sin tocar los casos de uso.
+**monolito modular** organizado por **bounded context**, cada uno con tres capas
+(`domain` / `application` / `infrastructure`) y la regla de dependencias
+`infra → application → domain`. Los dominios se comunican **solo vía facade**. MVP
+single-user: el backend asume un `userId` fijo inyectado por un guard/decorator; cuando
+se incorpore auth (Épica 1), ese guard pasa a resolver el usuario desde el JWT sin tocar
+los casos de uso.
 
 ### 2.2 Componentes
 
 | Componente | Responsabilidad | Tecnología |
 |------------|-----------------|------------|
 | **Mobile app** | UI, navegación, estado local, llamadas a la API | React Native + TS, React Navigation, React Query, React Hook Form + Zod |
-| **API REST** | Endpoints, validación, orquestación de casos de uso | NestJS + TS |
-| **Capa de dominio** | Entidades, reglas de negocio, casos de uso | DDD (entities, use cases, repositorios) |
+| **infrastructure** | Entrada HTTP (controllers), impl Prisma de los contratos, wiring de Nest | NestJS, Prisma |
+| **application** | Casos de uso (`execute()`), services internos, **facades** (API entre dominios), contratos de repositorio + token de DI | NestJS (DI) |
+| **domain** | Entidades planas, enums, invariantes de negocio | TS puro (sin framework) |
 | **Persistencia** | Esquema relacional, migraciones, queries | PostgreSQL + Prisma |
 | **Imágenes** | Almacenar fotos de prendas | Filesystem local (MVP) → S3-compatible (futuro) |
 
@@ -236,10 +240,14 @@ ready/
 └── apps/
     ├── mobile/               # React Native
     │   └── src/{screens,components,features,navigation,services,hooks,state,domain,utils}
-    └── backend/              # NestJS + DDD
-        └── src/modules/{clothes,outfits,planning,users}
-              /domain/{entities,repositories,use-cases}
-              /infrastructure/{http/{controllers,dto},repositories,mappers}
+    └── backend/              # NestJS + DDD por capas
+        ├── prisma/           # schema.prisma (recurso compartido)
+        └── src/
+            ├── shared/{prisma,auth,types}            # infra transversal
+            └── {clothes,outfits,planning,users}/
+                  domain/{entities,enums,utils}
+                  application/{repositories,use-cases,services,facades,dtos}
+                  infrastructure/{controllers,persistence/repositories,*.module.ts}
 ```
 
 Árbol completo de front y back en [`docs/02-ARCHITECTURE.md`](docs/02-ARCHITECTURE.md).

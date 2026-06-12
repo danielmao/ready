@@ -6,7 +6,7 @@ Documentación modular del proyecto. El entregable principal es el
 | Doc | Contenido |
 |-----|-----------|
 | [01-PROJECT-OVERVIEW](01-PROJECT-OVERVIEW.md) | Problema, alcance MVP, roadmap, referencias |
-| [02-ARCHITECTURE](02-ARCHITECTURE.md) | Arquitectura, ADRs, estructura de ficheros |
+| [02-ARCHITECTURE](02-ARCHITECTURE.md) | Arquitectura DDD por capas, ADRs, estructura de ficheros, límites entre dominios |
 | [03-DATA-MODEL](03-DATA-MODEL.md) | ER, entidades, esquema Prisma, seeds |
 | [04-API-SPECIFICATION](04-API-SPECIFICATION.md) | Endpoints, requests/responses |
 | [05-FRONTEND-INTEGRATION](05-FRONTEND-INTEGRATION.md) | Pantallas, navegación, componentes |
@@ -23,3 +23,4 @@ Documentación modular del proyecto. El entregable principal es el
 | Sugerencias | Fuera del MVP (roadmap Épica 2/3) |
 | Auth | Diferida — single-user con `userId` fijo |
 | Base de datos | PostgreSQL + Prisma |
+| Backend | DDD por capas (`domain` / `application` / `infrastructure`); cruce entre dominios solo vía facade |

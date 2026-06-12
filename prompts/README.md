@@ -4,18 +4,18 @@ Esta carpeta registra los prompts relevantes usados para construir **Ready**.
 Es la evidencia del uso de IA exigida por el entregable AI4Devs, y la materia
 prima del archivo `prompts.md` en la raíz del repo.
 
-## Cómo funciona (captura + curación on-demand)
+## Cómo funciona (grabado manual + curación on-demand)
 
-Hay dos capas, a propósito:
+Hay dos capas, a propósito. **La captura ya no es automática**: solo se guarda lo
+que vos marcás como importante.
 
-1. **Captura cruda (automática, determinista).**
-   El hook `UserPromptSubmit` (ver `.claude/settings.json` →
-   `.claude/hooks/capture-prompt.py`) guarda **cada** prompt que enviás,
-   intacto, en `_inbox/` con timestamp y `session_id`. No usa LLM, no juzga,
-   no corrige: solo preserva la evidencia original. Ignora comandos puros
-   (los que empiezan con `/`) y prompts vacíos.
+1. **Grabado manual (on-demand).**
+   Ejecutás `/save-prompt` y se guarda **un** prompt importante, intacto, en `_inbox/`
+   con timestamp y la marca `important: true`. Sin argumentos graba tu prompt anterior;
+   con argumentos (`/save-prompt <texto>`) graba ese texto. No usa LLM, no juzga, no
+   corrige: solo preserva la evidencia original.
 
-2. **Curación on-demand (yo, cuando lo pidas).**
+2. **Curación on-demand.**
    Ejecutás `/curate-prompts` y reviso el `_inbox/`: descarto lo irrelevante,
    corrijo redacción/inconsistencias, enriquezco con intención y contexto, y
    clasifico cada prompt en su subcarpeta. Luego actualizo `prompts.md`.
@@ -38,8 +38,13 @@ prompts/
 ```
 (las subcarpetas se crean al curar, según haga falta.)
 
-## Importante: alcance del hook
+## Importante: alcance del comando
 
-El hook está en `.claude/settings.json` **del workspace**, así que solo dispara
-cuando abrís Claude Code **desde esta carpeta** (`/Users/daniel/projects/AI4devs/ready`).
-Para que los prompts de Ready se capturen, trabajá este proyecto desde su propia raíz.
+`/save-prompt` y `/curate-prompts` viven en `.claude/commands/` **del workspace**, así
+que solo están disponibles cuando abrís Claude Code **desde esta carpeta**
+(`/Users/daniel/projects/AI4devs/ready`). Trabajá este proyecto desde su propia raíz
+para poder grabar y curar la evidencia.
+
+> Antes la captura era automática (hook `UserPromptSubmit`). Se eliminó a propósito:
+> ahora solo se graba lo que marcás con `/save-prompt`, para tener una traza curada y
+> sin ruido.

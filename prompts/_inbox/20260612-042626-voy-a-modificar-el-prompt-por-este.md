@@ -2,9 +2,9 @@
 captured_at: 2026-06-12T04:26:26.684237+00:00
 session_id: 8f8c19af-c08a-4f98-b6ec-303b734f5ae6
 cwd: /Users/daniel/projects/AI4devs/ready
-status: raw
-curated: false
-category: null
+status: curated
+curated: true
+category: backend
 ---
 
 Quiero hacer una modificación a la arquitectura del backend 

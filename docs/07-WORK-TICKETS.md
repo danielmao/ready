@@ -34,11 +34,13 @@ Prisma, exponiendo el CRUD de outfits y la gestión de sus items.
 
 **Tareas:**
 1. `Outfit` y `OutfitItem` en `schema.prisma` + migración.
-2. Entidades de dominio con la regla ≥2.
-3. Casos de uso: create, update, archive, addItem, removeItem.
-4. Repositorios Prisma + mappers.
-5. Controller + DTOs (`class-validator`).
-6. Tests unit (regla ≥2) + e2e (crear/editar/archivar).
+2. Entidades de dominio + invariante ≥2 en `domain/` (entidad/util puro).
+3. Contrato de repositorio (`application/repositories`: interface + token) y casos de uso
+   (`application/use-cases`): create, update, archive, addItem, removeItem.
+4. Impl Prisma del contrato en `infrastructure/persistence/repositories` (mapea modelo ↔ entidad).
+5. `OutfitsFacade` (API del dominio) + validación de prendas vía `ClothesFacade`.
+6. Controller + DTOs (`class-validator`) en `infrastructure/controllers`.
+7. Tests unit (regla ≥2) + e2e (crear/editar/archivar).
 
 **Definición de hecho:** tests verdes, Prettier aplicado, endpoint documentado en Swagger.
 
