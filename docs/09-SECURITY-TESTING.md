@@ -29,7 +29,8 @@
 
 Reglas de test (alineadas con las prácticas del autor): mockear sólo lo que se usa,
 preferir spies sobre stubs profundos, `jest.clearAllMocks()` en `afterEach`, 1–2
-asserts por comportamiento.
+asserts por comportamiento. Detalle completo (mocking en `TestingModule`, formato/lint,
+alcance): ver [`CODING-CONVENTIONS.md §4`](CODING-CONVENTIONS.md).
 
 ### Mobile
 

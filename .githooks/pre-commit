@@ -8,4 +8,13 @@
 set -euo pipefail
 
 ROOT="$(git rev-parse --show-toplevel)"
-exec python3 "$ROOT/scripts/arch-drift.py"
+
+# 1) Drift entre código y docs de arquitectura (siempre; sale en silencio si no hay cambios).
+python3 "$ROOT/scripts/arch-drift.py"
+
+# 2) Boundaries de arquitectura (dependency-cruiser). Dormido hasta que exista apps/backend:
+#    solo corre cuando hay package.json y hay cambios staged bajo apps/backend/src/.
+if [ -f "$ROOT/apps/backend/package.json" ] && \
+   git diff --cached --name-only --diff-filter=ACMR | grep -q '^apps/backend/src/'; then
+  ( cd "$ROOT/apps/backend" && npm run --silent lint:arch )
+fi

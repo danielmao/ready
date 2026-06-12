@@ -33,6 +33,7 @@ Decisiones de alcance confirmadas con el usuario:
 |------|----------|
 | Frontend | **React Native** (`apps/mobile`) |
 | Backend | **NestJS** (`apps/backend`) |
+| Logging | **`nestjs-pino`** (structured; reglas en `docs/CODING-CONVENTIONS.md §3`) |
 | Workspace | **Monorepo "apps/ simple"**: `apps/mobile` + `apps/backend`, un solo `CLAUDE.md` raíz, sin tooling extra de monorepo |
 | Idioma de la documentación | **Español** (nombres de archivo en inglés, contenido en español, como el repo de referencia) |
 | Estructura documental | **README único (secciones 0–7) + `docs/` modular numerado + `prompts.md`** |
@@ -110,4 +111,32 @@ se guarda lo que el usuario marca como importante.
 **Siguiente:**
 1. Curar prompts (`/curate-prompts`) para completar la evidencia de IA del entregable.
 2. Scaffolding de `apps/backend` (NestJS + Prisma + Docker Postgres) y `apps/mobile` (RN).
-3. Implementar módulos backend (clothes → outfits → planning) con tests.
+   Al crear `apps/backend`: fusionar el bloque listo para pegar de
+   `apps/backend/ARCH-SETUP.md` (devDep `dependency-cruiser` + script `lint:arch`). La
+   config ya está en `apps/backend/.dependency-cruiser.cjs` y el pre-commit ya lo ejecuta
+   condicionalmente (dormido hasta que exista el backend).
+3. Implementar módulos backend (clothes → outfits → planning) con tests. Usar
+   **`/new-domain`** para scaffoldear cada dominio con la convención de capas.
+
+## 7. Reglas de trabajo (enforcement y Definición de terminado)
+
+**Enforcement automático** (no confiar los invariantes a revisión manual):
+- **Boundaries de arquitectura** → `dependency-cruiser` (`apps/backend/.dependency-cruiser.cjs`,
+  `npm run lint:arch`). Hace cumplir `infra → application → domain`, "cruce solo vía facade",
+  "Prisma solo en `infrastructure/persistence`" y grafo acíclico. Ver `docs/02-ARCHITECTURE.md §6`.
+- **Doc de arquitectura sincronizada** → hook `pre-commit` (`scripts/arch-drift.py`) + skill
+  `update-arch-docs`. La doc se regenera, no se edita a mano.
+
+**Reglas de código, logging y testing** → `docs/CODING-CONVENTIONS.md` (fuente única; las
+de arquitectura/boundaries viven en `docs/02-ARCHITECTURE.md §3/§3 bis/§6`).
+
+**Definición de terminado (DoD)** — un cambio de backend está listo cuando:
+1. `npm run lint:arch` pasa (sin violaciones de capas/fachadas).
+2. Pasa **solo el spec del cambio** (`npx jest src/{domain} --no-coverage`) — **no** correr
+   la suite entera. Los tests siguen las **reglas de test** de `docs/CODING-CONVENTIONS.md §4`
+   (mockear solo lo que se usa, spies sobre stubs profundos, `jest.clearAllMocks()` en
+   `afterEach`, 1–2 asserts por comportamiento).
+3. Si cambió la arquitectura, el pre-commit de drift pasa (doc regenerada con `update-arch-docs`).
+4. Si fue una decisión de arquitectura nueva, queda registrada en la tabla de ADRs de
+   `docs/02-ARCHITECTURE.md §2`.
+5. Dominio nuevo → scaffoldeado con `/new-domain` y registrado en `app.module.ts`.

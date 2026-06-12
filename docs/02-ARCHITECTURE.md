@@ -62,6 +62,7 @@ graph TB
 | Single-user en MVP | `userId` fijo vía guard | Evita el costo de auth sin condicionar el modelo (todas las entidades ya tienen `userId`). |
 | Planning = 1 activo | Estado `planned/confirmed/cancelled` | Fiel al producto "próximo outfit"; `plannedFor` deja abierto el calendario. |
 | Imágenes | Filesystem local (MVP) | Sin dependencia de cloud para el entregable; el contrato API expone sólo URLs. |
+| Logging | **`nestjs-pino` (structured)** | Logs estructurados (objeto-primero) con IDs de dominio; integración nativa con Nest. Reglas en `CODING-CONVENTIONS.md §3`. |
 
 ## 3. Estructura de ficheros — backend
 
@@ -164,3 +165,30 @@ Recomendaciones de implementación:
 Ver [09-SECURITY-TESTING.md](09-SECURITY-TESTING.md). Despliegue: local en el MVP
 (Docker Postgres + dev servers); containerización y Postgres gestionado quedan fuera
 del entregable 1.
+
+## 6. Cumplimiento de los límites (enforcement)
+
+Las reglas de capas y de cruce entre dominios (§3, §3 bis) **no se confían a la
+revisión manual ni a la documentación**: se hacen cumplir por código. Lo que es
+determinista lo verifica una herramienta; el criterio queda para las personas.
+
+| Invariante | Cómo se hace cumplir |
+|------------|----------------------|
+| `domain → ∅`, `application ↛ infrastructure` | `dependency-cruiser` (regla `domain-stays-pure`, `application-no-infra`) |
+| Cruce entre dominios **solo vía facade** | `dependency-cruiser` (regla `cross-domain-only-via-facade`) |
+| Prisma solo en `infrastructure/persistence` | `dependency-cruiser` (regla `prisma-only-in-persistence`) |
+| Grafo de dominios acíclico | `dependency-cruiser` (regla `no-circular`) |
+| Documentación de arquitectura sincronizada con el código | hook de `pre-commit` (`scripts/arch-drift.py`) + skill `update-arch-docs` |
+
+La configuración vive en `apps/backend/.dependency-cruiser.cjs` (única fuente de
+verdad de las reglas de import). Se ejecuta con `npm run lint:arch` y debe correr en
+el pre-commit y en CI:
+
+```bash
+cd apps/backend && npx depcruise src --config .dependency-cruiser.cjs
+```
+
+> Por qué un linter y no un revisor humano/IA: las violaciones de capa se cuelan en
+> silencio y se detectan tarde, cuando el grafo de dependencias ya es difícil de
+> desenredar. Un chequeo determinista en el pre-commit es instantáneo y no se puede
+> olvidar.
