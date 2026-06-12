@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Hook versionado de pre-commit. Activado vía `git config core.hooksPath .githooks`.
+# Delega TODA la lógica en scripts/arch-drift.py (fuente de verdad de las reglas,
+# compartida con la skill `update-arch-docs`).
+#
+# Si no hay cambios de arquitectura, el detector sale casi instantáneamente y en
+# silencio. Solo bloquea cuando hay drift entre código y docs/architecture.
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+exec python3 "$ROOT/scripts/arch-drift.py"
