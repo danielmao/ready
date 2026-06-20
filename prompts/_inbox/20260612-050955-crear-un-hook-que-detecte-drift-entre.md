@@ -2,9 +2,9 @@
 captured_at: 2026-06-12T05:09:55+00:00
 source: manual
 important: true
-status: raw
-curated: false
-category: null
+status: curated
+curated: true
+category: infra
 ---
 
 Crear un hook que detecte drift entre el código y la documentación de arquitectura

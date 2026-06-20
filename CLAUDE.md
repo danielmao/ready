@@ -31,8 +31,8 @@ Decisiones de alcance confirmadas con el usuario:
 
 | Tema | Decisión |
 |------|----------|
-| Frontend | **React Native** (`apps/mobile`) |
-| Backend | **NestJS** (`apps/backend`) |
+| Frontend | **React Native + TypeScript** (`apps/mobile`). **Expo** (salvo que el proyecto ya use bare RN). **NativeWind** para estilos. Navegación: **React Navigation o Expo Router** según el setup existente. |
+| Backend | **NestJS + TypeScript** (`apps/backend`). Estructura **orientada a dominio** (DDD por capas). **REST API** en la primera versión. |
 | Logging | **`nestjs-pino`** (structured; reglas en `docs/CODING-CONVENTIONS.md §3`) |
 | Workspace | **Monorepo "apps/ simple"**: `apps/mobile` + `apps/backend`, un solo `CLAUDE.md` raíz, sin tooling extra de monorepo |
 | Idioma de la documentación | **Español** (nombres de archivo en inglés, contenido en español, como el repo de referencia) |

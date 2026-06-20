@@ -1,59 +1,269 @@
-# Prompts — evidencia de uso de IA · Ready
+## Índice
 
-Registro curado de los prompts más relevantes usados para construir **Ready**
-(app para alistar outfits · React Native + NestJS). Los originales crudos viven en
-[`prompts/_inbox/`](prompts/_inbox/); aquí queda la versión clasificada y pulida.
-Ver [`prompts/README.md`](prompts/README.md) para el funcionamiento del sistema.
+1. [Descripción general del producto](#1-descripción-general-del-producto)
+2. [Arquitectura del sistema](#2-arquitectura-del-sistema)
+3. [Modelo de datos](#3-modelo-de-datos)
+4. [Especificación de la API](#4-especificación-de-la-api)
+5. [Historias de usuario](#5-historias-de-usuario)
+6. [Tickets de trabajo](#6-tickets-de-trabajo)
+7. [Pull requests](#7-pull-requests)
 
-## meta
+> Registro curado de los prompts más relevantes usados para construir **Ready** (app
+> para alistar outfits · React Native + NestJS). Los originales crudos viven en
+> [`prompts/_inbox/`](prompts/_inbox/); aquí queda la versión clasificada y agrupada por
+> sección del entregable. Ver [`prompts/README.md`](prompts/README.md) para el
+> funcionamiento del sistema (`/save-prompt` + `/curate-prompts`).
 
-1. **Sistema de captura de prompts como evidencia de IA** —
-   [detalle](prompts/meta/01-sistema-captura-prompts.md) ·
-   [crudo](prompts/_inbox/20260612-025704-antes-de-empezar-quiero-hacer-unos-ajustes.md).
-   Se define la carpeta `prompts/` y un hook `UserPromptSubmit` que captura cada
-   prompt crudo; la clasificación/corrección/enriquecimiento se hace on-demand con
-   `/curate-prompts`. Resultado: pipeline captura + curación funcionando.
-   > Evolución posterior: el hook automático se **eliminó** y la captura pasó a ser
-   > manual con `/save-prompt` (solo se graba lo marcado como importante).
+---
 
-2. **Kickoff del proyecto Ready** —
-   [detalle](prompts/meta/02-kickoff-proyecto-ready.md) ·
-   [crudo](prompts/_inbox/20260612-025931-vamos-a-crear-una-aplicacion-en-react.md).
-   Se define **Ready** (app para alistar outfits), stack **React Native + NestJS** en
-   un único workspace, y el **primer entregable = documentación** tomando el repo
-   AI4Devs `AI4Devs-finalproject-Example2` como referencia de estructura/formato.
-   Se pide persistir las referencias en un `CLAUDE.md` de contexto durable. Resultado:
-   `CLAUDE.md` del workspace + decisiones de layout (monorepo "apps/ simple", doc en
-   español, cuenta personal de GitHub).
+## 1. Descripción general del producto
 
-## docs
+**Prompt 1:**
+```
+vamos a crear una aplicacion en react native y en nestjs como backend, entonces tendremos en esta carpeta nuestro workspace completo. aca pondras un claude.md y tomaras como referencia ese repo que te comparti y este https://github.com/LIDR-academy/AI4Devs-finalproject-Example2, como primer entregable haremos la documentacion de este proyecto. guarda las referencias o la estructura de referencias que necesites para que siempre podamos continuar desde cualquier sesión. Nuestro proyecto se llamara Ready, y es una aplicacion para alistar tus outfits. si tienes dudas puedes irme preguntando
+```
 
-1. **Estructura del proyecto y redacción del entregable 1** —
-   [detalle](prompts/docs/01-estructura-y-entregable-1.md) ·
-   [crudo](prompts/_inbox/20260612-041304-siguiendo-esta-estructura-de-proyecto-deseado.md).
-   A partir de una especificación extensa (sitemap, modelo de datos DDD, navegación,
-   APIs, referencias) se redacta el **entregable 1 = documentación** (README 0–7 +
-   `docs/` 01–09). Antes de escribir se cierran 4 decisiones de alcance del MVP:
-   planning = **1 outfit activo** (no calendario), **sin sugerencias** clima/ocasión,
-   **auth diferida** (single-user), **PostgreSQL + Prisma**. Reglas: outfit ≥2 prendas,
-   1 planned activo, archivado lógico.
-   > ⚠️ Crudo **reconstruido**: este prompt no fue capturado por el hook porque la sesión
-   > tenía como project root `le-projects` (no este workspace), así que el hook de Ready
-   > no estaba activo. Se preservó la evidencia de forma manual.
+**Prompt 2:**
+```
+Siguiendo esta estructura de proyecto deseado y las referencias que tienes, ayudame a armar la documentación para el entregable 1, preguntame cosas si necesitas aclarar funcionalidades o temas. La idea es construir el MVP, pero que también podamos dejar abierto a mas funcionalidades si alcanzamos.
 
-## backend
+[Adjunta una especificación extensa de "Ready - Estructura del Proyecto": sitemap (3 tabs Prendas/Outfits/Planear + stacks y modales), data models con orientación DDD (User, ClothingItem, Category, Color, Tag, Occasion, Outfit, OutfitItem, PlannedOutfit + OutfitHistory/OutfitRating futuros), navegación React Native, funcionalidades core vs futuras, estructura sugerida de front y back, APIs REST iniciales y referencias de apps de closet/outfit.]
+```
 
-1. **Arquitectura DDD por capas del backend** —
-   [detalle](prompts/backend/01-arquitectura-ddd-por-capas.md) ·
-   [crudo](prompts/_inbox/20260612-042626-voy-a-modificar-el-prompt-por-este.md).
-   Encargo de "arquitecto de software": diseñar la estructura del backend (contratos,
-   límites, wiring) **sin** lógica de negocio, con preguntas abiertas en vez de
-   asunciones. Segunda versión de un prompt previo que asumía el stack de
-   `ms-subscriptions` (TypeORM + Kafka), reescrita para el stack real de Ready
-   (**Prisma + PostgreSQL**). Define las tres capas por bounded context
-   (`domain` / `application` / `infrastructure`), la regla `infra → application → domain`,
-   contratos con token de DI y cruce entre dominios **solo vía facade**. Resultado:
-   `docs/02-ARCHITECTURE.md` (§1, §3, §3 bis) + README §2 reescritos según este patrón.
+**Prompt 3:**
+```
+antes de empezar quiero hacer unos ajustes. Hay que crear una carpeta prompts en donde vamos a poner los prompts mas relevantes que vamos usar para contruir este proyecto. para eso podemos configurar un hook que se dispare cuando estamos creando prompts, si es algo relevante para nuestra app, lo guarde como evidencia del uso de IA en este proyecto, si es necesario crear subcarpetas y reclacificarlos o enriquecer los prompts antes de usarlos y de guardarlos, este hook se encargara de esto, tambien de arreglar errores de redaccion o inconcistencias. por ejemplo este lo podemos guardar y probar
+```
 
-<!-- Próximas categorías (mobile, infra, data-model) se agregan al curar. -->
+> Nota de evolución: el hook automático `UserPromptSubmit` descrito en el Prompt 3 se
+> **eliminó** después para evitar ruido; la captura pasó a ser manual con `/save-prompt`
+> (solo se graba lo marcado como importante) y la curación on-demand con `/curate-prompts`.
 
+**Prompt 4:**
+```
+recuerdas los proyectos base? necesitamos igual el formato de readme.md y de prompts.md al de esos proyectos
+```
+
+> Intención: alinear `README.md` y `prompts.md` al **formato exacto** de la plantilla
+> AI4Devs (`AI4Devs-finalproject-Example2`), no solo a una estructura parecida. Resultado:
+> ambos archivos reescritos con el esqueleto de la plantilla (Índice numerado, `0.1–0.5`,
+> subsecciones `### **N.N.**`, `prompts.md` agrupado por sección del README).
+
+---
+
+## 2. Arquitectura del Sistema
+
+### **2.1. Diagrama de arquitectura:**
+
+**Prompt 1:**
+```
+Quiero hacer una modificación a la arquitectura del backend.
+
+Actuá como arquitecto de software. Tu tarea es diseñar y dejar scaffolded la arquitectura de un microservicio backend nuevo, aplicando Domain-Driven Design con una separación estricta en tres capas. No implementes lógica de negocio todavía: definí estructura, contratos, límites entre capas y wiring de dependencias. Donde falte una decisión de dominio, listala como pregunta abierta en vez de asumirla.
+
+## Stack
+- TypeScript + NestJS
+- Prisma como ORM sobre PostgreSQL
+- Jest para tests
+
+## Principio rector
+El código se organiza por bounded context (dominio), y dentro de cada dominio en tres capas:
+- domain: el modelo de negocio puro. No sabe nada de frameworks, bases de datos ni transporte.
+- application: los casos de uso y la lógica de aplicación. Orquesta el dominio. Define contratos (interfaces) de todo lo externo que necesita, pero no sabe cómo están implementados.
+- infrastructure: los detalles técnicos. Implementa los contratos que pide application (base de datos vía Prisma, HTTP, clientes de terceros) y conecta todo (DI).
+
+La regla de oro de dependencias: infrastructure → application → domain. Las flechas apuntan hacia adentro. domain no conoce a nadie; application no conoce infrastructure.
+
+[Incluye además: estructura de carpetas obligatoria por dominio, reglas detalladas por capa (entidades planas, repositorios = solo interfaces + token de inyección, use-cases con un único execute(), services internos, facades como única API pública entre dominios), los invariantes de límites entre dominios (cruce solo vía facade, Prisma solo en infrastructure/persistence) y los entregables esperados, incluyendo una propuesta inicial de schema.prisma y una lista de decisiones abiertas.]
+```
+
+> Segunda versión de un prompt previo que asumía el stack de `ms-subscriptions`
+> (TypeORM + Kafka), reescrita para el stack real de Ready (**Prisma + PostgreSQL**, sin
+> eventos por ahora). Resultado: `docs/02-ARCHITECTURE.md` (§1, §3, §3 bis) + README §2.
+
+**Prompt 2:**
+```
+no cambies la estructura del backend que ya teniamos. la que ya teniamos me gusta mas
+```
+
+> Decisión: rechazar la estructura backend simplificada que proponía el prompt del contrato
+> de roles y **mantener la DDD por capas existente** (`domain`/`application` con facades y
+> repositories/`infrastructure`). El rol *Backend Architect* del `AGENTS.md` quedó con la
+> estructura real del repo.
+
+### **2.2. Descripción de componentes principales:**
+
+**Prompt 1:**
+```
+ten en cuenta esto Mobile App
+React Native
+TypeScript
+Expo, unless the project already uses bare React Native
+NativeWind for styling
+React Navigation or Expo Router, depending on the existing project setup
+Backend
+NestJS
+TypeScript
+Domain-oriented structure
+REST API in the first version
+```
+
+> Intención: precisar el stack móvil más allá de "React Native". Resultado: stack volcado a
+> `CLAUDE.md §2`, `AGENTS.md`, `README.md §2.2` y `docs/02` (Expo · NativeWind · React
+> Navigation/Expo Router · TanStack Query · Zustand · react-hook-form).
+
+### **2.3. Estructura de ficheros y manejo de estado (frontend):**
+
+**Prompt 1:**
+```
+vamos a usar sus ## State Management
+Use a layered state management approach. Do not put all application state in a global store.
+1. Server State → TanStack Query (datos del backend; queries para leer, mutations para escribir).
+2. Global Client State → Zustand (estado compartido entre pantallas: draft de outfit, prendas seleccionadas, preferencias, onboarding, auth futuro).
+3. Local Screen State → useState/useReducer (modales, filtros temporales, preview de imagen).
+4. Forms → react-hook-form.
+
+[Incluye además: estructura recomendada por feature (app/providers, features/*/hooks·services·stores, shared/stores), reglas de Zustand (stores chicos por responsabilidad, sin app.store.ts gigante, no llamar APIs directo), reglas de TanStack Query (hooks por feature, query keys centralizadas), y la regla principal: si el dato viene del backend no va a Zustand por defecto.]
+```
+
+> Coordinación: el naming `wardrobe`/`ready` del prompt se mapeó al canónico
+> `clothes`/`outfits`/`planning`; los filtros de una sola pantalla pasaron de Zustand a
+> estado local. Resultado: nueva **§6 Gestión de estado** en `docs/05-FRONTEND-INTEGRATION.md`
+> + tabla y árbol actualizados en `docs/02`.
+
+### **2.4. Infraestructura y despliegue**
+
+**Prompt 1:**
+```
+Crear un hook que detecte drift entre el código y la documentación de arquitectura.
+
+Actuá como ingeniero de plataforma. Tu tarea es crear un hook de pre-commit para este repositorio que detecte cuándo un cambio afecta la arquitectura del proyecto pero la documentación de arquitectura NO fue actualizada en el mismo commit. El hook NO escribe documentación: solo detecta el desfasaje y bloquea el commit indicando qué hacer.
+
+## Qué cuenta como "cambio de arquitectura"
+- Se crea o elimina un dominio (carpeta bajo src/{domain}/).
+- Se agrega, renombra o elimina un caso de uso (application/use-cases/).
+- Se agrega, cambia o elimina una fachada (application/facades/).
+- Se agrega o cambia un contrato de repositorio (application/repositories/) o su token.
+- Se agrega o elimina un service, emitter o controller.
+- Cambia el wiring de un módulo ({domain}.module.ts): nuevos providers/exports.
+- Cambia el modelo de datos (schema.prisma).
+
+## Comportamiento del hook
+Se dispara en pre-commit sobre los archivos staged; si no hubo cambio de arquitectura sale en silencio; si lo hubo y la doc de arquitectura no fue tocada en el mismo commit, falla con un mensaje claro que nombra explícitamente la skill `update-arch-docs`. Debe ser determinista, rápido, no modificar nada y poder correrse en modo "check" para CI.
+
+[Las reglas de "qué cuenta como cambio de arquitectura" deben coincidir exactamente con las que usa la skill update-arch-docs.]
+```
+
+> Resultado: hook `scripts/arch-drift.py` en `pre-commit` + skill `update-arch-docs`,
+> referenciados en el README §2.4 (enforcement de arquitectura).
+
+**Prompt 2:**
+```
+ayudame a añadir un devops y apliar un poco el mentor — Add DevOps Architect and Update Technical Mentor.
+
+[Prompt extenso: agregar al AGENTS.md un rol DevOps Architect (deploy simple y barato para MVP en AWS: EC2+Docker / Beanstalk / App Runner; NestJS dockerizado + PostgreSQL + S3 + CloudWatch; CI/CD con GitHub Actions DESPUÉS del deploy manual; reglas de DB, secretos, seguridad básica, logs, backups; What Not To Do sin K8s/Terraform/multi-cuenta; formato de respuesta de 10 puntos) y ampliar el mentor de "React Native Mentor" a "Technical Mentor" (RN + backend + AWS/DevOps, con Learning Notes). Premisa: mantener todo simple, barato y entendible porque el dueño está aprendiendo.]
+```
+
+> Coordinación: la regla "imágenes en S3" del DevOps Architect se reconcilió con el `README
+> §2.4` (filesystem local en MVP) → **filesystem solo en dev local; cualquier target
+> desplegado → S3**. Resultado: `AGENTS.md` rol 5 *Technical Mentor* + rol 6 *DevOps Architect*.
+
+> Las subsecciones **2.5** (Seguridad) y **2.6** (Tests) se cubrieron dentro de los prompts
+> anteriores; sus prompts dedicados se irán agregando al curar durante la implementación.
+
+---
+
+## 3. Modelo de Datos
+
+El modelo de datos del MVP (entidades, agregados DDD y entidades futuras) se definió
+dentro del **Prompt 2 de la sección 1** (especificación de la estructura del proyecto).
+Los prompts dedicados al esquema Prisma se agregarán durante la implementación del
+backend.
+
+---
+
+## 4. Especificación de la API
+
+Los endpoints REST iniciales (clothes, outfits, planning) se definieron dentro del
+**Prompt 2 de la sección 1**. Los prompts de detalle de contratos OpenAPI se agregarán
+al implementar los controllers.
+
+---
+
+## 5. Historias de Usuario
+
+_(Pendiente — se completará al generar las historias de usuario detalladas durante la
+implementación.)_
+
+---
+
+## 6. Tickets de Trabajo
+
+_(Pendiente — se completará al aterrizar los tickets de trabajo por sprint.)_
+
+---
+
+## 7. Pull Requests
+
+_(Pendiente — se completará a medida que se abran los PRs de implementación.)_
+
+---
+
+## Meta — tooling y gobernanza de agentes
+
+Prompts sobre el andamiaje del proyecto y cómo deben trabajar los agentes de IA (no mapean
+a una sección del entregable, pero son evidencia del uso de IA).
+
+**Prompt 1:**
+```
+crea el agents.md de este proyecto
+```
+
+> Resultado: `AGENTS.md` en la raíz — versión agent-agnóstica del contexto (qué es Ready,
+> stack, arquitectura DDD, comandos de enforcement, DoD, evidencia de IA).
+
+**Prompt 2:**
+```
+mira ayudame a añadir esto también # Prompt para crear AGENTS.md del proyecto Ready
+
+Actúa como un AI Engineering Architect especializado en proyectos móviles con React Native, backend con NestJS y flujos de trabajo asistidos por agentes de IA. Necesito que crees un archivo AGENTS.md para mi proyecto Ready.
+
+[Prompt extenso: define AGENTS.md como contrato de trabajo con 5 roles (Product UX Architect, Frontend Mobile Architect, Backend Architect, Implementation Agent, React Native Mentor) — cada uno con propósito / responsabilidades / qué no hacer / cuándo se activa / reglas; más secciones de gestión de estado, reglas de UI (primitivas RN + NativeWind), modelos mínimos, orden de prioridad (clothes→outfits→planning→…→login), Role Selection Rule y What Not To Do.]
+```
+
+> Coordinación: naming → canónico `clothes`/`outfits`/`planning`; estructura backend → la
+> DDD por capas existente (no la simplificada del prompt, ver §2.1 Prompt 2); modelos
+> mínimos alineados a `docs/03` (`PlannedOutfit.status` = `planned|confirmed|cancelled`).
+> Resultado: `AGENTS.md` reescrito como contrato de roles completo.
+
+**Prompt 3:**
+```
+necesito también añadir un spec planner para que escriba los specs, basate en [sistema interno de specs], considera añadir si quieres openspec al proyecto, si lo ves necesario, sino, está bien asi
+```
+
+> Intención: sumar un rol **Spec Planner** que escriba los specs (el "qué") antes de diseñar o
+> codear, con enfoque spec-driven liviano en markdown. **OpenSpec evaluado y descartado** para
+> el MVP (mantener simple). Resultado: `AGENTS.md` rol 7 *Spec Planner* + scaffolding
+> `docs/specs/` (plantilla + `active/`/`completed/`). El nombre de la fuente interna se redactó
+> a pedido del usuario.
+
+---
+
+## Conversación / evidencia completa
+
+La evidencia cruda e intacta de cada prompt vive en [`prompts/_inbox/`](prompts/_inbox/)
+y, una vez clasificada, en `prompts/{meta,docs,backend,mobile,infra,data-model}/`. El
+sistema funciona así:
+
+- **`/save-prompt`** — graba manualmente un prompt crudo como evidencia importante.
+- **`/curate-prompts`** — clasifica, corrige y enriquece los crudos, y actualiza este
+  `prompts.md`. **La evidencia cruda nunca se edita ni se borra.**
+
+### **Categorías capturadas hasta ahora**
+
+- 🧭 **Kickoff / producto** — definición de Ready, stack y entregable 1 (1 prompt).
+- 📐 **Documentación / estructura** — especificación del proyecto, MVP y formato AI4Devs (2 prompts).
+- 🏗️ **Arquitectura backend** — DDD por capas, contratos, boundaries y decisión de mantener la estructura (2 prompts).
+- 📱 **Mobile** — stack móvil (Expo/NativeWind) y gestión de estado por capas (2 prompts).
+- ☁️ **Infra / tooling** — hook de drift de arquitectura + DevOps Architect/Technical Mentor (2 prompts).
+- 🧰 **Meta** — sistema de captura de prompts + creación/contrato de roles + Spec Planner de `AGENTS.md` (4 prompts).

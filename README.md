@@ -12,33 +12,43 @@ modular vive en [`docs/`](docs/) (01–09). La evidencia de uso de IA está en
 
 ## Índice
 
-- [0. Ficha del proyecto](#0-ficha-del-proyecto)
-- [1. Descripción general del producto](#1-descripción-general-del-producto)
-- [2. Arquitectura del sistema](#2-arquitectura-del-sistema)
-- [3. Modelo de datos](#3-modelo-de-datos)
-- [4. Especificación de la API](#4-especificación-de-la-api)
-- [5. Historias de usuario](#5-historias-de-usuario)
-- [6. Tickets de trabajo](#6-tickets-de-trabajo)
-- [7. Pull requests](#7-pull-requests)
+0. [Ficha del proyecto](#0-ficha-del-proyecto)
+1. [Descripción general del producto](#1-descripción-general-del-producto)
+2. [Arquitectura del sistema](#2-arquitectura-del-sistema)
+3. [Modelo de datos](#3-modelo-de-datos)
+4. [Especificación de la API](#4-especificación-de-la-api)
+5. [Historias de usuario](#5-historias-de-usuario)
+6. [Tickets de trabajo](#6-tickets-de-trabajo)
+7. [Pull requests](#7-pull-requests)
 
 ---
 
 ## 0. Ficha del proyecto
 
-| Campo | Valor |
-|-------|-------|
-| **Nombre** | Ready |
-| **Autor** | Daniel Torres (`danielmao`) |
-| **Programa** | AI4Devs — Proyecto final (LIDR Academy) |
-| **Tipo** | App móvil + API backend |
-| **Frontend** | React Native (TypeScript) — `apps/mobile` |
-| **Backend** | NestJS (TypeScript, DDD) — `apps/backend` |
-| **Persistencia** | PostgreSQL + Prisma |
-| **Repositorio** | https://github.com/danielmao/ready |
-| **Idioma de la documentación** | Español |
-| **Estado** | Documentación (entregable 1) |
+### **0.1. Tu nombre completo:**
 
-### Alcance del MVP (decisiones cerradas)
+Daniel Torres (`danielmao`)
+
+### **0.2. Nombre del proyecto:**
+
+Ready — app para alistar outfits.
+
+### **0.3. Descripción breve del proyecto:**
+
+App móvil + API backend para **preparar con antelación la ropa que vas a usar**. El
+usuario digitaliza su armario, combina prendas en outfits reutilizables y deja fijado
+el **próximo outfit** para revisarlo de un vistazo antes de salir. Proyecto final de
+AI4Devs (LIDR Academy); stack **React Native + NestJS + PostgreSQL/Prisma**.
+
+### **0.4. URL del proyecto:**
+
+Sin URL pública aún (MVP en desarrollo local; ver [§1.4](#14-instrucciones-de-instalación)).
+
+### 0.5. URL o archivo comprimido del repositorio
+
+https://github.com/danielmao/ready
+
+### **Alcance del MVP (decisiones cerradas)**
 
 | Decisión | Resolución para el MVP |
 |----------|------------------------|
@@ -49,13 +59,13 @@ modular vive en [`docs/`](docs/) (01–09). La evidencia de uso de IA está en
 
 > El diseño deja explícitamente **puertas abiertas** (calendario, historial, ratings,
 > sugerencias con IA, auth multi-usuario) sin condicionar la arquitectura del MVP.
-> Ver [§1.2](#12-características-y-funcionalidades) y [`docs/01-PROJECT-OVERVIEW.md`](docs/01-PROJECT-OVERVIEW.md).
+> Ver [§1.2](#12-características-y-funcionalidades-principales) y [`docs/01-PROJECT-OVERVIEW.md`](docs/01-PROJECT-OVERVIEW.md).
 
 ---
 
 ## 1. Descripción general del producto
 
-### 1.1 Objetivo
+### **1.1. Objetivo:**
 
 **Ready resuelve la fricción de vestirse a las apuras.** En vez de improvisar cada
 mañana frente al ropero, el usuario:
@@ -71,7 +81,7 @@ al vestirse. El MVP es de **uso personal** (un solo usuario por dispositivo).
 **Valor diferencial:** simplicidad. No es una app de compras ni un asistente de IA
 pesado; es un organizador rápido centrado en el acto de *alistar* el outfit.
 
-### 1.2 Características y funcionalidades
+### **1.2. Características y funcionalidades principales:**
 
 #### Core del MVP (imprescindible)
 
@@ -112,7 +122,7 @@ pesado; es un organizador rápido centrado en el acto de *alistar* el outfit.
 > El **modelo de datos del MVP ya contempla estas extensiones** (campos opcionales,
 > entidades futuras documentadas) para no requerir migraciones disruptivas.
 
-### 1.3 Diseño y experiencia de usuario
+### **1.3. Diseño y experiencia de usuario:**
 
 La app se organiza en **3 tabs** (bottom tabs), cada uno con su stack, más modales y
 stacks transversales (Settings, Search).
@@ -152,7 +162,7 @@ graph TD
 Detalle de cada pantalla (propósito, componentes, datos que consume/modifica) en
 [`docs/05-FRONTEND-INTEGRATION.md`](docs/05-FRONTEND-INTEGRATION.md).
 
-### 1.4 Instrucciones de instalación
+### **1.4. Instrucciones de instalación:**
 
 Requisitos: Node 20+, Docker (Postgres), y entorno React Native (Expo o RN CLI).
 
@@ -179,9 +189,9 @@ Guía detallada (variables de entorno, troubleshooting, seeds): [`docs/08-INSTAL
 
 ---
 
-## 2. Arquitectura del sistema
+## 2. Arquitectura del Sistema
 
-### 2.1 Diagrama de arquitectura
+### **2.1. Diagrama de arquitectura:**
 
 ```mermaid
 graph LR
@@ -217,18 +227,24 @@ single-user: el backend asume un `userId` fijo inyectado por un guard/decorator;
 se incorpore auth (Épica 1), ese guard pasa a resolver el usuario desde el JWT sin tocar
 los casos de uso.
 
-### 2.2 Componentes
+**Por qué esta arquitectura:** permite testear el dominio sin framework ni base de datos,
+aísla Prisma en una sola capa (cambiar de ORM no toca la lógica) y hace explícitos los
+límites entre módulos. **Sacrificio:** más boilerplate por dominio (contratos + tokens de
+DI + mappers) que un CRUD plano; se asume a cambio de mantenibilidad y de poder crecer a
+los módulos del roadmap sin refactors disruptivos.
+
+### **2.2. Descripción de componentes principales:**
 
 | Componente | Responsabilidad | Tecnología |
 |------------|-----------------|------------|
-| **Mobile app** | UI, navegación, estado local, llamadas a la API | React Native + TS, React Navigation, React Query, React Hook Form + Zod |
+| **Mobile app** | UI, navegación, estado local, llamadas a la API | React Native + TS, Expo (salvo bare RN), NativeWind (estilos), React Navigation / Expo Router, React Query, React Hook Form + Zod |
 | **infrastructure** | Entrada HTTP (controllers), impl Prisma de los contratos, wiring de Nest | NestJS, Prisma |
 | **application** | Casos de uso (`execute()`), services internos, **facades** (API entre dominios), contratos de repositorio + token de DI | NestJS (DI) |
 | **domain** | Entidades planas, enums, invariantes de negocio | TS puro (sin framework) |
 | **Persistencia** | Esquema relacional, migraciones, queries | PostgreSQL + Prisma |
 | **Imágenes** | Almacenar fotos de prendas | Filesystem local (MVP) → S3-compatible (futuro) |
 
-### 2.3 Estructura de ficheros
+### **2.3. Descripción de alto nivel del proyecto y estructura de ficheros**
 
 Monorepo **"apps/ simple"** (sin tooling de monorepo extra):
 
@@ -252,7 +268,7 @@ ready/
 
 Árbol completo de front y back en [`docs/02-ARCHITECTURE.md`](docs/02-ARCHITECTURE.md).
 
-### 2.4 Infraestructura y despliegue
+### **2.4. Infraestructura y despliegue**
 
 - **MVP / desarrollo:** todo local. Postgres en Docker; API con `npm run start:dev`;
   app con Metro/Expo.
@@ -260,8 +276,11 @@ ready/
   bucket S3-compatible sin cambiar el contrato de la API (sólo cambia la `imageUrl`).
 - **Despliegue futuro:** backend containerizado (Docker) + Postgres gestionado; app
   distribuida vía Expo/EAS o stores. Fuera del alcance del entregable 1.
+- **Enforcement de arquitectura:** `dependency-cruiser` (`npm run lint:arch`) hace cumplir
+  los boundaries de capas/facades en CI; un hook de pre-commit detecta drift entre el
+  código y la documentación de arquitectura.
 
-### 2.5 Seguridad
+### **2.5. Seguridad**
 
 | Aspecto | MVP | Futuro |
 |---------|-----|--------|
@@ -272,7 +291,7 @@ ready/
 
 Detalle y plan de testing de seguridad en [`docs/09-SECURITY-TESTING.md`](docs/09-SECURITY-TESTING.md).
 
-### 2.6 Tests
+### **2.6. Tests**
 
 | Capa | Estrategia | Herramientas |
 |------|-----------|--------------|
@@ -284,7 +303,9 @@ Plan completo en [`docs/09-SECURITY-TESTING.md`](docs/09-SECURITY-TESTING.md).
 
 ---
 
-## 3. Modelo de datos
+## 3. Modelo de Datos
+
+### **3.1. Diagrama del modelo de datos:**
 
 Diagrama entidad-relación del **MVP** (entidades futuras marcadas como roadmap):
 
@@ -307,7 +328,7 @@ erDiagram
     PlannedOutfit }o--|| Outfit : "fija"
 ```
 
-**Entidades del MVP:**
+### **3.2. Descripción de entidades principales:**
 
 | Entidad | Propósito | Campos clave | Reglas de negocio |
 |---------|-----------|--------------|-------------------|
@@ -335,7 +356,7 @@ Esquema Prisma, tablas pivote N:M y catálogos semilla en
 API REST bajo `/api`. MVP sin auth (single-user). Formato JSON. Paginación por
 `page`/`limit` en listados.
 
-### Clothes
+### **Clothes**
 
 | Método | Ruta | Propósito |
 |--------|------|-----------|
@@ -349,7 +370,7 @@ API REST bajo `/api`. MVP sin auth (single-user). Formato JSON. Paginación por
 | GET / POST | `/api/clothes/tags` | Listar / crear tags |
 | GET / POST | `/api/clothes/occasions` | Listar / crear ocasiones |
 
-### Outfits
+### **Outfits**
 
 | Método | Ruta | Propósito |
 |--------|------|-----------|
@@ -361,7 +382,7 @@ API REST bajo `/api`. MVP sin auth (single-user). Formato JSON. Paginación por
 | POST | `/api/outfits/:id/items` | Añadir prenda |
 | DELETE | `/api/outfits/:id/items/:itemId` | Quitar prenda |
 
-### Planning
+### **Planning**
 
 | Método | Ruta | Propósito |
 |--------|------|-----------|
@@ -376,73 +397,155 @@ Esquemas de request/response, códigos de error y fragmentos OpenAPI en
 
 ---
 
-## 5. Historias de usuario
+## 5. Historias de Usuario
 
 Listado priorizado (formato completo con criterios de aceptación en
 [`docs/06-USER-STORIES.md`](docs/06-USER-STORIES.md)).
 
-**HU-01 — Registrar una prenda** *(core)*
+### **Historia de Usuario 1: Registrar una prenda**
+
 > Como usuario quiero registrar una prenda con foto, categoría y color para tener mi
 > armario digitalizado.
-> **AC:** name/categoría/color obligatorios · al menos 0 fotos · aparece en la lista.
 
-**HU-02 — Ver y filtrar mi armario** *(core)*
-> Como usuario quiero ver mis prendas y filtrarlas por categoría/color/ocasión para
-> encontrarlas rápido.
+**Criterios de aceptación:**
+- name, categoría y color son obligatorios.
+- se pueden adjuntar 0 o más fotos.
+- al guardar, la prenda aparece en el listado del armario.
 
-**HU-03 — Crear un outfit** *(core)*
+### **Historia de Usuario 2: Crear un outfit**
+
 > Como usuario quiero combinar ≥2 prendas en un outfit con nombre para reutilizarlo.
-> **AC:** mínimo 2 prendas · no se repite una prenda en el mismo outfit.
 
-**HU-04 — Planear mi próximo outfit** *(core)*
-> Como usuario quiero fijar un outfit como "el próximo" para tenerlo listo al salir.
-> **AC:** sólo un planeado activo · al fijar otro, el anterior se cancela.
+**Criterios de aceptación:**
+- el outfit requiere un mínimo de 2 prendas.
+- no se puede repetir la misma prenda dentro del mismo outfit.
+- al guardar, el outfit aparece en el listado y puede planearse.
 
-**HU-05 — Revisar el outfit antes de salir** *(core)*
-> Como usuario quiero ver el outfit planeado con un checklist de prendas para no
-> olvidarme nada.
+### **Historia de Usuario 3: Planear el próximo outfit**
 
-**HU-06 — Editar / archivar prendas y outfits** *(importante)*
-**HU-07 — Buscar prendas y outfits** *(importante)*
-**HU-08 — Etiquetas y ocasiones propias** *(importante)*
+> Como usuario quiero fijar un outfit como "el próximo" para tenerlo listo al salir,
+> y revisarlo con un checklist de prendas antes de salir.
+
+**Criterios de aceptación:**
+- sólo existe un `PlannedOutfit` activo por usuario.
+- al fijar otro, el anterior pasa a `cancelled`.
+- la vista del planeado muestra el checklist de prendas del outfit.
+
+### **Otras historias (priorización)**
+
+| ID | Título | Prioridad |
+|----|--------|-----------|
+| HU-02 | Ver y filtrar mi armario | Core |
+| HU-06 | Editar / archivar prendas y outfits | Importante |
+| HU-07 | Buscar prendas y outfits | Importante |
+| HU-08 | Etiquetas y ocasiones propias | Importante |
 
 ---
 
-## 6. Tickets de trabajo
+## 6. Tickets de Trabajo
 
-Selección representativa (backlog completo en [`docs/07-WORK-TICKETS.md`](docs/07-WORK-TICKETS.md)).
+Backlog completo en [`docs/07-WORK-TICKETS.md`](docs/07-WORK-TICKETS.md). Selección
+representativa:
 
 | ID | Tipo | Título | HU | Estimación |
 |----|------|--------|----|-----------:|
 | RDY-1 | Infra | Scaffolding backend NestJS + Prisma + Docker Postgres | — | M |
 | RDY-2 | Infra | Scaffolding mobile RN + navegación (tabs/stacks/modales) | — | M |
-| RDY-3 | Backend | Módulo `clothes`: CRUD + catálogos (categorías/colores/ocasiones/tags) | HU-01,02,08 | L |
+| RDY-3 | Backend | Módulo `clothes`: CRUD + catálogos | HU-01,02,08 | L |
 | RDY-4 | Backend | Módulo `outfits`: CRUD + items (regla ≥2 prendas) | HU-03,06 | L |
 | RDY-5 | Backend | Módulo `planning`: 1 activo, confirm, cancel | HU-04,05 | M |
 | RDY-6 | Mobile | Tab Prendas: lista + filtros + detalle + alta (modal) | HU-01,02 | L |
-| RDY-7 | Mobile | Tab Outfits: lista + detalle + alta (selector de prendas) | HU-03,06 | L |
-| RDY-8 | Mobile | Tab Planear: ver/cambiar/confirmar próximo outfit | HU-04,05 | M |
 | RDY-9 | QA | Tests unit (dominio) + e2e (flujos HTTP) | — | M |
 
-Ejemplo de ticket detallado (descripción, criterios, tareas, definición de hecho) en
-[`docs/07-WORK-TICKETS.md`](docs/07-WORK-TICKETS.md).
+Tres tickets detallados (backend, frontend y base de datos):
+
+### **Ticket 1 (Backend): Módulo `clothes` — CRUD + catálogos**
+
+#### Descripción:
+Implementar el bounded context `clothes` con la convención DDD por capas: dominio,
+casos de uso, contratos de repositorio y persistencia Prisma. Expone el CRUD de prendas
+y los catálogos asociados (categorías, colores, tags, ocasiones).
+
+#### Requisitos funcionales:
+- CRUD de `ClothingItem` (crear, listar con filtros, detalle, actualizar, archivar).
+- Endpoints de catálogo: categorías, colores, tags (GET/POST), ocasiones (GET/POST).
+- Archivado lógico (`isActive`), nunca borrado físico.
+
+#### Requisitos técnicos:
+- Tres capas (`domain`/`application`/`infrastructure`); cruce a otros dominios sólo vía facade.
+- Prisma confinado a `infrastructure/persistence`; contratos inyectados por token de DI.
+- DTOs validados con `class-validator`.
+
+#### Criterios de aceptación:
+- name/categoría/color obligatorios; rechazo con 400 si faltan.
+- `npm run lint:arch` pasa (sin violaciones de capas/facades).
+- Tests unit del dominio + e2e del flujo de creación en verde.
+
+### **Ticket 2 (Frontend): Tab Prendas — lista, filtros, detalle y alta**
+
+#### Descripción:
+Construir el Tab "Prendas" en React Native: catálogo con filtros, detalle de prenda y
+alta vía modal, consumiendo la API de `clothes`.
+
+#### Requisitos funcionales:
+- `ClothesListScreen` con filtro por categoría/color/ocasión y búsqueda.
+- `ClothingDetailScreen` con fotos, datos y outfits relacionados.
+- `CreateClothingScreen` (modal) con upload de fotos y selectores de catálogo.
+
+#### Requisitos técnicos:
+- React Navigation (tab + stack + modal); React Query para data fetching/caché.
+- Formulario con React Hook Form + Zod; `react-native-image-picker` para fotos.
+
+#### Criterios de aceptación:
+- crear una prenda la deja visible en la lista sin recargar manualmente.
+- los filtros refinan el listado en cliente/servidor sin recargar la pantalla.
+- tests de componentes/hooks clave en verde (Jest + RN Testing Library).
+
+### **Ticket 3 (Base de datos): Esquema Prisma, migraciones y seeds**
+
+#### Descripción:
+Definir el `schema.prisma` del MVP (entidades y pivotes N:M), generar la migración
+inicial y sembrar catálogos + el usuario fijo single-user.
+
+#### Requisitos funcionales:
+- Modelos: User, ClothingItem, Category, Color, Tag, Occasion, Outfit, OutfitItem, PlannedOutfit.
+- Pivotes N:M para prenda↔ocasión, prenda↔tag, outfit↔ocasión, outfit↔tag.
+- Seed de categorías, colores, ocasiones globales y el `User` fijo del MVP.
+
+#### Requisitos técnicos:
+- `PlannedOutfit.plannedFor` opcional (punto de extensión al calendario, Épica 2).
+- Restricción única `(outfitId, clothingItemId)` en `OutfitItem`.
+- Archivado lógico (`isActive`) en `ClothingItem` y `Outfit`.
+
+#### Criterios de aceptación:
+- `npx prisma migrate dev` crea el esquema desde cero sin errores.
+- `npm run seed` deja catálogos + user fijo listos para usar la API.
+- el modelo soporta la regla "1 PlannedOutfit activo por usuario".
 
 ---
 
-## 7. Pull requests
+## 7. Pull Requests
 
-Se documentarán a medida que avance la implementación (fase posterior al entregable 1).
-Convención del repo:
+Los PRs se documentarán a medida que avance la implementación (fase posterior al
+entregable 1). Convención del repo:
 
 - Una rama por ticket (`feat/RDY-3-clothes-module`).
 - PR con descripción enlazando el ticket y las HU que cierra.
-- Checklist de tests antes de merge.
+- Checklist de tests + `npm run lint:arch` antes de merge.
 
-| PR | Ticket | Estado |
-|----|--------|--------|
-| _(pendiente)_ | — | — |
+### **Pull Request 1: _(pendiente)_**
+
+Se completará al implementar el primer módulo del backend.
+
+### **Pull Request 2: _(pendiente)_**
+
+Se completará al implementar el primer Tab del frontend.
+
+### **Pull Request 3: _(pendiente)_**
+
+Se completará con el esquema de base de datos y los seeds.
 
 ---
 
 > **Evidencia de uso de IA:** ver [`prompts.md`](prompts.md). Los prompts crudos se
-> capturan automáticamente en `prompts/_inbox/` y se curan con `/curate-prompts`.
+> graban con `/save-prompt` en `prompts/_inbox/` y se curan con `/curate-prompts`.

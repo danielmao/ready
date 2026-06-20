@@ -26,9 +26,9 @@ ningún dominio importa repos/services/use-cases ajenos ni accede a tablas de ot
 
 ```mermaid
 graph TB
-    subgraph Mobile[apps/mobile — React Native]
-        UI[Screens + Components]
-        NAV[React Navigation]
+    subgraph Mobile[apps/mobile — React Native + Expo]
+        UI[Screens + Components<br/>NativeWind]
+        NAV[React Navigation / Expo Router]
         QRY[React Query]
         SVC[services/*Service.ts]
         UI --> NAV --> QRY --> SVC
@@ -140,11 +140,12 @@ graph LR
 apps/mobile/src/
 ├── screens/{clothes,outfits,planning,settings,search,modals}/
 ├── components/{common,clothes,outfits,planning,filters,search}/
-├── features/{clothes,outfits,planning}/{components,hooks,services,state}
+├── app/providers/   # QueryProvider (QueryClient) + provider raíz
+├── features/{clothes,outfits,planning}/{components,hooks,services,stores}
 ├── navigation/   # RootNavigator, MainTabs, *Stack, ModalStack, types
 ├── services/     # apiClient + *Service por dominio
 ├── hooks/        # useApi, useDebounce, ...
-├── state/        # store (Zustand) + slices ui/filtros
+├── shared/stores/  # Zustand global: appPreferences, auth (chicos por responsabilidad)
 ├── domain/models # tipos espejo de las entidades
 └── utils/ constants/ types/ config/
 ```
@@ -153,11 +154,14 @@ Recomendaciones de implementación:
 
 | Área | Elección |
 |------|----------|
-| Navegación | React Navigation v6 (tabs + stacks + modales) |
-| Estado servidor | React Query (cache, loading, retry) |
-| Estado UI | Zustand (filtros activos, modales) |
+| Plataforma | Expo (salvo que el proyecto ya use bare React Native) |
+| Navegación | React Navigation v6 o Expo Router según el setup (tabs + stacks + modales) |
+| Estilos | NativeWind (Tailwind para React Native) |
+| Estado servidor | TanStack Query (cache, loading, retry) — todo dato del backend |
+| Estado global cliente | Zustand, stores chicos por responsabilidad (outfit builder, preferencias, auth) |
+| Estado local | `useState`/`useReducer` para lo de una sola pantalla (filtros temporales, modales) |
 | Formularios | React Hook Form + Zod |
-| Imágenes | react-native-image-picker |
+| Imágenes | expo-image-picker / react-native-image-picker |
 | Tests | Jest + React Native Testing Library |
 
 ## 5. Seguridad y despliegue

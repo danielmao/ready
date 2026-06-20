@@ -1,0 +1,28 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno y secretos — NUNCA commitear (ver skill /aws-deploy y rol DevOps Architect)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Builds / artefactos
+dist/
+build/
+.expo/
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+.idea/
+*.swp
+
+# Backups locales de DB
+*.dump
+*.sql.bak
