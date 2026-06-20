@@ -2,9 +2,9 @@
 captured_at: 2026-06-20T04:23:03+00:00
 source: manual
 important: true
-status: raw
-curated: false
-category: null
+status: curated
+curated: true
+category: mobile
 ---
 
 define el tema de la app con estos colores

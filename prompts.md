@@ -112,6 +112,18 @@ REST API in the first version
 > `CLAUDE.md §2`, `AGENTS.md`, `README.md §2.2` y `docs/02` (Expo · NativeWind · React
 > Navigation/Expo Router · TanStack Query · Zustand · react-hook-form).
 
+**Prompt 2:**
+```
+define el tema de la app con estos colores
+
+export const theme = { colors: { primary: "#003B4A" /* petróleo */, secondary: "#6F2B3E" /* burgundy */, accent: "#D9C9CC", background: "#F8F5F0", surface: "#FFFFFF", border: "#D8D0C8", textPrimary: "#172126", ... success/warning/error/info ... } };
+```
+
+> Intención: fijar la identidad visual (base neutral cálida + acentos petróleo/burgundy).
+> Resultado: design tokens canónicos en `docs/05-FRONTEND-INTEGRATION.md §4.1` (tabla
+> token→hex→uso + mapeo a NativeWind `tailwind.config.js`); `AGENTS.md` (Reglas de UI)
+> actualizado. Regla: usar tokens por nombre (`bg-primary`…), nunca hex sueltos.
+
 ### **2.3. Estructura de ficheros y manejo de estado (frontend):**
 
 **Prompt 1:**
@@ -264,6 +276,6 @@ sistema funciona así:
 - 🧭 **Kickoff / producto** — definición de Ready, stack y entregable 1 (1 prompt).
 - 📐 **Documentación / estructura** — especificación del proyecto, MVP y formato AI4Devs (2 prompts).
 - 🏗️ **Arquitectura backend** — DDD por capas, contratos, boundaries y decisión de mantener la estructura (2 prompts).
-- 📱 **Mobile** — stack móvil (Expo/NativeWind) y gestión de estado por capas (2 prompts).
+- 📱 **Mobile** — stack móvil (Expo/NativeWind), gestión de estado por capas y tema/paleta (3 prompts).
 - ☁️ **Infra / tooling** — hook de drift de arquitectura + DevOps Architect/Technical Mentor (2 prompts).
 - 🧰 **Meta** — sistema de captura de prompts + creación/contrato de roles + Spec Planner de `AGENTS.md` (4 prompts).
