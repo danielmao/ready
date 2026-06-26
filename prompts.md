@@ -180,6 +180,26 @@ ayudame a añadir un devops y apliar un poco el mentor — Add DevOps Architect 
 > §2.4` (filesystem local en MVP) → **filesystem solo en dev local; cualquier target
 > desplegado → S3**. Resultado: `AGENTS.md` rol 5 *Technical Mentor* + rol 6 *DevOps Architect*.
 
+**Prompt 3:**
+```
+que necesitas de aws aca?
+```
+
+> Intención: antes de ejecutar el primer deploy, inventariar lo mínimo de AWS (IAM no-root,
+> key pair, región, autorización de costos) en vez de improvisar. Resultado: kickoff del deploy
+> EC2 + Docker + Caddy; el paso a paso quedó como tutorial en `learnings/01-primer-deploy-aws.md`.
+
+**Prompt 4:**
+```
+hice el primer punto. Sin embargo tengo una configuración de la empresa vammo, quisiera hacer una personal pero entonces puedes crear una skill para conectarte a ambas? una skill global? o cómo manejaría las dos cuentas? para conectarme a la personal puedo copiarte los keys en el .env y lo haces tú? o cómo me conectaría?
+```
+
+> Intención: convivir dos cuentas AWS (Vammo + personal) sin mezclarlas, y resolver dónde van
+> los secretos. Resultado: **perfiles con nombre** (Vammo por SSO, personal con access keys en
+> `~/.aws/credentials`), **secretos NUNCA en un `.env` del repo ni en el chat**, y skill global
+> **`aws-account`** (espejo de `clone-repo`) que verifica la identidad antes de toda acción
+> facturable. Ver `learnings/01-primer-deploy-aws.md §1.1`.
+
 > Las subsecciones **2.5** (Seguridad) y **2.6** (Tests) se cubrieron dentro de los prompts
 > anteriores; sus prompts dedicados se irán agregando al curar durante la implementación.
 
@@ -258,6 +278,20 @@ necesito también añadir un spec planner para que escriba los specs, basate en 
 > el MVP (mantener simple). Resultado: `AGENTS.md` rol 7 *Spec Planner* + scaffolding
 > `docs/specs/` (plantilla + `active/`/`completed/`). El nombre de la fuente interna se redactó
 > a pedido del usuario.
+
+**Prompt 4:**
+```
+entonces debemos hacer lo siguiente
+1) crea la skill
+2) haz el PR
+3) haz una carpeta en el proyecto que se llame learnings y crea un tutorial con lo que hicimos acá, de cómo crear un primer despliegue en AWS.
+4) toma los prompts más relevantes de la conversación, guárdalos y cúralos.
+```
+
+> Intención: tras dejar el backend desplegado, consolidar el trabajo en artefactos durables.
+> Resultado: skill global `aws-account`, PR de la rama `feat/backend-first-deploy-health`,
+> carpeta `learnings/` con el tutorial de primer deploy en AWS, y esta misma traza de prompts
+> curada. Patrón del proyecto: convertir cada trabajo concreto en tooling + docs + evidencia.
 
 ---
 
