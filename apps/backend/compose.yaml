@@ -1,0 +1,38 @@
+# Stack de deploy del MVP: API NestJS + Caddy como reverse-proxy con HTTPS.
+# Uso en el host (EC2): `docker compose up -d --build`
+#
+# Variables (archivo .env junto a este compose, NO versionado):
+#   DOMAIN=<elastic-ip-con-guiones>.nip.io   # p. ej. 13-52-1-7.nip.io
+services:
+  api:
+    build: .
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    # `expose` publica el puerto SOLO dentro de la red de compose, no al host.
+    # Por eso la API no es alcanzable directo desde internet: solo Caddy la ve.
+    expose:
+      - "3000"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    # Únicos puertos abiertos al mundo. El Security Group del EC2 abre 80/443.
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      # Caddy lee {$DOMAIN} del Caddyfile; lo emite Let's Encrypt automáticamente.
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Persisten certificados TLS entre reinicios (evita re-emitir y topar rate limits).
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+
+volumes:
+  caddy_data:
+  caddy_config:

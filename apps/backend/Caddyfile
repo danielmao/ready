@@ -1,0 +1,8 @@
+# Caddy hace dos cosas con tres líneas:
+#   1. Obtiene y renueva un certificado TLS de Let's Encrypt para $DOMAIN.
+#   2. Termina HTTPS y proxya el tráfico al contenedor `api` en el puerto 3000.
+# HTTP→HTTPS y el manejo del certificado son automáticos (no hay que configurarlos).
+{$DOMAIN} {
+	encode gzip
+	reverse_proxy api:3000
+}

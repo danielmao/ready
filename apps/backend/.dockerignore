@@ -1,0 +1,18 @@
+# Lo que NO debe entrar al contexto de build (más rápido y más seguro).
+node_modules
+dist
+*.log
+
+# Secretos: nunca al contenedor (se inyectan por env en runtime).
+.env
+.env.*
+!.env.example
+
+# Cosas de build/dev que la imagen no necesita.
+Dockerfile
+.dockerignore
+compose.yaml
+Caddyfile
+**/*.spec.ts
+.dependency-cruiser.cjs
+ARCH-SETUP.md
