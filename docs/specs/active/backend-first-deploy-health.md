@@ -224,9 +224,9 @@ sequenceDiagram
 |---|---|---|---|---|---|
 | 1 | Scaffold | backend | `feat(backend): esqueleto NestJS + GET /api/health (liveness, sin DB)` | — | in-progress |
 | 2 | Enforcement | backend | `chore(backend): activar lint:arch (fusionar ARCH-SETUP en package.json)` | #1 | in-progress (fusionado en #1) |
-| 3 | Contenerizar | backend/infra | `feat(infra): Dockerfile multi-stage + compose.yaml (api + caddy)` | #1 | not-started |
-| 4 | Deploy | infra | `feat(infra): provisión EC2 + Elastic IP + SG (80/443/22) y deploy manual` | #3 | not-started |
-| 5 | Docs | docs | `docs: deploy AWS básico en 08-INSTALLATION-GUIDE + §5/ADR en 02-ARCHITECTURE` | #4 | not-started |
+| 3 | Contenerizar | backend/infra | `feat(infra): Dockerfile multi-stage + compose.yaml (api + caddy)` | #1 | in-progress (build verde, sin commit) |
+| 4 | Deploy | infra | `feat(infra): provisión EC2 + Elastic IP + SG (80/443/22) y deploy manual` | #3 | in-progress (artefactos listos, NO ejecutado por guardarraíl de `/aws-deploy`) |
+| 5 | Docs | docs | `docs: deploy AWS básico en 08-INSTALLATION-GUIDE + §5/ADR en 02-ARCHITECTURE` | #4 | in-progress (sin commit) |
 
 Estados: `not-started | in-progress | open | merged | blocked`.
 

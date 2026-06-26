@@ -94,6 +94,32 @@ npx tailwindcss init                 # genera tailwind.config.js
 
 5. Reiniciar Metro limpiando caché tras la configuración: `npm run start -- --reset-cache`.
 
+## Deploy a AWS (EC2 + Docker)
+
+Deploy del backend al MVP en AWS — **manual y reproducible**, sin CI/CD. Resumen:
+
+1. **Provisión** (una vez): Security Group (80/443 público, 22 solo a tu IP), instancia EC2
+   `t3.micro` con `apps/backend/deploy/bootstrap.sh` como *user data*, y una **Elastic IP**.
+2. **Deploy**: en el host, `apps/backend/deploy/deploy.sh` hace `git pull` +
+   `docker compose up -d --build` (api NestJS + **Caddy** con HTTPS automático) y verifica
+   `https://$DOMAIN/api/health`.
+
+Comandos AWS CLI completos, env vars y el plan DevOps de 10 puntos en
+[`../apps/backend/deploy/README.md`](../apps/backend/deploy/README.md).
+
+> ⚠️ Crea recursos AWS que cuestan dinero; requiere AWS CLI con IAM de permisos mínimos.
+> Por convención del repo (guardarraíl de `/aws-deploy`), el deploy real se hace cuando el
+> core (`clothes → outfits → planning`) funcione; hasta entonces el deploy queda *listo
+> pero no ejecutado*.
+
+### Variables de entorno de deploy (`apps/backend/.env`)
+
+| Variable | Ejemplo | Descripción |
+|----------|---------|-------------|
+| `DOMAIN` | `13-52-1-7.nip.io` | Hostname para el TLS de Caddy (Elastic IP con guiones) |
+| `PORT` | `3000` | Puerto interno de la API (Caddy proxya aquí) |
+| `NODE_ENV` | `production` | Desactiva pino-pretty (logs JSON crudos) |
+
 ## Verificación rápida
 
 ```bash
