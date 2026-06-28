@@ -1,37 +1,54 @@
 # syntax=docker/dockerfile:1
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Etapa 1: build — instala TODO (incluye devDeps) y compila TS → JS (dist/).
+# Etapa 1: build — instala TODO (incluye devDeps), genera el cliente Prisma y
+# compila TS → JS (dist/).
 # ─────────────────────────────────────────────────────────────────────────────
-FROM node:20-alpine AS builder
+# Base Debian slim (no Alpine): Prisma necesita libssl/openssl; en Alpine (musl) el motor
+# se intenta descargar en runtime y falla. Slim trae openssl 3 y los engines correctos.
+FROM node:20-slim AS builder
 WORKDIR /app
 
-# Copiamos solo los manifiestos primero para aprovechar la cache de capas de Docker:
-# si package*.json no cambian, npm ci no se reejecuta aunque cambie el código.
+RUN apt-get update && apt-get install -y --no-install-recommends openssl \
+  && rm -rf /var/lib/apt/lists/*
+
+# Manifiestos primero para aprovechar la cache de capas (npm ci no se reejecuta si
+# package*.json no cambian).
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# Ahora sí el código y la config de compilación.
+# Esquema Prisma antes de generar el cliente.
+COPY prisma ./prisma
+RUN npx prisma generate
+
+# Código + config de compilación.
 COPY tsconfig.json nest-cli.json ./
 COPY src ./src
 RUN npm run build
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Etapa 2: runtime — imagen final mínima, solo deps de producción + dist/.
+# Etapa 2: runtime — imagen final. Trae node_modules completo del builder (incluye
+# el cliente Prisma generado + la CLI de Prisma + ts-node para migrate/seed al
+# arrancar). Para el MVP prima la fiabilidad del arranque (migrar la DB) sobre el
+# tamaño de imagen; afinar a sólo prod-deps es una mejora futura.
 # ─────────────────────────────────────────────────────────────────────────────
-FROM node:20-alpine AS runtime
+FROM node:20-slim AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
 
-# Solo dependencies (sin devDeps): la imagen final no trae el compilador TS ni jest.
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN apt-get update && apt-get install -y --no-install-recommends openssl \
+  && rm -rf /var/lib/apt/lists/*
 
-# El artefacto compilado viene de la etapa builder; el código fuente TS no entra.
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
+COPY package.json package-lock.json tsconfig.json ./
+COPY prisma ./prisma
+COPY docker-entrypoint.sh ./
+RUN chmod +x docker-entrypoint.sh
 
-# Correr como usuario no-root (el usuario `node` ya existe en la imagen oficial).
+# Usuario no-root (ya existe en la imagen oficial). Puede leer node_modules y migrar.
 USER node
 
 EXPOSE 3000
-CMD ["node", "dist/main.js"]
+# El entrypoint aplica migraciones + seed (idempotentes) y luego arranca la API.
+CMD ["./docker-entrypoint.sh"]

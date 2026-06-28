@@ -1,17 +1,41 @@
-# Stack de deploy del MVP: API NestJS + Caddy como reverse-proxy con HTTPS.
+# Stack de deploy del MVP: Postgres + API NestJS + Caddy (reverse-proxy HTTPS).
 # Uso en el host (EC2): `docker compose up -d --build`
 #
 # Variables (archivo .env junto a este compose, NO versionado):
 #   DOMAIN=<elastic-ip-con-guiones>.nip.io   # p. ej. 13-52-1-7.nip.io
+# Opcionales (tienen default; Postgres NO se expone al host, sólo a la red de compose):
+#   POSTGRES_PASSWORD=...   MVP_USER_ID=...
 services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ready
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ready}
+      POSTGRES_DB: ready
+    # Sin `ports`: la DB sólo es alcanzable dentro de la red de compose (la API la ve;
+    # internet no). Por eso el password por default es aceptable en el MVP.
+    volumes:
+      - ready_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ready -d ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   api:
     build: .
     restart: unless-stopped
     environment:
       NODE_ENV: production
       PORT: 3000
+      DATABASE_URL: postgresql://ready:${POSTGRES_PASSWORD:-ready}@postgres:5432/ready?schema=public
+      MVP_USER_ID: ${MVP_USER_ID:-00000000-0000-0000-0000-000000000001}
+    depends_on:
+      postgres:
+        condition: service_healthy
     # `expose` publica el puerto SOLO dentro de la red de compose, no al host.
-    # Por eso la API no es alcanzable directo desde internet: solo Caddy la ve.
+    # La API no es alcanzable directo desde internet: solo Caddy la ve.
     expose:
       - "3000"
 
@@ -36,3 +60,4 @@ services:
 volumes:
   caddy_data:
   caddy_config:
+  ready_pgdata:
