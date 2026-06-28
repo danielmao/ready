@@ -1,0 +1,38 @@
+{
+  "name": "ready-mobile",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Ready — app mobile (Expo + React Native + NativeWind)",
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^3.9.0",
+    "@react-navigation/bottom-tabs": "^6.6.1",
+    "@react-navigation/native": "^6.1.18",
+    "@react-navigation/native-stack": "^6.11.0",
+    "@tanstack/react-query": "5.59.0",
+    "axios": "^1.7.7",
+    "expo": "~51.0.28",
+    "expo-status-bar": "~1.12.1",
+    "nativewind": "^4.1.23",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-hook-form": "^7.53.0",
+    "react-native": "0.74.5",
+    "react-native-safe-area-context": "4.10.5",
+    "react-native-screens": "3.31.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.0",
+    "@types/react": "~18.2.79",
+    "tailwindcss": "^3.4.13",
+    "typescript": "~5.3.3"
+  }
+}
