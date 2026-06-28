@@ -47,8 +47,9 @@ npm run start                      # Metro / Expo
 > La base URL se resuelve en `src/config/env.ts` desde `EXPO_PUBLIC_API_URL`. En dispositivo
 > físico, exportá la **IP LAN** de tu máquina, p. ej. `EXPO_PUBLIC_API_URL=http://192.168.0.10:3000/api`.
 >
-> **Versiones sensibles:** `@tanstack/react-query` está pineado a `5.59.0` exacto — versiones
-> 5.10x rompen la inferencia de `useQuery().data` (vuelve `any`) con el TypeScript 5.3 de Expo 51.
+> **SDK:** el proyecto usa **Expo SDK 54** (RN 0.81 / React 19), compatible con el Expo Go más
+> reciente de la App Store/Play Store. En **macOS instalá Watchman** (`brew install watchman`)
+> antes de `expo start` para evitar `EMFILE: too many open files` (límite de file descriptors).
 
 ### Setup de NativeWind (estilos)
 
@@ -156,7 +157,9 @@ curl http://localhost:3000/api/clothes/categories   # debe devolver el catálogo
 | `ECONNREFUSED` al migrar | Postgres no levantado | `npm run db:up` (o `docker compose -f compose.dev.yaml up -d postgres`) |
 | Listados vacíos | Falta seed | `npm run seed` |
 | App no conecta | `EXPO_PUBLIC_API_URL` apunta a `localhost` en device físico | exportar la IP LAN de la máquina |
-| TS marca error en `className` | La augmentación de NativeWind no mergea (css-interop anidado) | augmentación local en `nativewind-env.d.ts` (ya incluida) |
-| `useQuery().data` es `any` | `@tanstack/react-query` 5.10x vs TS 5.3 | pin a `5.59.0` exacto (ya pineado) |
+| `expo start` muere con `EMFILE: too many open files` | Watcher de Metro vs límite de fds (macOS) | `brew install watchman` |
+| Expo Go dice "incompatible / SDK X" | El Expo Go del store es más nuevo que el SDK del proyecto | el proyecto está en SDK 54 (alineado con el Expo Go actual); si subís el SDK, reinstalá deps con `npx expo install --fix` |
+| `Cannot find module react-native-worklets/plugin` | `babel-preset-expo` (SDK 54) incluye el plugin de worklets | instalar `react-native-reanimated` + `react-native-worklets` (`npx expo install`) |
+| `Unable to resolve react-native-css-interop/jsx-runtime` | css-interop no hoisteado (jsxImportSource nativewind) | agregarlo como dep directa: `npm i react-native-css-interop@<ver de nativewind>` |
 | Deploy falla con `compose build requires buildx 0.17.0 or later` | Instancia con buildx viejo | `ready-deploy` cae solo al builder clásico (`DOCKER_BUILDKIT=0`) |
 | Prisma falla en Docker (`Can't write to @prisma/engines`) | Base Alpine (musl/openssl) | imagen sobre `node:20-slim` (ya aplicado) |
