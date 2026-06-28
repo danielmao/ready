@@ -1,3 +1,4 @@
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { Logger } from 'nestjs-pino';
 
@@ -8,6 +9,17 @@ async function bootstrap(): Promise<void> {
 
   // nestjs-pino como logger de toda la app (ver docs/CODING-CONVENTIONS.md §3).
   app.useLogger(app.get(Logger));
+
+  // Validación global de DTOs (class-validator). whitelist: descarta props no declaradas;
+  // transform: convierte query strings a los tipos del DTO (p. ej. page/limit a number).
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+    }),
+  );
 
   // Base de la API: todas las rutas cuelgan de /api (ver docs/04-API-SPECIFICATION.md).
   app.setGlobalPrefix('api');

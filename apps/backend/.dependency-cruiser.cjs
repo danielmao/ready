@@ -44,11 +44,19 @@ module.exports = {
     {
       name: 'prisma-only-in-persistence',
       comment:
-        'El cliente de Prisma (y PrismaService) solo se usa dentro de ' +
-        'infrastructure/persistence: es el único lugar del mapeo modelo ↔ entidad. ' +
-        'Nunca debe filtrarse a domain, application ni a los controllers.',
+        'El cliente de Prisma se usa solo dentro de infrastructure/persistence (el ' +
+        'único lugar del mapeo modelo ↔ entidad) y en src/shared/prisma (que DEFINE el ' +
+        'PrismaService transversal y @Global, sancionado por docs/02-ARCHITECTURE §3). ' +
+        'El composition root (src/app.module.ts) puede importar el PrismaModule para el ' +
+        'wiring. Nunca debe filtrarse a domain, application ni a los controllers.',
       severity: 'error',
-      from: { pathNot: 'src/[^/]+/infrastructure/persistence/' },
+      from: {
+        pathNot: [
+          'src/[^/]+/infrastructure/persistence/',
+          'src/shared/prisma/',
+          'src/app.module.ts',
+        ],
+      },
       to: { path: '(@prisma/client|src/shared/prisma/)' },
     },
     {
@@ -56,14 +64,16 @@ module.exports = {
       comment:
         'Un dominio solo puede consumir a otro a través de su facade ' +
         '(application/facades). Importar domain, use-cases, services, repositories o ' +
-        'infrastructure de OTRO dominio está prohibido. Usa group-matching: $1 = ' +
-        'dominio destino; se bloquea cuando el importador NO pertenece a ese dominio.',
+        'infrastructure de OTRO dominio está prohibido. Group-matching: $1 = dominio ' +
+        'IMPORTADOR (capturado en from.path); se bloquea cuando el destino es OTRO ' +
+        'dominio (to.pathNot exime el mismo dominio y las facades de cualquiera). El ' +
+        'composition root (src/app.module.ts) no pertenece a ningún dominio → exento.',
       severity: 'error',
-      from: { pathNot: 'src/$1/' },
+      from: { path: 'src/([^/]+)/' },
       to: {
         path:
           'src/([^/]+)/(?:domain|application/(?:use-cases|services|repositories|emitters|dtos)|infrastructure)/',
-        pathNot: 'src/[^/]+/application/facades/',
+        pathNot: ['src/$1/', 'src/[^/]+/application/facades/'],
       },
     },
   ],

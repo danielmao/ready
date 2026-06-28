@@ -207,3 +207,42 @@ cd apps/backend && npx depcruise src --config .dependency-cruiser.cjs
 > silencio y se detectan tarde, cuando el grafo de dependencias ya es difícil de
 > desenredar. Un chequeo determinista en el pre-commit es instantáneo y no se puede
 > olvidar.
+
+## Inventario de módulos (derivado del código)
+
+<!-- AUTO-GENERATED:modules:start -->
+<!-- Generado por scripts/arch-docs.py — no editar a mano dentro de este bloque. -->
+
+### Dominio `clothes`
+
+- **Casos de uso:** `ArchiveClothingItemUseCase`, `CreateClothingItemUseCase`, `CreateOccasionUseCase`, `CreateTagUseCase`, `GetClothingItemUseCase`, `ListCategoriesUseCase`, `ListClothingItemsUseCase`, `ListColorsUseCase`, `ListOccasionsUseCase`, `ListTagsUseCase`, `UpdateClothingItemUseCase`
+- **Fachada `ClothesFacade`** (API pública) — métodos: `findActiveItemById(id: string, userId: string): Promise<ClothingItem | null>`; `findExistingActiveItemIds(ids: string[],
+    userId: string,): Promise<string[]>`
+- **Contrato `CatalogRepository`** — token: `CATALOG_REPOSITORY`
+- **Contrato `ClothingItemFilters`** — token: `CLOTHING_ITEM_REPOSITORY`
+- **Contrato `ClothingItemRepository`** — token: `CLOTHING_ITEM_REPOSITORY`
+- **Contrato `ClothingItemUpdate`** — token: `CLOTHING_ITEM_REPOSITORY`
+- **Contrato `NewClothingItem`** — token: `CLOTHING_ITEM_REPOSITORY`
+- **Services:** `CatalogValidationService`
+- **Emitters:** —
+- **Controllers:** `ClothesController`
+
+<!-- AUTO-GENERATED:modules:end -->
+
+## Dependencias entre dominios (derivado del código)
+
+<!-- AUTO-GENERATED:dependencies:start -->
+<!-- Generado por scripts/arch-docs.py — no editar a mano dentro de este bloque. -->
+
+| Dominio | Consume (vía fachada) |
+|---|---|
+| `clothes` | — |
+
+```mermaid
+graph LR
+    %% sin dependencias entre dominios
+```
+
+> El cruce entre dominios ocurre **solo vía fachada**. La tabla lista las fachadas ajenas efectivamente referenciadas en el código de cada dominio.
+
+<!-- AUTO-GENERATED:dependencies:end -->
