@@ -95,11 +95,13 @@ git pull --quiet --ff-only
 echo "HEAD: $(git log -1 --oneline)"
 cd apps/backend
 echo "DOMAIN=$DOMAIN" > .env
-# `docker compose --build` exige buildx; si el host no lo tiene, builder clásico.
-if docker buildx version >/dev/null 2>&1; then
-  docker compose up -d --build
+# `docker compose build` exige buildx >= 0.17; si está ausente o es muy viejo (instancias
+# bootstrapeadas antes del fix traen 0.12), cae al builder clásico. En vez de chequear la
+# versión, intentamos el build de compose y, si falla, usamos DOCKER_BUILDKIT=0 (self-healing).
+if docker compose build 2>/dev/null; then
+  docker compose up -d
 else
-  echo ">>> sin buildx → builder clásico"
+  echo ">>> buildx ausente o viejo → builder clásico (DOCKER_BUILDKIT=0)"
   DOCKER_BUILDKIT=0 docker build -t backend-api:latest .
   docker compose up -d --no-build
 fi

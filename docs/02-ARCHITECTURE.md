@@ -63,7 +63,9 @@ graph TB
 | Planning = 1 activo | Estado `planned/confirmed/cancelled` | Fiel al producto "próximo outfit"; `plannedFor` deja abierto el calendario. |
 | Imágenes | Filesystem local (MVP) | Sin dependencia de cloud para el entregable; el contrato API expone sólo URLs. |
 | Logging | **`nestjs-pino` (structured)** | Logs estructurados (objeto-primero) con IDs de dominio; integración nativa con Nest. Reglas en `CODING-CONVENTIONS.md §3`. |
-| Despliegue (MVP) | **EC2 + Docker Compose** (`api` + Caddy), deploy manual | Lo más barato/simple para un MVP; Caddy da HTTPS automático (Let's Encrypt) sin ALB. CI/CD, RDS y S3 quedan para después del core. Ver `docs/specs/active/backend-first-deploy-health.md`. |
+| Despliegue (MVP) | **EC2 + Docker Compose** (`api` + Caddy), deploy manual | Lo más barato/simple para un MVP; Caddy da HTTPS automático (Let's Encrypt) sin ALB. CI/CD y S3 quedan para después del core. Ver `docs/specs/active/backend-first-deploy-health.md`. |
+| DB en el deploy MVP | **Postgres en el mismo EC2** (contenedor en el compose, volumen persistente), **no** RDS | Cero costo extra y un solo host para el MVP; la DB no se expone a internet (sólo la ve `api`). La API migra/siembra al arrancar (`docker-entrypoint.sh`). Migrar a **RDS + backups** cuando el core (`clothes → outfits → planning`) crezca. |
+| Imagen del backend (base) | **`node:20-slim`** (Debian), no Alpine | Prisma necesita openssl/engines; en Alpine (musl) el engine se intenta descargar en runtime y falla. Slim trae los engines correctos horneados en el build. |
 
 ## 3. Estructura de ficheros — backend
 
@@ -170,16 +172,18 @@ Recomendaciones de implementación:
 Ver [09-SECURITY-TESTING.md](09-SECURITY-TESTING.md).
 
 **Despliegue (AWS básico).** El backend se containeriza (`apps/backend/Dockerfile`,
-multi-stage) y corre en una instancia **EC2** con **Docker Compose**: dos servicios,
-`api` (NestJS) y **Caddy** como reverse-proxy que termina HTTPS con Let's Encrypt y proxya
-a la API (que nunca se expone directo a internet). El deploy es **manual y reproducible**
-(`apps/backend/deploy/` + runbook); sin CI/CD, Terraform ni RDS en esta etapa. Sin dominio
-propio aún, se usa `nip.io` sobre una **Elastic IP**. En dev sigue siendo local (Docker
-Postgres + dev servers). Detalle, comandos AWS CLI y plan DevOps de 10 puntos en
-[`../apps/backend/deploy/README.md`](../apps/backend/deploy/README.md) y el spec
-[`specs/active/backend-first-deploy-health.md`](specs/active/backend-first-deploy-health.md).
-Postgres gestionado (RDS) e imágenes en S3 entran cuando el core
-(`clothes → outfits → planning`) esté funcionando.
+multi-stage sobre `node:20-slim`) y corre en una instancia **EC2** con **Docker Compose**:
+tres servicios, `api` (NestJS), `postgres` (la DB del MVP, en el mismo host, sin puerto al
+mundo) y **Caddy** como reverse-proxy que termina HTTPS con Let's Encrypt y proxya a la API
+(que nunca se expone directo a internet). Al arrancar, `api` aplica migraciones y siembra la
+DB (`docker-entrypoint.sh`). El deploy es **manual y reproducible** (skill `ready-deploy` +
+`apps/backend/deploy/`); sin CI/CD ni Terraform en esta etapa. Sin dominio propio aún, se usa
+`nip.io` sobre una **Elastic IP**. En dev es local (Docker Postgres en `compose.dev.yaml` +
+dev servers). Detalle, comandos AWS CLI y plan DevOps en
+[`../apps/backend/deploy/README.md`](../apps/backend/deploy/README.md) y los specs
+[`backend-first-deploy-health.md`](specs/active/backend-first-deploy-health.md) /
+[`clothes-domain.md`](specs/active/clothes-domain.md). **RDS gestionado + backups** e
+**imágenes en S3** entran cuando el core (`clothes → outfits → planning`) crezca.
 
 ## 6. Cumplimiento de los límites (enforcement)
 

@@ -1,6 +1,6 @@
 ---
 title: Armario digital (dominio Clothes) — primer feature del MVP
-status: in-progress
+status: shipped
 size_class: risky
 owner: @backend-architect
 ticket: no aplica (sin tickets en el MVP)
@@ -10,7 +10,7 @@ last_updated: 2026-06-28
 
 # Armario digital (dominio Clothes) — primer feature del MVP
 
-- **Status:** in-progress
+- **Status:** shipped (backend + mobile + deploy AWS verificados 2026-06-28)
 - **Size class:** risky (introduce la base de datos, los primeros contratos HTTP de producto y el patrón DDD que copiarán `outfits`/`planning`)
 - **Owner:** @backend-architect
 - **Ticket:** no aplica (sin tickets en el MVP)
@@ -206,15 +206,18 @@ sequenceDiagram
 
 > Una fila = un PR. Ramas desde `feat/clothes-domain` (que sale de `mvp`).
 
-| # | Fase | Área | PR (título propuesto) | Depende de | Estado |
+> Implementado en la rama `feat/clothes-domain` (sale de `mvp`); en el MVP no se abren PRs
+> separados por fila — se entregó como un conjunto de commits acotados en esa rama.
+
+| # | Fase | Área | Commit | Depende de | Estado |
 |---|---|---|---|---|---|
-| 1 | Persistencia | backend/infra | `feat(backend): Prisma + Postgres docker + PrismaModule + esquema MVP + seed` | — | in-progress |
-| 2 | Auth scaffold | backend | `feat(backend): guard @CurrentUser (userId fijo, single-user MVP)` | #1 | in-progress |
-| 3 | Dominio | backend | `feat(clothes): dominio DDD + CRUD ClothingItem + catálogos + facade` | #2 | in-progress |
-| 4 | Tests | backend | `test(clothes): specs de use-cases (create/list/archive)` | #3 | in-progress |
-| 5 | E2E | backend | `/e2e-local` verifica el flujo HTTP de clothes | #3 | in-progress |
-| 6 | Mobile | mobile | `feat(mobile): base Expo + feature clothes (lista + alta)` | #3 | in-progress |
-| 7 | Review | docs | `/review-spec` + regresión + deploy backend a AWS | #5,#6 | in-progress |
+| 1 | Persistencia | backend/infra | Prisma + Postgres (5433) + PrismaModule + esquema MVP + seed | — | merged |
+| 2 | Auth scaffold | backend | guard `@CurrentUser` (userId fijo MVP) | #1 | merged |
+| 3 | Dominio | backend | dominio clothes DDD + CRUD + catálogos + facade | #2 | merged |
+| 4 | Tests | backend | specs create/list/archive (jest) | #3 | merged |
+| 5 | E2E | backend | flujo HTTP de clothes (12 pasos PASS) | #3 | merged |
+| 6 | Mobile | mobile | base Expo + feature clothes (lista + alta), `tsc` OK | #3 | merged |
+| 7 | Review+Deploy | infra/docs | regresión + correspondencia front/back + deploy AWS (Postgres) + docs | #5,#6 | merged |
 
 Estados: `not-started | in-progress | open | merged | blocked`.
 
