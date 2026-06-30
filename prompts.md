@@ -237,7 +237,36 @@ _(Pendiente — se completará al aterrizar los tickets de trabajo por sprint.)_
 
 ## 7. Pull Requests
 
-_(Pendiente — se completará a medida que se abran los PRs de implementación.)_
+**Prompt 1 — primer feature (armario / Clothes) end-to-end:**
+```
+utiliza las scripts para implementar el primer feature de ready. haz una rama mvp y de allí
+haz la rama para el primer feature. La idea es que uses las skills de este proyecto para
+escribir el plan para implementarlo con tdd para hacer pruebas de e2e levantando los servicios.
+crea la bd, la entidad el contenedor docker para correr la bd, corre el pyecto y que quede listo
+para conectarse. también crea el feature en fronted ... /loop si encuentras algun inconnveniente
+solucionalo de acuerdo a las buenas practicas del proyecto, separa bien las responsabilidades
+porque esta va aser las base para los proximos features. al final haz una analisis de regresion
+y refactorización ... verifica que lo que hiciste en el front corresponde a lo que hiciste en el
+backend. al final haz el deploy a aws del backend y documenta los servicios
+```
+
+> Intención: llevar el primer feature de producto de punta a punta usando el workflow de skills
+> (spec → dominio → tests/e2e → mobile → review → deploy). Resultado: dominio `clothes` (DDD por
+> capas, `ClothesFacade`, Prisma+Postgres en Docker, guard `@CurrentUser`), e2e HTTP (12 pasos
+> PASS), mobile (lista + alta), deploy AWS (EC2: api+postgres+Caddy, migra/siembra al arrancar) y
+> servicios documentados. **PR `feat/clothes-domain` → `mvp`.** Curado en
+> [`prompts/backend/03-…`](prompts/backend/03-implementar-primer-feature-clothes-tdd-deploy.md).
+
+**Prompt 2 — correr la app y verla funcionando:**
+```
+como corro la app y veo el resultado?
+```
+
+> Intención: levantar la app mobile en un dispositivo real. Destapó una cadena de
+> incompatibilidades de versiones que se resolvió **subiendo el proyecto a Expo SDK 54** (RN 0.81
+> / React 19), instalando **Watchman** (EMFILE) y apuntando la app al backend por IP LAN / AWS
+> (no `localhost`). Resultado: app corriendo en el teléfono listando las prendas. Curado en
+> [`prompts/mobile/04-…`](prompts/mobile/04-correr-la-app-y-upgrade-expo-sdk54.md).
 
 ---
 
@@ -309,7 +338,7 @@ sistema funciona así:
 
 - 🧭 **Kickoff / producto** — definición de Ready, stack y entregable 1 (1 prompt).
 - 📐 **Documentación / estructura** — especificación del proyecto, MVP y formato AI4Devs (2 prompts).
-- 🏗️ **Arquitectura backend** — DDD por capas, contratos, boundaries y decisión de mantener la estructura (2 prompts).
-- 📱 **Mobile** — stack móvil (Expo/NativeWind), gestión de estado por capas y tema/paleta (3 prompts).
+- 🏗️ **Arquitectura backend** — DDD por capas, contratos, boundaries, decisión de mantener la estructura y la implementación del primer feature `clothes` con TDD/e2e/deploy (3 prompts).
+- 📱 **Mobile** — stack móvil (Expo/NativeWind), gestión de estado por capas, tema/paleta y correr la app (upgrade a Expo SDK 54) (4 prompts).
 - ☁️ **Infra / tooling** — hook de drift de arquitectura + DevOps Architect/Technical Mentor (2 prompts).
 - 🧰 **Meta** — sistema de captura de prompts + creación/contrato de roles + Spec Planner de `AGENTS.md` (4 prompts).
