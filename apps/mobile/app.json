@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "Ready",
+    "slug": "ready",
+    "version": "0.0.1",
+    "orientation": "portrait",
+    "scheme": "ready",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0F172A"
+    },
+    "ios": { "supportsTablet": true },
+    "android": {
+      "adaptiveIcon": { "backgroundColor": "#0F172A" }
+    },
+    "web": { "bundler": "metro" }
+  }
+}

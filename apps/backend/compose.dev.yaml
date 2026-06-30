@@ -1,0 +1,29 @@
+# Stack LOCAL de desarrollo: sólo Postgres. La API se corre con `npm run start:dev`
+# (no en contenedor) para tener hot-reload. El deploy productivo usa compose.yaml (api+caddy).
+#
+#   docker compose -f compose.dev.yaml up -d postgres
+#   # luego: npx prisma migrate dev && npm run seed && npm run start:dev
+#
+# Credenciales locales (no secretas; sólo dev). DATABASE_URL en .env debe apuntar acá:
+#   DATABASE_URL=postgresql://ready:ready@localhost:5433/ready?schema=public
+# Puerto host 5433 (no 5432) para no chocar con otros Postgres locales (p. ej. Vammo).
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ready
+      POSTGRES_PASSWORD: ready
+      POSTGRES_DB: ready
+    ports:
+      - "5433:5432"
+    volumes:
+      - ready_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ready -d ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  ready_pgdata:

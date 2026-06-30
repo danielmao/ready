@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { LoggerModule } from 'nestjs-pino';
 
+import { ClothesModule } from './clothes/infrastructure/clothes.module';
 import { HealthModule } from './shared/health/health.module';
+import { PrismaModule } from './shared/prisma/prisma.module';
 
 @Module({
   imports: [
@@ -14,7 +16,9 @@ import { HealthModule } from './shared/health/health.module';
             : undefined,
       },
     }),
+    PrismaModule,
     HealthModule,
+    ClothesModule,
   ],
 })
 export class AppModule {}

@@ -183,3 +183,173 @@ model PlannedOutfit {
 - **Categories**: camiseta, pantalón, vestido, abrigo, calzado, accesorio (con jerarquía base).
 - **Colors**: paleta base con `hexCode`.
 - **Occasions** globales: trabajo, casual, formal, deporte, fiesta.
+
+## Modelos (derivado de `schema.prisma`)
+
+<!-- AUTO-GENERATED:data-model:start -->
+<!-- Generado por scripts/arch-docs.py — no editar a mano dentro de este bloque. -->
+
+### enum `PlannedStatus`
+
+Valores: `planned`, `confirmed`, `cancelled`
+
+### model `Category`
+
+| Campo | Tipo |
+|---|---|
+| `id` | `String` |
+| `name` | `String` |
+| `icon` | `String?` |
+| `parentCategoryId` | `String?` |
+| `parent` | `Category?` |
+| `children` | `Category[]` |
+| `clothingItems` | `ClothingItem[]` |
+
+### model `ClothingItem`
+
+| Campo | Tipo |
+|---|---|
+| `id` | `String` |
+| `userId` | `String` |
+| `name` | `String` |
+| `categoryId` | `String` |
+| `colorId` | `String` |
+| `description` | `String?` |
+| `imageUrls` | `String[]` |
+| `isActive` | `Boolean` |
+| `createdAt` | `DateTime` |
+| `updatedAt` | `DateTime` |
+| `user` | `User` |
+| `category` | `Category` |
+| `color` | `Color` |
+| `occasions` | `ClothingItemOccasion[]` |
+| `tags` | `ClothingItemTag[]` |
+| `outfitItems` | `OutfitItem[]` |
+
+### model `ClothingItemOccasion`
+
+| Campo | Tipo |
+|---|---|
+| `clothingItemId` | `String` |
+| `occasionId` | `String` |
+| `clothingItem` | `ClothingItem` |
+| `occasion` | `Occasion` |
+
+### model `ClothingItemTag`
+
+| Campo | Tipo |
+|---|---|
+| `clothingItemId` | `String` |
+| `tagId` | `String` |
+| `clothingItem` | `ClothingItem` |
+| `tag` | `Tag` |
+
+### model `Color`
+
+| Campo | Tipo |
+|---|---|
+| `id` | `String` |
+| `name` | `String` |
+| `hexCode` | `String` |
+| `clothingItems` | `ClothingItem[]` |
+
+### model `Occasion`
+
+| Campo | Tipo |
+|---|---|
+| `id` | `String` |
+| `name` | `String` |
+| `icon` | `String?` |
+| `isGlobal` | `Boolean` |
+| `userId` | `String?` |
+| `user` | `User?` |
+| `clothingItems` | `ClothingItemOccasion[]` |
+| `outfits` | `OutfitOccasion[]` |
+
+### model `Outfit`
+
+| Campo | Tipo |
+|---|---|
+| `id` | `String` |
+| `userId` | `String` |
+| `name` | `String` |
+| `isActive` | `Boolean` |
+| `createdAt` | `DateTime` |
+| `updatedAt` | `DateTime` |
+| `user` | `User` |
+| `items` | `OutfitItem[]` |
+| `occasions` | `OutfitOccasion[]` |
+| `tags` | `OutfitTag[]` |
+| `plannedOutfits` | `PlannedOutfit[]` |
+
+### model `OutfitItem`
+
+| Campo | Tipo |
+|---|---|
+| `id` | `String` |
+| `outfitId` | `String` |
+| `clothingItemId` | `String` |
+| `order` | `Int` |
+| `outfit` | `Outfit` |
+| `clothingItem` | `ClothingItem` |
+
+### model `OutfitOccasion`
+
+| Campo | Tipo |
+|---|---|
+| `outfitId` | `String` |
+| `occasionId` | `String` |
+| `outfit` | `Outfit` |
+| `occasion` | `Occasion` |
+
+### model `OutfitTag`
+
+| Campo | Tipo |
+|---|---|
+| `outfitId` | `String` |
+| `tagId` | `String` |
+| `outfit` | `Outfit` |
+| `tag` | `Tag` |
+
+### model `PlannedOutfit`
+
+| Campo | Tipo |
+|---|---|
+| `id` | `String` |
+| `userId` | `String` |
+| `outfitId` | `String` |
+| `plannedFor` | `DateTime?` |
+| `status` | `PlannedStatus` |
+| `createdAt` | `DateTime` |
+| `updatedAt` | `DateTime` |
+| `user` | `User` |
+| `outfit` | `Outfit` |
+
+### model `Tag`
+
+| Campo | Tipo |
+|---|---|
+| `id` | `String` |
+| `name` | `String` |
+| `userId` | `String?` |
+| `user` | `User?` |
+| `clothingItems` | `ClothingItemTag[]` |
+| `outfits` | `OutfitTag[]` |
+
+### model `User`
+
+| Campo | Tipo |
+|---|---|
+| `id` | `String` |
+| `email` | `String` |
+| `name` | `String` |
+| `photoUrl` | `String?` |
+| `createdAt` | `DateTime` |
+| `updatedAt` | `DateTime` |
+| `clothingItems` | `ClothingItem[]` |
+| `outfits` | `Outfit[]` |
+| `plannedOutfits` | `PlannedOutfit[]` |
+| `tags` | `Tag[]` |
+| `occasions` | `Occasion[]` |
+
+<!-- AUTO-GENERATED:data-model:end -->

@@ -1,0 +1,201 @@
+// Esquema MVP completo de Ready (ver docs/03-DATA-MODEL.md).
+// Se migran todas las tablas del core (clothes → outfits → planning) de una vez para no
+// re-migrar al sumar los dominios siguientes; en esta vuelta sólo `clothes` tiene código.
+// Recurso compartido de infra: vive fuera de los dominios y sólo lo toca
+// infrastructure/persistence (regla `prisma-only-in-persistence`, docs/02-ARCHITECTURE §6).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  photoUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  clothingItems  ClothingItem[]
+  outfits        Outfit[]
+  plannedOutfits PlannedOutfit[]
+  tags           Tag[]
+  occasions      Occasion[]
+
+  @@map("users")
+}
+
+model Category {
+  id               String  @id @default(uuid())
+  name             String  @unique
+  icon             String?
+  parentCategoryId String?
+
+  parent        Category?      @relation("CategoryHierarchy", fields: [parentCategoryId], references: [id])
+  children      Category[]     @relation("CategoryHierarchy")
+  clothingItems ClothingItem[]
+
+  @@map("categories")
+}
+
+model Color {
+  id      String @id @default(uuid())
+  name    String @unique
+  hexCode String
+
+  clothingItems ClothingItem[]
+
+  @@map("colors")
+}
+
+model Tag {
+  id     String  @id @default(uuid())
+  name   String
+  userId String?
+
+  user          User?              @relation(fields: [userId], references: [id])
+  clothingItems ClothingItemTag[]
+  outfits       OutfitTag[]
+
+  @@unique([name, userId])
+  @@map("tags")
+}
+
+model Occasion {
+  id       String  @id @default(uuid())
+  name     String
+  icon     String?
+  isGlobal Boolean @default(false)
+  userId   String?
+
+  user          User?                  @relation(fields: [userId], references: [id])
+  clothingItems ClothingItemOccasion[]
+  outfits       OutfitOccasion[]
+
+  @@map("occasions")
+}
+
+model ClothingItem {
+  id          String   @id @default(uuid())
+  userId      String
+  name        String
+  categoryId  String
+  colorId     String
+  description String?
+  imageUrls   String[]
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User                   @relation(fields: [userId], references: [id])
+  category    Category               @relation(fields: [categoryId], references: [id])
+  color       Color                  @relation(fields: [colorId], references: [id])
+  occasions   ClothingItemOccasion[]
+  tags        ClothingItemTag[]
+  outfitItems OutfitItem[]
+
+  @@index([userId, isActive])
+  @@map("clothing_items")
+}
+
+model ClothingItemOccasion {
+  clothingItemId String
+  occasionId     String
+
+  clothingItem ClothingItem @relation(fields: [clothingItemId], references: [id], onDelete: Cascade)
+  occasion     Occasion     @relation(fields: [occasionId], references: [id], onDelete: Cascade)
+
+  @@id([clothingItemId, occasionId])
+  @@map("clothing_item_occasions")
+}
+
+model ClothingItemTag {
+  clothingItemId String
+  tagId          String
+
+  clothingItem ClothingItem @relation(fields: [clothingItemId], references: [id], onDelete: Cascade)
+  tag          Tag          @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([clothingItemId, tagId])
+  @@map("clothing_item_tags")
+}
+
+model Outfit {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user           User             @relation(fields: [userId], references: [id])
+  items          OutfitItem[]
+  occasions      OutfitOccasion[]
+  tags           OutfitTag[]
+  plannedOutfits PlannedOutfit[]
+
+  @@index([userId, isActive])
+  @@map("outfits")
+}
+
+model OutfitItem {
+  id             String @id @default(uuid())
+  outfitId       String
+  clothingItemId String
+  order          Int
+
+  outfit       Outfit       @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+  clothingItem ClothingItem @relation(fields: [clothingItemId], references: [id])
+
+  @@unique([outfitId, clothingItemId])
+  @@map("outfit_items")
+}
+
+model OutfitOccasion {
+  outfitId   String
+  occasionId String
+
+  outfit   Outfit   @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+  occasion Occasion @relation(fields: [occasionId], references: [id], onDelete: Cascade)
+
+  @@id([outfitId, occasionId])
+  @@map("outfit_occasions")
+}
+
+model OutfitTag {
+  outfitId String
+  tagId    String
+
+  outfit Outfit @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([outfitId, tagId])
+  @@map("outfit_tags")
+}
+
+enum PlannedStatus {
+  planned
+  confirmed
+  cancelled
+}
+
+model PlannedOutfit {
+  id         String        @id @default(uuid())
+  userId     String
+  outfitId   String
+  plannedFor DateTime?
+  status     PlannedStatus @default(planned)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id])
+  outfit Outfit @relation(fields: [outfitId], references: [id])
+
+  @@index([userId, status])
+  @@map("planned_outfits")
+}
