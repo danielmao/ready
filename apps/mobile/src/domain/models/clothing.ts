@@ -58,6 +58,9 @@ export interface CreateClothingItemInput {
   imageUrls?: string[];
 }
 
+/** Body de PUT /api/clothes/:id (espejo de UpdateClothingItemDto). Update parcial. */
+export type UpdateClothingItemInput = Partial<CreateClothingItemInput>;
+
 /** Respuesta de POST /api/clothes/images: la imagen subida a S3/MinIO. */
 export interface UploadedImage {
   key: string;

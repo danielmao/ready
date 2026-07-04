@@ -219,7 +219,7 @@ cd apps/backend && npx depcruise src --config .dependency-cruiser.cjs
 
 ### Dominio `clothes`
 
-- **Casos de uso:** `ArchiveClothingItemUseCase`, `CreateClothingItemUseCase`, `CreateOccasionUseCase`, `CreateTagUseCase`, `GetClothingItemUseCase`, `ListCategoriesUseCase`, `ListClothingItemsUseCase`, `ListColorsUseCase`, `ListOccasionsUseCase`, `ListTagsUseCase`, `UpdateClothingItemUseCase`
+- **Casos de uso:** `ArchiveClothingItemUseCase`, `CreateClothingItemUseCase`, `CreateOccasionUseCase`, `CreateTagUseCase`, `GetClothingItemImageUseCase`, `GetClothingItemUseCase`, `ListCategoriesUseCase`, `ListClothingItemsUseCase`, `ListColorsUseCase`, `ListOccasionsUseCase`, `ListTagsUseCase`, `UpdateClothingItemUseCase`, `UploadClothingItemImageUseCase`
 - **Fachada `ClothesFacade`** (API pública) — métodos: `findActiveItemById(id: string, userId: string): Promise<ClothingItem | null>`; `findExistingActiveItemIds(ids: string[],
     userId: string,): Promise<string[]>`
 - **Contrato `CatalogRepository`** — token: `CATALOG_REPOSITORY`
