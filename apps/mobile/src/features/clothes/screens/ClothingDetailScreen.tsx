@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -67,8 +68,21 @@ export function ClothingDetailScreen({
     : undefined;
 
   const handleArchive = () => {
-    archive.mutate(item.id);
-    navigation.goBack();
+    Alert.alert(
+      'Archivar prenda',
+      `«${item.name}» dejará de aparecer en tu armario. No se elimina: podés recuperarla más adelante.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Archivar',
+          style: 'destructive',
+          onPress: () => {
+            archive.mutate(item.id);
+            navigation.goBack();
+          },
+        },
+      ],
+    );
   };
 
   return (
