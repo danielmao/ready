@@ -12,6 +12,8 @@ export function AddClothingItemScreen({
 
   return (
     <ClothingItemForm
+      title="Nueva prenda"
+      onCancel={() => navigation.goBack()}
       submitLabel="Guardar prenda"
       submitting={createItem.isPending}
       onSubmit={(values, imageUrl) =>

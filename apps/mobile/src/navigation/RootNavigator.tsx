@@ -33,7 +33,7 @@ export function RootNavigator() {
         <Stack.Screen
           name="AddClothingItem"
           component={AddClothingItemScreen}
-          options={{ title: 'Nueva prenda', presentation: 'modal' }}
+          options={{ headerShown: false, presentation: 'modal' }}
         />
         <Stack.Screen
           name="EditClothingItem"

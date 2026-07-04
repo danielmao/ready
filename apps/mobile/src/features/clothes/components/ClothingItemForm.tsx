@@ -14,8 +14,10 @@ import {
 } from 'react-native';
 import { z } from 'zod';
 
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { Button } from '../../../shared/components/Button';
-import { colors as palette } from '../../../theme';
+import { colors as palette, fonts } from '../../../theme';
 import { resolveImageUrl } from '../../../shared/utils/resolveImageUrl';
 import { useCategories, useColors, useOccasions } from '../hooks/useCatalogs';
 import { useUploadClothingImage } from '../hooks/useClothes';
@@ -36,6 +38,9 @@ interface ClothingItemFormProps {
   defaultValues?: Partial<ClothingItemFormValues>;
   initialImageUrl?: string | null;
   submitting?: boolean;
+  /** Si se pasa, renderiza el top bar del diseño 04 (Cancelar / título / Guardar). */
+  title?: string;
+  onCancel?: () => void;
 }
 
 interface ChipOption {
@@ -126,6 +131,8 @@ export function ClothingItemForm({
   defaultValues,
   initialImageUrl = null,
   submitting = false,
+  title,
+  onCancel,
 }: ClothingItemFormProps) {
   const categories = useCategories();
   const colors = useColors();
@@ -221,11 +228,30 @@ export function ClothingItemForm({
 
   const submit = handleSubmit((values) => onSubmit(values, imageUrl));
 
+  const topBar = title ? (
+    <View className="flex-row items-center justify-between px-5 pb-3 pt-1">
+      <Pressable onPress={onCancel} hitSlop={8}>
+        <Text className="text-[15px] text-text-secondary">Cancelar</Text>
+      </Pressable>
+      <Text
+        className="text-[22px] text-text-primary"
+        style={{ fontFamily: fonts.serif }}
+      >
+        {title}
+      </Text>
+      <Pressable testID="form-header-save" onPress={submit} hitSlop={8}>
+        <Text className="text-[15px] font-semibold text-primary">Guardar</Text>
+      </Pressable>
+    </View>
+  ) : null;
+
   return (
-    <ScrollView
-      className="flex-1 bg-background"
-      contentContainerClassName="p-6 pb-10"
-    >
+    <SafeAreaView className="flex-1 bg-background" edges={title ? ['top'] : []}>
+      {topBar}
+      <ScrollView
+        className="flex-1 bg-background"
+        contentContainerClassName="p-6 pb-10"
+      >
       <View className="mb-5">
         <Text className="mb-2 text-xs uppercase tracking-wider text-text-muted">
           Foto
@@ -249,11 +275,12 @@ export function ClothingItemForm({
               ) : null}
             </>
           ) : (
-            <View className="items-center">
-              <Text className="text-3xl">📷</Text>
-              <Text className="mt-1 text-sm text-text-secondary">
-                Tomá o elegí una foto (opcional)
-              </Text>
+            <View className="items-center gap-2.5">
+              <View className="h-[52px] w-[52px] items-center justify-center rounded-full bg-primary-soft">
+                <Text className="text-2xl text-primary">＋</Text>
+              </View>
+              <Text className="text-sm text-text-secondary">Agregá una foto</Text>
+              <Text className="text-xs text-text-muted">Cámara o galería</Text>
             </View>
           )}
         </Pressable>
@@ -343,6 +370,7 @@ export function ClothingItemForm({
         loading={submitting}
         disabled={uploadImage.isPending}
       />
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }

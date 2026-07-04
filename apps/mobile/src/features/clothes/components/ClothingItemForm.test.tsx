@@ -78,4 +78,68 @@ describe('ClothingItemForm', () => {
       colorId: COL,
     });
   });
+
+  it('el dropzone invita a agregar una foto cuando no hay imagen', () => {
+    render(<ClothingItemForm submitLabel="Guardar prenda" onSubmit={jest.fn()} />);
+
+    expect(screen.getByText('Agregá una foto')).toBeOnTheScreen();
+  });
+});
+
+describe('ClothingItemForm · top bar (diseño 04 · Nueva prenda)', () => {
+  it('con title muestra el top bar con Cancelar, título y Guardar', () => {
+    render(
+      <ClothingItemForm
+        submitLabel="Guardar prenda"
+        title="Nueva prenda"
+        onCancel={jest.fn()}
+        onSubmit={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByText('Nueva prenda')).toBeOnTheScreen();
+    expect(screen.getByText('Cancelar')).toBeOnTheScreen();
+    expect(screen.getByTestId('form-header-save')).toBeOnTheScreen();
+  });
+
+  it('sin title no renderiza el top bar (modo edición)', () => {
+    render(
+      <ClothingItemForm submitLabel="Guardar cambios" onSubmit={jest.fn()} />,
+    );
+
+    expect(screen.queryByTestId('form-header-save')).toBeNull();
+  });
+
+  it('Cancelar dispara onCancel', () => {
+    const onCancel = jest.fn();
+    render(
+      <ClothingItemForm
+        submitLabel="Guardar prenda"
+        title="Nueva prenda"
+        onCancel={onCancel}
+        onSubmit={jest.fn()}
+      />,
+    );
+
+    fireEvent.press(screen.getByText('Cancelar'));
+
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('Guardar del top bar dispara onSubmit', async () => {
+    const onSubmit = jest.fn();
+    render(
+      <ClothingItemForm
+        submitLabel="Guardar prenda"
+        title="Nueva prenda"
+        onCancel={jest.fn()}
+        defaultValues={{ name: 'Remera', categoryId: CAT, colorId: COL }}
+        onSubmit={onSubmit}
+      />,
+    );
+
+    fireEvent.press(screen.getByTestId('form-header-save'));
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+  });
 });
