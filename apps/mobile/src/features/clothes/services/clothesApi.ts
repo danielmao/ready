@@ -4,8 +4,10 @@ import type {
   ClothingItem,
   Color,
   CreateClothingItemInput,
+  LocalImageFile,
   Occasion,
   Paginated,
+  UploadedImage,
 } from '../../../domain/models/clothing';
 
 /** Filtros de listado (espejo de ListClothingItemsQuery del backend). */
@@ -35,6 +37,23 @@ export const clothesApi = {
 
   async create(input: CreateClothingItemInput): Promise<ClothingItem> {
     const { data } = await apiClient.post<ClothingItem>('/clothes', input);
+    return data;
+  },
+
+  /** Sube una imagen (multipart) a POST /api/clothes/images y devuelve su URL pública. */
+  async uploadImage(file: LocalImageFile): Promise<UploadedImage> {
+    const form = new FormData();
+    // RN acepta este shape para archivos en FormData (uri/name/type).
+    form.append('file', {
+      uri: file.uri,
+      name: file.name,
+      type: file.type,
+    } as unknown as Blob);
+    const { data } = await apiClient.post<UploadedImage>(
+      '/clothes/images',
+      form,
+      { headers: { 'Content-Type': 'multipart/form-data' } },
+    );
     return data;
   },
 

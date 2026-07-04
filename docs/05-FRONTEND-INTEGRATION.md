@@ -37,7 +37,12 @@ RootNavigator
 |----------|-----------|---------|----------|
 | **ClothesListScreen** | Catálogo con filtros (categoría/color/ocasión) y búsqueda | `GET /clothes` | — |
 | **ClothingDetailScreen** | Detalle + outfits relacionados | `GET /clothes/:id` | edita/archiva |
-| **CreateClothingScreen** (modal) | Alta de prenda | catálogos | `POST /clothes` |
+| **CreateClothingScreen** (modal) | Alta de prenda (incluye elegir/subir foto) | catálogos | `POST /clothes/images` → `POST /clothes` |
+
+> **Subida de foto (alta de prenda).** La pantalla de alta usa **`expo-image-picker`** para
+> elegir una foto de la galería; la sube por `multipart/form-data` a `POST /api/clothes/images`
+> y agrega la `url` devuelta al array `imageUrls` que manda a `POST /api/clothes`. La foto es
+> **opcional** (0..N). La lista ya renderiza `imageUrls[0]` como miniatura.
 
 ### Tab Outfits
 

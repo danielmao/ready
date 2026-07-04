@@ -3,13 +3,18 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Param,
   ParseUUIDPipe,
   Post,
   Put,
   Query,
+  StreamableFile,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 import { CurrentUser } from '../../../shared/auth/current-user.decorator';
 import { CurrentUserGuard } from '../../../shared/auth/current-user.guard';
@@ -21,7 +26,9 @@ import { ArchiveClothingItemUseCase } from '../../application/use-cases/archive-
 import { CreateClothingItemUseCase } from '../../application/use-cases/create-clothing-item.use-case';
 import { CreateOccasionUseCase } from '../../application/use-cases/create-occasion.use-case';
 import { CreateTagUseCase } from '../../application/use-cases/create-tag.use-case';
+import { GetClothingItemImageUseCase } from '../../application/use-cases/get-clothing-item-image.use-case';
 import { GetClothingItemUseCase } from '../../application/use-cases/get-clothing-item.use-case';
+import { UploadClothingItemImageUseCase } from '../../application/use-cases/upload-clothing-item-image.use-case';
 import {
   ListCategoriesUseCase,
   ListColorsUseCase,
@@ -51,6 +58,8 @@ export class ClothesController {
     private readonly listTags: ListTagsUseCase,
     private readonly createTag: CreateTagUseCase,
     private readonly createOccasion: CreateOccasionUseCase,
+    private readonly uploadClothingImage: UploadClothingItemImageUseCase,
+    private readonly getClothingImage: GetClothingItemImageUseCase,
   ) {}
 
   // --- Catálogos (segmentos fijos primero) ---
@@ -99,6 +108,23 @@ export class ClothesController {
     @Body() dto: CreateClothingItemDto,
   ) {
     return this.createClothingItem.execute(dto, userId);
+  }
+
+  // --- Imágenes de prendas (S3/MinIO) ---
+  // Sube un archivo y devuelve { key, url }; el cliente pone `url` en imageUrls.
+  // Sólo recibe el archivo (sin otros campos) → no lo rechaza el ValidationPipe global.
+  @Post('images')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadImage(@UploadedFile() file?: Express.Multer.File) {
+    return this.uploadClothingImage.execute(file);
+  }
+
+  // Sirve el objeto por su key (ruta pública referenciada desde imageUrls).
+  @Get('images/:key')
+  @Header('Cache-Control', 'public, max-age=31536000, immutable')
+  async getImage(@Param('key') key: string): Promise<StreamableFile> {
+    const image = await this.getClothingImage.execute(key);
+    return new StreamableFile(image.body, { type: image.contentType });
   }
 
   @Get(':id')

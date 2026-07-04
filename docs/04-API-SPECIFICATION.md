@@ -33,13 +33,34 @@ Query: `categoryId?, colorId?, occasionId?, tagId?, search?, page?, limit?`
   "imageUrls": ["https://.../1.jpg"] }
 // response 201 → ClothingItem
 ```
-Validación: `name`, `categoryId`, `colorId` obligatorios.
+Validación: `name`, `categoryId`, `colorId` obligatorios. `imageUrls` es opcional (0..N URLs);
+esas URLs se obtienen subiendo cada foto vía `POST /api/clothes/images` (ver abajo).
 
 ### `PUT /api/clothes/:id`
 Mismo body que POST (campos parciales permitidos). → `ClothingItem`.
 
 ### `DELETE /api/clothes/:id`
 → `{ "success": true }` (archiva).
+
+### Imágenes
+
+Subida real de fotos a object storage (S3 en prod, MinIO en dev). El bucket es **privado**:
+la API lee los objetos con credenciales y los sirve. El flujo es: subir la foto → obtener su
+`url` → incluir esa `url` en `imageUrls` de `POST/PUT /api/clothes`. Detalle en
+[`../specs/active/clothes-image-upload.md`](../specs/active/clothes-image-upload.md).
+
+#### `POST /api/clothes/images`
+Sube **una** imagen. `Content-Type: multipart/form-data`, campo `file`.
+```json
+// response 201
+{ "key": "<uuid>.jpg", "url": "http://localhost:3000/api/clothes/images/<uuid>.jpg" }
+```
+Validación: tamaño máximo **5 MB**; MIME permitido `image/jpeg`, `image/png`, `image/webp`.
+Errores: `400` (falta `file`), `415` (MIME no permitido), `413` (excede 5 MB).
+
+#### `GET /api/clothes/images/:key`
+Devuelve el binario del objeto almacenado con su `Content-Type` y `Cache-Control` de larga
+duración. Es la URL a la que apunta cada elemento de `imageUrls`. `404` si el `key` no existe.
 
 ### Catálogos
 | Método | Ruta | Respuesta |

@@ -1,7 +1,8 @@
-# Stack LOCAL de desarrollo: sólo Postgres. La API se corre con `npm run start:dev`
-# (no en contenedor) para tener hot-reload. El deploy productivo usa compose.yaml (api+caddy).
+# Stack LOCAL de desarrollo: Postgres + MinIO (S3 local para imágenes). La API se corre con
+# `npm run start:dev` (no en contenedor) para tener hot-reload. El deploy productivo usa
+# compose.yaml (api+caddy) y AWS S3 real.
 #
-#   docker compose -f compose.dev.yaml up -d postgres
+#   docker compose -f compose.dev.yaml up -d postgres minio minio-createbucket
 #   # luego: npx prisma migrate dev && npm run seed && npm run start:dev
 #
 # Credenciales locales (no secretas; sólo dev). DATABASE_URL en .env debe apuntar acá:
@@ -25,5 +26,39 @@ services:
       timeout: 5s
       retries: 5
 
+  # Storage S3-compatible para las imágenes de prendas (dev local). En prod = AWS S3.
+  # API en http://localhost:9000, consola web en http://localhost:9001 (ready/readysecret).
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ready
+      MINIO_ROOT_PASSWORD: readysecret
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - ready_minio:/data
+    healthcheck:
+      test: ["CMD-SHELL", "mc ready local || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Job efímero: crea el bucket `ready-uploads` cuando MinIO está listo y termina.
+  # El bucket queda privado — el API lo lee con credenciales y sirve las imágenes.
+  minio-createbucket:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 ready readysecret; do sleep 1; done;
+      mc mb --ignore-existing local/ready-uploads;
+      echo 'bucket ready-uploads listo';
+      "
+
 volumes:
   ready_pgdata:
+  ready_minio:

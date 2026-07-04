@@ -1,7 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import * as ImagePicker from 'expo-image-picker';
+import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
+  ActivityIndicator,
   Alert,
+  Image,
   Pressable,
   ScrollView,
   Text,
@@ -10,6 +14,7 @@ import {
 } from 'react-native';
 import { z } from 'zod';
 
+import { colors as palette } from '../../../theme';
 import { Button } from '../../../shared/components/Button';
 import type { RootStackScreenProps } from '../../../navigation/types';
 import {
@@ -17,7 +22,10 @@ import {
   useColors,
   useOccasions,
 } from '../hooks/useCatalogs';
-import { useCreateClothingItem } from '../hooks/useClothes';
+import {
+  useCreateClothingItem,
+  useUploadClothingImage,
+} from '../hooks/useClothes';
 
 const schema = z.object({
   name: z.string().trim().min(1, 'El nombre es obligatorio'),
@@ -71,12 +79,14 @@ function ChipGroup({
           className={`rounded-full border px-3.5 py-2 ${
             selected(opt.id)
               ? 'border-primary bg-primary'
-              : 'border-slate-300 bg-white'
+              : 'border-border bg-surface'
           }`}
         >
           <Text
             className={
-              selected(opt.id) ? 'text-sm text-white' : 'text-sm text-ink'
+              selected(opt.id)
+                ? 'text-sm text-text-inverse'
+                : 'text-sm text-text-primary'
             }
           >
             {opt.label}
@@ -98,9 +108,9 @@ function Field({
 }) {
   return (
     <View className="mb-5">
-      <Text className="text-sm font-semibold text-ink">{label}</Text>
+      <Text className="text-sm font-semibold text-text-primary">{label}</Text>
       {children}
-      {error ? <Text className="mt-1 text-xs text-red-500">{error}</Text> : null}
+      {error ? <Text className="mt-1 text-xs text-error">{error}</Text> : null}
     </View>
   );
 }
@@ -113,6 +123,43 @@ export function AddClothingItemScreen({
   const colors = useColors();
   const occasions = useOccasions();
   const createItem = useCreateClothingItem();
+  const uploadImage = useUploadClothingImage();
+
+  // Imagen de la prenda: uri local (preview) + url pública ya subida al backend.
+  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  const pickImage = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert(
+        'Permiso requerido',
+        'Necesitamos acceso a tus fotos para elegir la imagen de la prenda.',
+      );
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.7,
+    });
+    if (result.canceled) return;
+
+    const asset = result.assets[0];
+    setImageUri(asset.uri);
+    setImageUrl(null);
+    uploadImage.mutate(
+      {
+        uri: asset.uri,
+        name: asset.fileName ?? asset.uri.split('/').pop() ?? 'photo.jpg',
+        type: asset.mimeType ?? 'image/jpeg',
+      },
+      {
+        onSuccess: (img) => setImageUrl(img.url),
+        onError: () =>
+          Alert.alert('Error', 'No se pudo subir la imagen. Probá de nuevo.'),
+      },
+    );
+  };
 
   const {
     control,
@@ -144,6 +191,7 @@ export function AddClothingItemScreen({
         colorId: values.colorId,
         description: values.description || undefined,
         occasionIds: values.occasionIds,
+        imageUrls: imageUrl ? [imageUrl] : undefined,
       },
       {
         onSuccess: () => navigation.goBack(),
@@ -154,7 +202,43 @@ export function AddClothingItemScreen({
   };
 
   return (
-    <ScrollView className="flex-1 bg-surface" contentContainerClassName="p-4">
+    <ScrollView className="flex-1 bg-background" contentContainerClassName="p-4">
+      <View className="mb-5">
+        <Text className="text-sm font-semibold text-text-primary">Foto</Text>
+        <Pressable
+          onPress={() => void pickImage()}
+          disabled={uploadImage.isPending}
+          className="mt-2 h-40 items-center justify-center overflow-hidden rounded-xl border border-dashed border-border bg-surface"
+        >
+          {imageUri ? (
+            <>
+              <Image
+                source={{ uri: imageUri }}
+                className="h-40 w-full"
+                resizeMode="cover"
+              />
+              {uploadImage.isPending ? (
+                <View className="absolute inset-0 items-center justify-center bg-primary-dark/40">
+                  <ActivityIndicator color={palette.text.inverse} />
+                </View>
+              ) : null}
+            </>
+          ) : (
+            <View className="items-center">
+              <Text className="text-3xl">📷</Text>
+              <Text className="mt-1 text-sm text-text-secondary">
+                Elegí una foto (opcional)
+              </Text>
+            </View>
+          )}
+        </Pressable>
+        {uploadImage.isError ? (
+          <Text className="mt-1 text-xs text-error">
+            No se pudo subir la imagen. Tocá para reintentar.
+          </Text>
+        ) : null}
+      </View>
+
       <Field label="Nombre" error={errors.name?.message}>
         <Controller
           control={control}
@@ -165,8 +249,8 @@ export function AddClothingItemScreen({
               onChangeText={onChange}
               onBlur={onBlur}
               placeholder="Ej. Remera azul"
-              placeholderTextColor="#94A3B8"
-              className="mt-2 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-ink"
+              placeholderTextColor={palette.text.muted}
+              className="mt-2 rounded-xl border border-border bg-surface px-4 py-3 text-base text-text-primary"
             />
           )}
         />
@@ -225,9 +309,9 @@ export function AddClothingItemScreen({
               onChangeText={onChange}
               onBlur={onBlur}
               placeholder="Algodón, manga corta…"
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor={palette.text.muted}
               multiline
-              className="mt-2 min-h-[72px] rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-ink"
+              className="mt-2 min-h-[72px] rounded-xl border border-border bg-surface px-4 py-3 text-base text-text-primary"
             />
           )}
         />
@@ -237,6 +321,7 @@ export function AddClothingItemScreen({
         label="Guardar prenda"
         onPress={handleSubmit(onSubmit)}
         loading={createItem.isPending}
+        disabled={uploadImage.isPending}
       />
     </ScrollView>
   );

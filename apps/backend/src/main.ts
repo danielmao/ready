@@ -1,3 +1,7 @@
+// Carga .env → process.env en ejecución local (dev). En docker/prod el env viene del
+// compose y dotenv no lo pisa (no override), así que es inerte allí.
+import 'dotenv/config';
+
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { Logger } from 'nestjs-pino';

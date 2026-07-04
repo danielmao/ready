@@ -58,6 +58,19 @@ export interface CreateClothingItemInput {
   imageUrls?: string[];
 }
 
+/** Respuesta de POST /api/clothes/images: la imagen subida a S3/MinIO. */
+export interface UploadedImage {
+  key: string;
+  url: string;
+}
+
+/** Archivo local a subir (uri del dispositivo + nombre + mime), tal como lo da el picker. */
+export interface LocalImageFile {
+  uri: string;
+  name: string;
+  type: string;
+}
+
 /** Forma paginada de GET /api/clothes (espejo de Paginated<T>). */
 export interface Paginated<T> {
   data: T[];

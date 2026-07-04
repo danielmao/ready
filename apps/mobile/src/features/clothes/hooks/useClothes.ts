@@ -4,7 +4,10 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 
-import type { CreateClothingItemInput } from '../../../domain/models/clothing';
+import type {
+  CreateClothingItemInput,
+  LocalImageFile,
+} from '../../../domain/models/clothing';
 import { clothesApi, type ClothesListParams } from '../services/clothesApi';
 
 /** Query keys centralizadas de la feature clothes. */
@@ -33,6 +36,13 @@ export function useCreateClothingItem() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: clothesKeys.all });
     },
+  });
+}
+
+/** Sube una imagen y devuelve su URL pública (para meter en imageUrls al crear). */
+export function useUploadClothingImage() {
+  return useMutation({
+    mutationFn: (file: LocalImageFile) => clothesApi.uploadImage(file),
   });
 }
 

@@ -45,8 +45,13 @@ Sin el dominio `clothes` —dueño de `ClothingItem` y de los catálogos `Catego
 
 - **No** incluye `outfits` ni `planning` (features siguientes; sólo se deja la `ClothesFacade`
   y el esquema Prisma de esas tablas para no re-migrar).
-- **No** incluye **subida real de imágenes** (S3/filesystem): `imageUrls` se acepta como
-  array de strings ya resueltos; la captura de fotos en mobile usa URLs locales/placeholder.
+- ~~**No** incluye **subida real de imágenes** (S3/filesystem): `imageUrls` se acepta como
+  array de strings ya resueltos; la captura de fotos en mobile usa URLs locales/placeholder.~~
+  **Actualizado:** la subida real de imágenes vía **S3/MinIO** ya está **en alcance e
+  implementada** (endpoints `POST /api/clothes/images` + `GET /api/clothes/images/:key`).
+  El contrato JSON de `clothes` no cambia: `imageUrls` sigue siendo un array de strings de
+  URL — ahora esas URLs las devuelve el endpoint de subida. Detalle en
+  [`clothes-image-upload.md`](clothes-image-upload.md).
 - **No** incluye autenticación real (Google/JWT): el guard resuelve un `userId` fijo sembrado.
 - **No** incluye jerarquía de categorías editable por el usuario (el `parentCategoryId` se
   siembra; no hay endpoint para crearla).
