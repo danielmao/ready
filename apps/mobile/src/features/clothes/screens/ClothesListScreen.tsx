@@ -1,5 +1,6 @@
 import { ActivityIndicator, FlatList, Text, View } from 'react-native';
 
+import { colors } from '../../../theme';
 import { Button } from '../../../shared/components/Button';
 import { EmptyState } from '../../../shared/components/EmptyState';
 import type { RootStackScreenProps } from '../../../navigation/types';
@@ -14,15 +15,15 @@ export function ClothesListScreen({
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-surface">
-        <ActivityIndicator color="#6366F1" />
+      <View className="flex-1 items-center justify-center bg-background">
+        <ActivityIndicator color={colors.primary.DEFAULT} />
       </View>
     );
   }
 
   if (isError) {
     return (
-      <View className="flex-1 bg-surface">
+      <View className="flex-1 bg-background">
         <EmptyState
           title="No pudimos cargar tu armario"
           subtitle="Revisá que la API esté corriendo y volvé a intentar."
@@ -37,7 +38,7 @@ export function ClothesListScreen({
   const items = data?.data ?? [];
 
   return (
-    <View className="flex-1 bg-surface">
+    <View className="flex-1 bg-background">
       <FlatList
         data={items}
         keyExtractor={(item) => item.id}
@@ -47,7 +48,7 @@ export function ClothesListScreen({
         onRefresh={() => void refetch()}
         ListHeaderComponent={
           items.length > 0 ? (
-            <Text className="mb-3 text-sm text-muted">
+            <Text className="mb-3 text-sm text-text-secondary">
               {data?.total ?? items.length} prenda(s)
             </Text>
           ) : null

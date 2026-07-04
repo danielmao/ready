@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { AddClothingItemScreen } from '../features/clothes/screens/AddClothingItemScreen';
 import { ClothesListScreen } from '../features/clothes/screens/ClothesListScreen';
+import { colors } from '../theme';
 import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -12,9 +13,9 @@ export function RootNavigator() {
     <NavigationContainer>
       <Stack.Navigator
         screenOptions={{
-          headerStyle: { backgroundColor: '#0F172A' },
-          headerTintColor: '#FFFFFF',
-          contentStyle: { backgroundColor: '#F8FAFC' },
+          headerStyle: { backgroundColor: colors.primary.dark },
+          headerTintColor: colors.text.inverse,
+          contentStyle: { backgroundColor: colors.background },
         }}
       >
         <Stack.Screen
