@@ -6,8 +6,6 @@ import {
   ActivityIndicator,
   Alert,
   Image,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -299,15 +297,12 @@ export function ClothingItemForm({
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       {title ? header : null}
-      <KeyboardAvoidingView
-        className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
       <ScrollView
         className="flex-1 bg-background"
         contentContainerClassName="px-6 pb-8 pt-4"
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="interactive"
+        automaticallyAdjustKeyboardInsets
       >
       <View className="mb-5">
         <Text className="mb-2 text-xs uppercase tracking-wider text-text-muted">
@@ -461,7 +456,6 @@ export function ClothingItemForm({
           />
         </View>
       ) : null}
-      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
