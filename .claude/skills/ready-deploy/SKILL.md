@@ -36,8 +36,9 @@ para no tocar la cuenta equivocada.
 
 ## Notas de diseño
 
-- **Rama opcional en deploy.** Sin argumento usa la rama actualmente desplegada
-  (`feat/backend-first-deploy-health`). Pasá otra para desplegarla: `run.sh deploy main`.
+- **Rama opcional en deploy.** Sin argumento usa la rama desplegable por defecto
+  (`feature-entrega2-dmtu`, la entrega 2 con el backend). `main` es solo docs (entrega 1)
+  y NO es deployable. Pasá otra rama para desplegarla: `run.sh deploy <rama>`.
 - **buildx.** `docker compose --build` lo exige; si el host no lo tiene (instancia vieja,
   bootstrapeada antes del fix), el deploy cae al **builder clásico** (`DOCKER_BUILDKIT=0`)
   automáticamente. Las instancias nuevas ya traen buildx por el `bootstrap.sh`.
