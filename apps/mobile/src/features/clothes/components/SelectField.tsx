@@ -33,7 +33,7 @@ export function SelectField({
       <Pressable
         testID="select-field"
         onPress={() => setOpen(true)}
-        className="h-[50px] flex-row items-center justify-between rounded-[14px] border border-border bg-surface px-4"
+        className="h-[50px] flex-row items-center justify-between rounded-[14px] bg-surface-alt px-4"
       >
         <Text
           className={`text-[15px] ${

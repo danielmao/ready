@@ -6,6 +6,8 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -47,9 +49,14 @@ interface ClothingItemFormProps {
   defaultValues?: Partial<ClothingItemFormValues>;
   initialImageUrl?: string | null;
   submitting?: boolean;
-  /** Si se pasa, renderiza el top bar del diseño 04 (Cancelar / título / Guardar). */
   title?: string;
   onCancel?: () => void;
+  /**
+   * Header + guardado según diseño:
+   * - `sheet` (crear, 04): grabber + ✕ arriba-izq; guardado SOLO en el botón inferior.
+   * - `bar` (editar, 03): Cancelar / título / Guardar (arriba-der); sin botón inferior.
+   */
+  variant?: 'sheet' | 'bar';
 }
 
 interface ChipOption {
@@ -142,6 +149,7 @@ export function ClothingItemForm({
   submitting = false,
   title,
   onCancel,
+  variant = 'sheet',
 }: ClothingItemFormProps) {
   const categories = useCategories();
   const colors = useColors();
@@ -236,40 +244,70 @@ export function ClothingItemForm({
 
   const submit = handleSubmit((values) => onSubmit(values, imageUrl));
 
-  const topBar = title ? (
-    <View className="flex-row items-center justify-between px-5 pb-3 pt-1">
-      <Pressable onPress={onCancel} hitSlop={8}>
-        <Text className="text-[15px] text-text-secondary">Cancelar</Text>
-      </Pressable>
-      <Text
-        className="text-[22px] text-text-primary"
-        style={{ fontFamily: fonts.serif }}
-      >
-        {title}
-      </Text>
-      <Pressable
-        testID="form-header-save"
-        onPress={submit}
-        disabled={!isValid || submitting}
-        hitSlop={8}
-      >
+  const header =
+    variant === 'bar' ? (
+      // Diseño 03 (editar): Cancelar / título / Guardar (arriba-derecha).
+      <View className="flex-row items-center justify-between px-5 pb-3 pt-1">
+        <Pressable onPress={onCancel} hitSlop={8}>
+          <Text className="text-[15px] text-text-secondary">Cancelar</Text>
+        </Pressable>
         <Text
-          className={`text-[15px] font-semibold ${
-            isValid && !submitting ? 'text-primary' : 'text-text-muted'
-          }`}
+          className="text-[22px] text-text-primary"
+          style={{ fontFamily: fonts.serif }}
         >
-          Guardar
+          {title}
         </Text>
-      </Pressable>
-    </View>
-  ) : null;
+        <Pressable
+          testID="form-header-save"
+          onPress={submit}
+          disabled={!isValid || submitting}
+          hitSlop={8}
+        >
+          <Text
+            className={`text-[15px] font-semibold ${
+              isValid && !submitting ? 'text-primary' : 'text-text-muted'
+            }`}
+          >
+            Guardar
+          </Text>
+        </Pressable>
+      </View>
+    ) : (
+      // Diseño 04 (crear): bottom-sheet — grabber + ✕ arriba-izquierda + título.
+      <View className="pt-2.5">
+        <View className="mx-auto h-[5px] w-[38px] rounded-[3px] bg-border" />
+        <View className="flex-row items-center justify-between px-5 pb-3 pt-3.5">
+          <Pressable
+            testID="sheet-close"
+            onPress={onCancel}
+            className="h-[30px] w-[30px] items-center justify-center rounded-full bg-surface-alt"
+          >
+            <Text className="text-base text-text-secondary">✕</Text>
+          </Pressable>
+          <Text
+            className="text-2xl text-text-primary"
+            style={{ fontFamily: fonts.serif }}
+          >
+            {title}
+          </Text>
+          <View className="w-[30px]" />
+        </View>
+        <View className="h-px bg-border" />
+      </View>
+    );
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={title ? ['top'] : []}>
-      {topBar}
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+      {title ? header : null}
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
       <ScrollView
         className="flex-1 bg-background"
-        contentContainerClassName="p-6 pb-10"
+        contentContainerClassName="px-6 pb-8 pt-4"
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
       >
       <View className="mb-5">
         <Text className="mb-2 text-xs uppercase tracking-wider text-text-muted">
@@ -316,7 +354,7 @@ export function ClothingItemForm({
               onBlur={onBlur}
               placeholder="Ej: Camisa de lino blanca"
               placeholderTextColor={palette.text.muted}
-              className="mt-2 rounded-[14px] border border-border bg-surface px-4 py-3.5 text-[15px] text-text-primary"
+              className="mt-2 rounded-[14px] bg-surface-alt px-4 py-3.5 text-[15px] text-text-primary"
             />
           )}
         />
@@ -406,19 +444,24 @@ export function ClothingItemForm({
               placeholder="Añadí una nota sobre la prenda (opcional)"
               placeholderTextColor={palette.text.muted}
               multiline
-              className="mt-2 min-h-[76px] rounded-[14px] border border-border bg-surface px-4 py-3.5 text-[15px] text-text-primary"
+              className="mt-2 min-h-[76px] rounded-[14px] bg-surface-alt px-4 py-3.5 text-[15px] text-text-primary"
             />
           )}
         />
       </Field>
 
-      <Button
-        label={submitLabel}
-        onPress={submit}
-        loading={submitting}
-        disabled={uploadImage.isPending}
-      />
       </ScrollView>
+      {variant !== 'bar' ? (
+        <View className="px-6 pb-8 pt-3">
+          <Button
+            label={submitLabel}
+            onPress={submit}
+            loading={submitting}
+            disabled={uploadImage.isPending}
+          />
+        </View>
+      ) : null}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

@@ -37,14 +37,17 @@ mockup, y usa el header nativo de navegación en lugar del propio de la pantalla
   seleccionado), no chips de texto.
 - **Tags** con `TagSelector`: tags existentes toggleables + "+ Agregar tag" que crea uno
   nuevo (`POST /clothes/tags`) y lo selecciona.
-- El `Guardar` del top bar queda **gris/deshabilitado** hasta que el form es válido (no un
-  segundo botón azul redundante con "Guardar prenda").
-- **Categoría** como **select desplegable** ("Elegí una categoría ▾" → hoja modal con las
-  opciones), no chips.
-- **Nombre / Descripción**: inputs blancos con borde (no relleno), con los placeholders del
-  mockup ("Ej: Camisa de lino blanca", "Añadí una nota sobre la prenda (opcional)").
-- **Edición (03)** unificada bajo el **mismo modal 04** (top bar Cancelar/Editar prenda/Guardar):
-  crear y editar comparten `ClothingItemForm` sección por sección.
+- **Header por variante** (el diseño difiere entre crear y editar):
+  - **Crear (04, `variant="sheet"`):** bottom-sheet con **grabber** + **✕** (arriba-izquierda) +
+    título; **sin** "Cancelar"/"Guardar" arriba. El único guardado es el botón inferior
+    **"Guardar prenda"**.
+  - **Editar (03, `variant="bar"`):** top bar **Cancelar / Editar prenda / Guardar** (Guardar
+    arriba-derecha, gris/deshabilitado hasta que el form es válido); **sin** botón inferior.
+- **Categoría** como **select desplegable** ("Elegí una categoría ▾" → hoja modal), no chips.
+- **Nombre / Descripción / Categoría**: inputs **rellenos `surface-alt`** (como el mockup),
+  con los placeholders del diseño.
+- Crear y editar comparten el mismo `ClothingItemForm` sección por sección (foto, nombre,
+  categoría, color, ocasiones, tags, descripción); solo cambia el header/guardado por variante.
 
 ## Non-goals
 
@@ -93,10 +96,13 @@ Ninguno.
 - [x] El dropzone de foto muestra "Agregá una foto" cuando no hay imagen.
 - [x] El color se elige por swatches circulares; el seleccionado queda marcado.
 - [x] Los tags se listan como chips toggleables y "+ Agregar tag" crea + selecciona uno nuevo.
-- [x] El `Guardar` del top bar está deshabilitado/gris hasta que el form es válido.
+- [x] Crear (sheet) muestra grabber + ✕ + título, sin "Cancelar"/"Guardar" arriba; guarda
+      solo con "Guardar prenda" abajo.
+- [x] Editar (bar) muestra Cancelar / título / Guardar (arriba, gris hasta válido); sin botón
+      inferior.
 - [x] La categoría se elige con un select desplegable (placeholder + opciones en modal).
-- [x] Nombre y Descripción son inputs blancos con borde y los placeholders del mockup.
-- [x] La edición (03) usa el mismo modal 04 (top bar), compartiendo el form con la creación.
+- [x] Nombre/Categoría/Descripción son inputs rellenos (surface-alt) con los placeholders del
+      mockup.
 - [x] `npm run typecheck` + `npm test` (mobile) pasan.
 
 ## Plan de test

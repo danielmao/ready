@@ -92,59 +92,80 @@ describe('ClothingItemForm', () => {
   });
 });
 
-describe('ClothingItemForm · top bar (diseño 04 · Nueva prenda)', () => {
-  it('con title muestra el top bar con Cancelar, título y Guardar', () => {
+describe('ClothingItemForm · header por variante (diseño 03/04)', () => {
+  it('variant sheet (crear, 04) muestra ✕ y título, sin Cancelar ni Guardar arriba', () => {
     render(
       <ClothingItemForm
         submitLabel="Guardar prenda"
         title="Nueva prenda"
+        variant="sheet"
         onCancel={jest.fn()}
         onSubmit={jest.fn()}
       />,
     );
 
     expect(screen.getByText('Nueva prenda')).toBeOnTheScreen();
-    expect(screen.getByText('Cancelar')).toBeOnTheScreen();
-    expect(screen.getByTestId('form-header-save')).toBeOnTheScreen();
+    expect(screen.getByTestId('sheet-close')).toBeOnTheScreen();
+    expect(screen.queryByTestId('form-header-save')).toBeNull();
+    expect(screen.queryByText('Cancelar')).toBeNull();
   });
 
-  it('sin title no renderiza el top bar (modo edición)', () => {
+  it('variant bar (editar, 03) muestra Cancelar, título y Guardar', () => {
     render(
-      <ClothingItemForm submitLabel="Guardar cambios" onSubmit={jest.fn()} />,
+      <ClothingItemForm
+        submitLabel="Guardar cambios"
+        title="Editar prenda"
+        variant="bar"
+        onCancel={jest.fn()}
+        onSubmit={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByText('Editar prenda')).toBeOnTheScreen();
+    expect(screen.getByText('Cancelar')).toBeOnTheScreen();
+    expect(screen.getByTestId('form-header-save')).toBeOnTheScreen();
+    expect(screen.queryByTestId('sheet-close')).toBeNull();
+  });
+
+  it('sin title no renderiza header', () => {
+    render(
+      <ClothingItemForm submitLabel="Guardar" onSubmit={jest.fn()} />,
     );
 
     expect(screen.queryByTestId('form-header-save')).toBeNull();
+    expect(screen.queryByTestId('sheet-close')).toBeNull();
   });
 
-  it('Cancelar dispara onCancel', () => {
+  it('el ✕ del sheet dispara onCancel', () => {
     const onCancel = jest.fn();
     render(
       <ClothingItemForm
         submitLabel="Guardar prenda"
         title="Nueva prenda"
+        variant="sheet"
         onCancel={onCancel}
         onSubmit={jest.fn()}
       />,
     );
 
-    fireEvent.press(screen.getByText('Cancelar'));
+    fireEvent.press(screen.getByTestId('sheet-close'));
 
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
-  it('Guardar del top bar dispara onSubmit', async () => {
+  it('Guardar del bar dispara onSubmit cuando el form es válido', async () => {
     const onSubmit = jest.fn();
     render(
       <ClothingItemForm
-        submitLabel="Guardar prenda"
-        title="Nueva prenda"
+        submitLabel="Guardar cambios"
+        title="Editar prenda"
+        variant="bar"
         onCancel={jest.fn()}
         defaultValues={{ name: 'Remera', categoryId: CAT, colorId: COL }}
         onSubmit={onSubmit}
       />,
     );
 
-    // El Guardar del top bar se habilita cuando el form es válido (mode onChange).
     await waitFor(() => {
       fireEvent.press(screen.getByTestId('form-header-save'));
       expect(onSubmit).toHaveBeenCalledTimes(1);
