@@ -21,7 +21,7 @@ INSTANCE_ID="i-09ed3441754a9b223"
 EIP="32.195.76.205"
 DOMAIN="32-195-76-205.nip.io"
 PEM="${HOME}/.ssh/ready-mvp.pem"
-DEFAULT_BRANCH="feat/backend-first-deploy-health"
+DEFAULT_BRANCH="mvp"
 AWS_AS="${HOME}/.claude/skills/aws-account/aws-as.sh"
 
 SSH_OPTS=(-i "$PEM" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
