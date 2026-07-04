@@ -1,47 +1,70 @@
-import { Image, Text, View } from 'react-native';
+import { Image, Pressable, Text, View } from 'react-native';
 
 import type { ClothingItem } from '../../../domain/models/clothing';
 import { resolveImageUrl } from '../../../shared/utils/resolveImageUrl';
 
-/** Tarjeta de una prenda en el listado del armario. */
-export function ClothingCard({ item }: { item: ClothingItem }) {
+interface ClothingCardProps {
+  item: ClothingItem;
+  onPress: () => void;
+}
+
+/**
+ * Tarjeta vertical de una prenda en el grid del armario (diseño lookbook):
+ * foto 3/4 arriba, nombre, chip de categoría y dot de color abajo.
+ */
+export function ClothingCard({ item, onPress }: ClothingCardProps) {
   const cover = item.imageUrls?.[0]
     ? resolveImageUrl(item.imageUrls[0])
     : undefined;
+
   return (
-    <View className="mb-3 flex-row items-center rounded-2xl bg-surface p-3 shadow-sm">
-      <View className="h-16 w-16 items-center justify-center overflow-hidden rounded-xl bg-surface-alt">
+    <Pressable
+      testID="clothing-card"
+      onPress={onPress}
+      className="flex-1 overflow-hidden rounded-[20px] border border-surface-alt bg-surface"
+    >
+      <View className="aspect-[3/4] w-full items-center justify-center bg-surface-alt">
         {cover ? (
-          <Image source={{ uri: cover }} className="h-16 w-16" resizeMode="cover" />
+          <Image
+            source={{ uri: cover }}
+            className="h-full w-full"
+            resizeMode="cover"
+          />
         ) : (
-          <Text className="text-2xl">{item.category?.icon ?? '👕'}</Text>
+          <Text testID="clothing-card-placeholder" className="text-4xl">
+            {item.category?.icon ?? '👕'}
+          </Text>
         )}
       </View>
 
-      <View className="ml-3 flex-1">
+      <View className="px-3 pb-3.5 pt-2.5">
         <Text
-          className="text-base font-semibold text-text-primary"
-          numberOfLines={1}
+          className="text-sm font-medium leading-tight text-text-primary"
+          numberOfLines={2}
         >
           {item.name}
         </Text>
-        <Text className="mt-0.5 text-sm text-text-secondary">
-          {item.category?.name ?? 'Sin categoría'}
-          {item.color ? ` · ${item.color.name}` : ''}
-        </Text>
-        {item.occasions && item.occasions.length > 0 ? (
-          <Text className="mt-0.5 text-xs text-text-secondary" numberOfLines={1}>
-            {item.occasions.map((o) => o.name).join(', ')}
-          </Text>
-        ) : null}
+        <View className="mt-2 flex-row items-center justify-between">
+          {item.category ? (
+            <Text className="rounded-[10px] bg-surface-alt px-2.5 py-0.5 text-[11px] text-text-secondary">
+              {item.category.name}
+            </Text>
+          ) : (
+            <View />
+          )}
+          {item.color ? (
+            <View className="flex-row items-center gap-1.5">
+              <View
+                className="h-3 w-3 rounded-full border border-border"
+                style={{ backgroundColor: item.color.hexCode }}
+              />
+              <Text className="text-[11px] text-text-muted" numberOfLines={1}>
+                {item.color.name}
+              </Text>
+            </View>
+          ) : null}
+        </View>
       </View>
-
-      {item.color ? (
-        <View
-          className="ml-2 h-5 w-5 rounded-full border border-border"
-          style={{ backgroundColor: item.color.hexCode }}
-        />
-      ) : null}
-    </View>
+    </Pressable>
   );
 }

@@ -28,6 +28,15 @@ export function useClothes(params: ClothesListParams = {}) {
   });
 }
 
+/** Detalle de una prenda por id (pantalla de detalle). */
+export function useClothingItem(id: string) {
+  return useQuery({
+    queryKey: clothesKeys.detail(id),
+    queryFn: () => clothesApi.getById(id),
+    enabled: !!id,
+  });
+}
+
 /** Crea una prenda e invalida el listado para reflejarla al volver. */
 export function useCreateClothingItem() {
   const queryClient = useQueryClient();
