@@ -7,6 +7,7 @@ import type {
   LocalImageFile,
   Occasion,
   Paginated,
+  UpdateClothingItemInput,
   UploadedImage,
 } from '../../../domain/models/clothing';
 
@@ -37,6 +38,14 @@ export const clothesApi = {
 
   async create(input: CreateClothingItemInput): Promise<ClothingItem> {
     const { data } = await apiClient.post<ClothingItem>('/clothes', input);
+    return data;
+  },
+
+  async update(
+    id: string,
+    input: UpdateClothingItemInput,
+  ): Promise<ClothingItem> {
+    const { data } = await apiClient.put<ClothingItem>(`/clothes/${id}`, input);
     return data;
   },
 

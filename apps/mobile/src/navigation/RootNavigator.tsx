@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AddClothingItemScreen } from '../features/clothes/screens/AddClothingItemScreen';
 import { ClothesListScreen } from '../features/clothes/screens/ClothesListScreen';
 import { ClothingDetailScreen } from '../features/clothes/screens/ClothingDetailScreen';
+import { EditClothingItemScreen } from '../features/clothes/screens/EditClothingItemScreen';
 import { colors } from '../theme';
 import type { RootStackParamList } from './types';
 
@@ -33,6 +34,11 @@ export function RootNavigator() {
           name="AddClothingItem"
           component={AddClothingItemScreen}
           options={{ title: 'Nueva prenda', presentation: 'modal' }}
+        />
+        <Stack.Screen
+          name="EditClothingItem"
+          component={EditClothingItemScreen}
+          options={{ title: 'Editar prenda', presentation: 'modal' }}
         />
       </Stack.Navigator>
     </NavigationContainer>

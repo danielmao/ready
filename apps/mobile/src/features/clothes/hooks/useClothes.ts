@@ -7,6 +7,7 @@ import {
 import type {
   CreateClothingItemInput,
   LocalImageFile,
+  UpdateClothingItemInput,
 } from '../../../domain/models/clothing';
 import { clothesApi, type ClothesListParams } from '../services/clothesApi';
 
@@ -44,6 +45,24 @@ export function useCreateClothingItem() {
     mutationFn: (input: CreateClothingItemInput) => clothesApi.create(input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: clothesKeys.all });
+    },
+  });
+}
+
+/** Actualiza una prenda e invalida su detalle y el listado. */
+export function useUpdateClothingItem() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      input,
+    }: {
+      id: string;
+      input: UpdateClothingItemInput;
+    }) => clothesApi.update(id, input),
+    onSuccess: (_data, { id }) => {
+      void queryClient.invalidateQueries({ queryKey: clothesKeys.all });
+      void queryClient.invalidateQueries({ queryKey: clothesKeys.detail(id) });
     },
   });
 }

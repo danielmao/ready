@@ -176,9 +176,9 @@ export function ClothingDetailScreen({
         </Pressable>
         <View className="flex-row gap-2.5">
           <Pressable
-            onPress={() => {
-              // TODO(clothes): navegar a edición de prenda cuando exista la pantalla.
-            }}
+            onPress={() =>
+              navigation.navigate('EditClothingItem', { id: item.id })
+            }
             className="h-[50px] flex-1 items-center justify-center rounded-2xl border border-border bg-surface"
           >
             <Text className="text-[15px] font-medium text-text-primary">Editar</Text>

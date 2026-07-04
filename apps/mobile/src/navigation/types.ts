@@ -5,6 +5,7 @@ export type RootStackParamList = {
   ClothesList: undefined;
   ClothingDetail: { id: string };
   AddClothingItem: undefined;
+  EditClothingItem: { id: string };
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =
