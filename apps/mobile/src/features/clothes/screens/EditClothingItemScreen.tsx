@@ -42,6 +42,7 @@ export function EditClothingItemScreen({
         colorId: item.colorId,
         description: item.description ?? undefined,
         occasionIds: item.occasions?.map((o) => o.id) ?? [],
+        tagIds: item.tags?.map((t) => t.id) ?? [],
       }}
       onSubmit={(values, imageUrl) =>
         update.mutate(
@@ -53,6 +54,7 @@ export function EditClothingItemScreen({
               colorId: values.colorId,
               description: values.description || undefined,
               occasionIds: values.occasionIds,
+              tagIds: values.tagIds,
               imageUrls: imageUrl ? [imageUrl] : undefined,
             },
           },

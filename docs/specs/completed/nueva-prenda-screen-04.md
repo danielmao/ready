@@ -33,12 +33,20 @@ mockup, y usa el header nativo de navegación en lugar del propio de la pantalla
 - **Dropzone de foto** estilo 04: círculo `＋`, "Agregá una foto", "Cámara o galería".
 - Barra inferior con botón primario **"Guardar prenda"**.
 - El botón "Cancelar" cierra la pantalla sin crear nada.
+- **Color** como swatches circulares (círculo por color del catálogo, anillo en el
+  seleccionado), no chips de texto.
+- **Tags** con `TagSelector`: tags existentes toggleables + "+ Agregar tag" que crea uno
+  nuevo (`POST /clothes/tags`) y lo selecciona.
+- El `Guardar` del top bar queda **gris/deshabilitado** hasta que el form es válido (no un
+  segundo botón azul redundante con "Guardar prenda").
 
 ## Non-goals
 
-- No se cambia el contrato ni el backend (crear ya existe: `POST /clothes`).
-- No se agregan tags editables con creación libre (queda como follow-up, igual que en 03).
-- No se rediseña la pantalla de edición (03) en este PR.
+- No se cambia el contrato del backend (crear y tags ya existen: `POST /clothes`,
+  `POST /clothes/tags`).
+- No se agrega creación de **colores** custom (el `＋` del mockup): no hay endpoint de color.
+- No se rediseña la pantalla de edición (03) en este PR (aunque hereda swatches/tags por
+  compartir el form).
 
 ## Módulos / servicios afectados
 
@@ -77,6 +85,9 @@ Ninguno.
 - [x] "Cancelar" dispara `onCancel` (cierra la pantalla).
 - [x] "Guardar" (top bar) y "Guardar prenda" (barra inferior) disparan el mismo submit.
 - [x] El dropzone de foto muestra "Agregá una foto" cuando no hay imagen.
+- [x] El color se elige por swatches circulares; el seleccionado queda marcado.
+- [x] Los tags se listan como chips toggleables y "+ Agregar tag" crea + selecciona uno nuevo.
+- [x] El `Guardar` del top bar está deshabilitado/gris hasta que el form es válido.
 - [x] `npm run typecheck` + `npm test` (mobile) pasan.
 
 ## Plan de test

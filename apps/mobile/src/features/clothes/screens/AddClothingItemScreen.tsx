@@ -24,6 +24,7 @@ export function AddClothingItemScreen({
             colorId: values.colorId,
             description: values.description || undefined,
             occasionIds: values.occasionIds,
+            tagIds: values.tagIds,
             imageUrls: imageUrl ? [imageUrl] : undefined,
           },
           {

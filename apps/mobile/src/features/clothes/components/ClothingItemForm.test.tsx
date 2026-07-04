@@ -9,8 +9,9 @@ import {
   useCategories,
   useColors,
   useOccasions,
+  useTags,
 } from '../hooks/useCatalogs';
-import { useUploadClothingImage } from '../hooks/useClothes';
+import { useCreateTag, useUploadClothingImage } from '../hooks/useClothes';
 import { ClothingItemForm } from './ClothingItemForm';
 
 jest.mock('expo-image-picker');
@@ -30,6 +31,11 @@ beforeEach(() => {
     asQuery([{ id: COL, name: 'Blanco', hexCode: '#fff' }]),
   );
   (useOccasions as jest.Mock).mockReturnValue(asQuery([]));
+  (useTags as jest.Mock).mockReturnValue(asQuery([]));
+  (useCreateTag as jest.Mock).mockReturnValue({
+    mutate: jest.fn(),
+    isPending: false,
+  });
   (useUploadClothingImage as jest.Mock).mockReturnValue({
     mutate: jest.fn(),
     isPending: false,
@@ -138,8 +144,10 @@ describe('ClothingItemForm · top bar (diseño 04 · Nueva prenda)', () => {
       />,
     );
 
-    fireEvent.press(screen.getByTestId('form-header-save'));
-
-    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    // El Guardar del top bar se habilita cuando el form es válido (mode onChange).
+    await waitFor(() => {
+      fireEvent.press(screen.getByTestId('form-header-save'));
+      expect(onSubmit).toHaveBeenCalledTimes(1);
+    });
   });
 });

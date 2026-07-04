@@ -19,8 +19,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../../shared/components/Button';
 import { colors as palette, fonts } from '../../../theme';
 import { resolveImageUrl } from '../../../shared/utils/resolveImageUrl';
-import { useCategories, useColors, useOccasions } from '../hooks/useCatalogs';
-import { useUploadClothingImage } from '../hooks/useClothes';
+import {
+  useCategories,
+  useColors,
+  useOccasions,
+  useTags,
+} from '../hooks/useCatalogs';
+import { useCreateTag, useUploadClothingImage } from '../hooks/useClothes';
+import { ColorSwatchPicker } from './ColorSwatchPicker';
+import { TagSelector } from './TagSelector';
 
 const schema = z.object({
   name: z.string().trim().min(1, 'El nombre es obligatorio'),
@@ -28,6 +35,7 @@ const schema = z.object({
   colorId: z.string().uuid('Elegí un color'),
   description: z.string().trim().optional(),
   occasionIds: z.array(z.string().uuid()).optional(),
+  tagIds: z.array(z.string().uuid()).optional(),
 });
 
 export type ClothingItemFormValues = z.infer<typeof schema>;
@@ -137,6 +145,8 @@ export function ClothingItemForm({
   const categories = useCategories();
   const colors = useColors();
   const occasions = useOccasions();
+  const tags = useTags();
+  const createTag = useCreateTag();
   const uploadImage = useUploadClothingImage();
 
   // Imagen: uri local (preview) + url pública ya subida al backend.
@@ -207,19 +217,16 @@ export function ClothingItemForm({
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useForm<ClothingItemFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { name: '', occasionIds: [], ...defaultValues },
+    mode: 'onChange',
+    defaultValues: { name: '', occasionIds: [], tagIds: [], ...defaultValues },
   });
 
   const categoryOptions: ChipOption[] = (categories.data ?? []).map((c) => ({
     id: c.id,
     label: `${c.icon ?? ''} ${c.name}`.trim(),
-  }));
-  const colorOptions: ChipOption[] = (colors.data ?? []).map((c) => ({
-    id: c.id,
-    label: c.name,
   }));
   const occasionOptions: ChipOption[] = (occasions.data ?? []).map((o) => ({
     id: o.id,
@@ -239,8 +246,19 @@ export function ClothingItemForm({
       >
         {title}
       </Text>
-      <Pressable testID="form-header-save" onPress={submit} hitSlop={8}>
-        <Text className="text-[15px] font-semibold text-primary">Guardar</Text>
+      <Pressable
+        testID="form-header-save"
+        onPress={submit}
+        disabled={!isValid || submitting}
+        hitSlop={8}
+      >
+        <Text
+          className={`text-[15px] font-semibold ${
+            isValid && !submitting ? 'text-primary' : 'text-text-muted'
+          }`}
+        >
+          Guardar
+        </Text>
       </Pressable>
     </View>
   ) : null;
@@ -322,10 +340,10 @@ export function ClothingItemForm({
           control={control}
           name="colorId"
           render={({ field: { onChange, value } }) => (
-            <ChipGroup
-              options={colorOptions}
+            <ColorSwatchPicker
+              colors={colors.data ?? []}
               value={value}
-              onChange={(next) => onChange(next as string)}
+              onChange={onChange}
             />
           )}
         />
@@ -343,6 +361,34 @@ export function ClothingItemForm({
               onChange={(next) => onChange(next as string[])}
             />
           )}
+        />
+      </Field>
+
+      <Field label="Tags">
+        <Controller
+          control={control}
+          name="tagIds"
+          render={({ field: { onChange, value } }) => {
+            const selected = value ?? [];
+            return (
+              <TagSelector
+                tags={tags.data ?? []}
+                selectedIds={selected}
+                onToggle={(id) =>
+                  onChange(
+                    selected.includes(id)
+                      ? selected.filter((t) => t !== id)
+                      : [...selected, id],
+                  )
+                }
+                onCreate={(name) =>
+                  createTag.mutate(name, {
+                    onSuccess: (tag) => onChange([...selected, tag.id]),
+                  })
+                }
+              />
+            );
+          }}
         />
       </Field>
 
