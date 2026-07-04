@@ -86,7 +86,21 @@ case "$ACTION" in
     ensure_running
     wait_ssh
     echo ">>> desplegando rama '$BRANCH' en el host..."
-    ssh "${SSH_OPTS[@]}" "ec2-user@${EIP}" BRANCH="$BRANCH" DOMAIN="$DOMAIN" 'bash -s' <<'REMOTE' 2>&1 | grep -vE "$NOISE"
+    # Credenciales S3 de la app: se leen del .env.deploy local (gitignored, user scopeado
+    # ready-app-s3), NO del perfil deployer. Se inyectan en el .env del host EC2.
+    ENV_DEPLOY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)/apps/backend/.env.deploy"
+    S3_ACCESS_KEY=""; S3_SECRET_KEY=""
+    if [ -f "$ENV_DEPLOY" ]; then
+      set -a; . "$ENV_DEPLOY"; set +a
+      echo ">>> credenciales S3 cargadas de .env.deploy"
+    else
+      echo ">>> sin .env.deploy: la app arranca sin S3 (subir imágenes fallará)"
+    fi
+    ssh "${SSH_OPTS[@]}" "ec2-user@${EIP}" \
+      BRANCH="$BRANCH" DOMAIN="$DOMAIN" \
+      S3_BUCKET_NAME="ready-uploads" AWS_REGION="us-east-1" \
+      S3_ACCESS_KEY="$S3_ACCESS_KEY" S3_SECRET_KEY="$S3_SECRET_KEY" \
+      'bash -s' <<'REMOTE' 2>&1 | grep -vE "$NOISE"
 set -e
 cd ready
 git fetch --quiet origin
@@ -94,7 +108,15 @@ git checkout --quiet "$BRANCH"
 git pull --quiet --ff-only
 echo "HEAD: $(git log -1 --oneline)"
 cd apps/backend
-echo "DOMAIN=$DOMAIN" > .env
+# .env del host (no versionado): DOMAIN + credenciales S3 reales de la app.
+cat > .env <<ENV
+DOMAIN=$DOMAIN
+S3_BUCKET_NAME=$S3_BUCKET_NAME
+AWS_REGION=$AWS_REGION
+S3_ACCESS_KEY=$S3_ACCESS_KEY
+S3_SECRET_KEY=$S3_SECRET_KEY
+IMAGE_PUBLIC_BASE_URL=https://$DOMAIN
+ENV
 # `docker compose build` exige buildx >= 0.17; si está ausente o es muy viejo (instancias
 # bootstrapeadas antes del fix traen 0.12), cae al builder clásico. En vez de chequear la
 # versión, intentamos el build de compose y, si falla, usamos DOCKER_BUILDKIT=0 (self-healing).

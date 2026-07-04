@@ -31,6 +31,16 @@ services:
       PORT: 3000
       DATABASE_URL: postgresql://ready:${POSTGRES_PASSWORD:-ready}@postgres:5432/ready?schema=public
       MVP_USER_ID: ${MVP_USER_ID:-00000000-0000-0000-0000-000000000001}
+      # Imágenes en AWS S3 real (bucket privado ready-uploads). endpoint vacío y
+      # force_path_style false = AWS por defecto. Las llaves (user scopeado solo-S3
+      # ready-app-s3) las inyecta el deploy en el .env del host (no versionado).
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME:-ready-uploads}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      S3_ENDPOINT: ${S3_ENDPOINT:-}
+      S3_FORCE_PATH_STYLE: ${S3_FORCE_PATH_STYLE:-false}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-}
+      IMAGE_PUBLIC_BASE_URL: ${IMAGE_PUBLIC_BASE_URL:-https://${DOMAIN}}
     depends_on:
       postgres:
         condition: service_healthy
