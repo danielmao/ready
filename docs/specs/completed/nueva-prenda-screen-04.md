@@ -39,6 +39,12 @@ mockup, y usa el header nativo de navegación en lugar del propio de la pantalla
   nuevo (`POST /clothes/tags`) y lo selecciona.
 - El `Guardar` del top bar queda **gris/deshabilitado** hasta que el form es válido (no un
   segundo botón azul redundante con "Guardar prenda").
+- **Categoría** como **select desplegable** ("Elegí una categoría ▾" → hoja modal con las
+  opciones), no chips.
+- **Nombre / Descripción**: inputs blancos con borde (no relleno), con los placeholders del
+  mockup ("Ej: Camisa de lino blanca", "Añadí una nota sobre la prenda (opcional)").
+- **Edición (03)** unificada bajo el **mismo modal 04** (top bar Cancelar/Editar prenda/Guardar):
+  crear y editar comparten `ClothingItemForm` sección por sección.
 
 ## Non-goals
 
@@ -88,6 +94,9 @@ Ninguno.
 - [x] El color se elige por swatches circulares; el seleccionado queda marcado.
 - [x] Los tags se listan como chips toggleables y "+ Agregar tag" crea + selecciona uno nuevo.
 - [x] El `Guardar` del top bar está deshabilitado/gris hasta que el form es válido.
+- [x] La categoría se elige con un select desplegable (placeholder + opciones en modal).
+- [x] Nombre y Descripción son inputs blancos con borde y los placeholders del mockup.
+- [x] La edición (03) usa el mismo modal 04 (top bar), compartiendo el form con la creación.
 - [x] `npm run typecheck` + `npm test` (mobile) pasan.
 
 ## Plan de test

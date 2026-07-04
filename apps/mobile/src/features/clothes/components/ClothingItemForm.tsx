@@ -27,6 +27,7 @@ import {
 } from '../hooks/useCatalogs';
 import { useCreateTag, useUploadClothingImage } from '../hooks/useClothes';
 import { ColorSwatchPicker } from './ColorSwatchPicker';
+import { SelectField } from './SelectField';
 import { TagSelector } from './TagSelector';
 
 const schema = z.object({
@@ -277,13 +278,13 @@ export function ClothingItemForm({
         <Pressable
           onPress={chooseImageSource}
           disabled={uploadImage.isPending}
-          className="h-44 items-center justify-center overflow-hidden rounded-[18px] border border-dashed border-border bg-surface-alt"
+          className="aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-[18px] border-[1.5px] border-dashed border-border bg-surface-alt"
         >
           {imageUri ? (
             <>
               <Image
                 source={{ uri: imageUri }}
-                className="h-44 w-full"
+                className="h-full w-full"
                 resizeMode="cover"
               />
               {uploadImage.isPending ? (
@@ -313,9 +314,9 @@ export function ClothingItemForm({
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
-              placeholder="Ej. Camisa de lino blanca"
+              placeholder="Ej: Camisa de lino blanca"
               placeholderTextColor={palette.text.muted}
-              className="mt-2 rounded-[14px] bg-surface-alt px-4 py-3.5 text-[15px] text-text-primary"
+              className="mt-2 rounded-[14px] border border-border bg-surface px-4 py-3.5 text-[15px] text-text-primary"
             />
           )}
         />
@@ -326,10 +327,11 @@ export function ClothingItemForm({
           control={control}
           name="categoryId"
           render={({ field: { onChange, value } }) => (
-            <ChipGroup
+            <SelectField
               options={categoryOptions}
               value={value}
-              onChange={(next) => onChange(next as string)}
+              placeholder="Elegí una categoría"
+              onChange={onChange}
             />
           )}
         />
@@ -401,10 +403,10 @@ export function ClothingItemForm({
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
-              placeholder="Algodón, manga corta…"
+              placeholder="Añadí una nota sobre la prenda (opcional)"
               placeholderTextColor={palette.text.muted}
               multiline
-              className="mt-2 min-h-[76px] rounded-[14px] bg-surface-alt px-4 py-3.5 text-[15px] text-text-primary"
+              className="mt-2 min-h-[76px] rounded-[14px] border border-border bg-surface px-4 py-3.5 text-[15px] text-text-primary"
             />
           )}
         />

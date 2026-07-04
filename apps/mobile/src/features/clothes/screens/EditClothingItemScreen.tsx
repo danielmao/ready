@@ -33,6 +33,8 @@ export function EditClothingItemScreen({
 
   return (
     <ClothingItemForm
+      title="Editar prenda"
+      onCancel={() => navigation.goBack()}
       submitLabel="Guardar cambios"
       submitting={update.isPending}
       initialImageUrl={item.imageUrls?.[0] ?? null}
