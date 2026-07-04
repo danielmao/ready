@@ -129,22 +129,8 @@ export function AddClothingItemScreen({
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
-  const pickImage = async () => {
-    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!perm.granted) {
-      Alert.alert(
-        'Permiso requerido',
-        'Necesitamos acceso a tus fotos para elegir la imagen de la prenda.',
-      );
-      return;
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      quality: 0.7,
-    });
-    if (result.canceled) return;
-
-    const asset = result.assets[0];
+  // Sube el asset elegido (cámara o galería) al backend y refleja el preview.
+  const handleAsset = (asset: ImagePicker.ImagePickerAsset) => {
     setImageUri(asset.uri);
     setImageUrl(null);
     uploadImage.mutate(
@@ -159,6 +145,49 @@ export function AddClothingItemScreen({
           Alert.alert('Error', 'No se pudo subir la imagen. Probá de nuevo.'),
       },
     );
+  };
+
+  const takePhoto = async () => {
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert(
+        'Permiso requerido',
+        'Necesitamos acceso a la cámara para tomar la foto de la prenda.',
+      );
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      quality: 0.7,
+    });
+    if (result.canceled) return;
+    handleAsset(result.assets[0]);
+  };
+
+  const pickImage = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert(
+        'Permiso requerido',
+        'Necesitamos acceso a tus fotos para elegir la imagen de la prenda.',
+      );
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.7,
+    });
+    if (result.canceled) return;
+    handleAsset(result.assets[0]);
+  };
+
+  // Menú de origen de la imagen: cámara o galería.
+  const chooseImageSource = () => {
+    Alert.alert('Foto de la prenda', '¿De dónde querés sacar la imagen?', [
+      { text: 'Tomar foto', onPress: () => void takePhoto() },
+      { text: 'Elegir de galería', onPress: () => void pickImage() },
+      { text: 'Cancelar', style: 'cancel' },
+    ]);
   };
 
   const {
@@ -206,7 +235,7 @@ export function AddClothingItemScreen({
       <View className="mb-5">
         <Text className="text-sm font-semibold text-text-primary">Foto</Text>
         <Pressable
-          onPress={() => void pickImage()}
+          onPress={chooseImageSource}
           disabled={uploadImage.isPending}
           className="mt-2 h-40 items-center justify-center overflow-hidden rounded-xl border border-dashed border-border bg-surface"
         >
@@ -227,7 +256,7 @@ export function AddClothingItemScreen({
             <View className="items-center">
               <Text className="text-3xl">📷</Text>
               <Text className="mt-1 text-sm text-text-secondary">
-                Elegí una foto (opcional)
+                Tomá o elegí una foto (opcional)
               </Text>
             </View>
           )}

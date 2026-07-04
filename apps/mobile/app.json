@@ -20,7 +20,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Ready accede a tus fotos para elegir la imagen de una prenda."
+          "photosPermission": "Ready accede a tus fotos para elegir la imagen de una prenda.",
+          "cameraPermission": "Ready accede a la cámara para tomar la foto de una prenda."
         }
       ]
     ]
