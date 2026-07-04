@@ -24,7 +24,7 @@ const EXTENSION_BY_MIME: Record<string, string> = {
  * Adapter S3 del puerto ImageStorageService. Funciona igual contra AWS S3 (prod) y MinIO
  * (dev local) — sólo cambian las env vars. Config por `process.env` (no hay @nestjs/config
  * en el MVP; mismo patrón que el resto del backend):
- *   S3_BUCKET, S3_REGION, S3_ENDPOINT (MinIO), S3_ACCESS_KEY/S3_SECRET_KEY,
+ *   S3_BUCKET_NAME, AWS_REGION, S3_ENDPOINT (MinIO), S3_ACCESS_KEY/S3_SECRET_KEY,
  *   S3_FORCE_PATH_STYLE (true para MinIO), IMAGE_PUBLIC_BASE_URL.
  * La URL pública apunta al propio API (`/api/clothes/images/:key`), que sirve el objeto:
  * así el bucket puede quedar privado y no se expone el storage a la red.

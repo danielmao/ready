@@ -14,3 +14,6 @@ sabe el camino.
 - [`01-primer-deploy-aws.md`](01-primer-deploy-aws.md) — Tu primer despliegue en AWS:
   una API NestJS en EC2 con Docker + Caddy (HTTPS automático), de cero a una URL
   pública, incluyendo los errores que aparecieron en el camino.
+- [`02-imagenes-en-s3.md`](02-imagenes-en-s3.md) — Guardar imágenes en un bucket
+  privado de S3 (y MinIO en local con el mismo código) desde una API NestJS
+  hexagonal: puerto/adapter, servir por la API, y el IAM scopeado fuera de git.
