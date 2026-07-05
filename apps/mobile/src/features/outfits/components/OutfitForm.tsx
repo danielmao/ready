@@ -162,10 +162,8 @@ export function OutfitForm({
     defaultOutfit,
   });
 
-  const countLabel =
-    flags.selectedCount < 2
-      ? `${flags.selectedCount} elegidas · mínimo 2`
-      : `${flags.selectedCount} elegidas`;
+  // El diseño muestra siempre "· mínimo 2" como recordatorio del requisito.
+  const countLabel = `${flags.selectedCount} elegidas · mínimo 2`;
 
   const emptyWardrobe = data.clothes.length === 0 && !flags.isFiltering;
   const noResults = data.clothes.length === 0 && flags.isFiltering;

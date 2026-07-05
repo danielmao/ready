@@ -1,4 +1,5 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Text } from 'react-native';
 
 import { ClothesListScreen } from '../features/clothes/screens/ClothesListScreen';
 import { OutfitsListScreen } from '../features/outfits/screens/OutfitsListScreen';
@@ -9,9 +10,15 @@ import type { MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
+const LABELS: Record<keyof MainTabParamList, string> = {
+  ArmarioTab: 'Armario',
+  OutfitsTab: 'Outfits',
+  PerfilTab: 'Perfil',
+};
+
 /**
  * Tabs inferiores del diseño Ready.dc (Armario · Outfits · Perfil). Barra flotante clara con
- * ícono + label; activo en petróleo `#003B4A`, inactivo en gris `#90989C`.
+ * ícono + label; activo en petróleo `#003B4A` (label en negrita), inactivo en gris `#90989C`.
  */
 export function MainTabs() {
   return (
@@ -28,27 +35,21 @@ export function MainTabs() {
           borderTopColor: '#E4DCD3',
           borderTopWidth: 1,
         },
-        tabBarLabelStyle: { fontSize: 11 },
         tabBarIcon: ({ color }) => (
           <TabBarIcon name={route.name} color={color} />
         ),
+        tabBarLabel: ({ color, focused }) => (
+          <Text
+            style={{ fontSize: 11, color, fontWeight: focused ? '600' : '400' }}
+          >
+            {LABELS[route.name]}
+          </Text>
+        ),
       })}
     >
-      <Tab.Screen
-        name="ArmarioTab"
-        component={ClothesListScreen}
-        options={{ tabBarLabel: 'Armario' }}
-      />
-      <Tab.Screen
-        name="OutfitsTab"
-        component={OutfitsListScreen}
-        options={{ tabBarLabel: 'Outfits' }}
-      />
-      <Tab.Screen
-        name="PerfilTab"
-        component={ProfileScreen}
-        options={{ tabBarLabel: 'Perfil' }}
-      />
+      <Tab.Screen name="ArmarioTab" component={ClothesListScreen} />
+      <Tab.Screen name="OutfitsTab" component={OutfitsListScreen} />
+      <Tab.Screen name="PerfilTab" component={ProfileScreen} />
     </Tab.Navigator>
   );
 }

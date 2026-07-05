@@ -66,14 +66,16 @@ export function OutfitCard({ outfit, onPress }: OutfitCardProps) {
           {items.length} prendas
         </Text>
         {outfit.occasions && outfit.occasions.length > 0 ? (
-          <View className="flex-row flex-wrap justify-end gap-1.5">
-            {outfit.occasions.map((o) => (
-              <Text
+          <View className="flex-row justify-end gap-1.5">
+            {outfit.occasions.slice(0, 2).map((o) => (
+              <View
                 key={o.id}
-                className="rounded-[13px] bg-primary-soft px-[11px] py-1 text-xs text-primary"
+                className="h-[26px] justify-center rounded-[13px] bg-primary-soft px-[11px]"
               >
-                {o.name}
-              </Text>
+                <Text className="text-xs text-primary" numberOfLines={1}>
+                  {o.name}
+                </Text>
+              </View>
             ))}
           </View>
         ) : null}
