@@ -41,13 +41,19 @@ export function EditOutfitScreen({
       defaultOutfit={outfit}
       submitting={updateOutfit.isPending}
       onCancel={() => navigation.goBack()}
+      onGoToWardrobe={() =>
+        navigation.navigate('MainTabs', { screen: 'ArmarioTab' })
+      }
       onSubmit={(input) =>
         updateOutfit.mutate(
           { id, input },
           {
             onSuccess: () => navigation.goBack(),
             onError: () =>
-              Alert.alert('Error', 'No se pudo guardar el outfit. Intentá de nuevo.'),
+              Alert.alert(
+                'Error',
+                'No se pudo guardar el outfit. Intentá de nuevo.',
+              ),
           },
         )
       }

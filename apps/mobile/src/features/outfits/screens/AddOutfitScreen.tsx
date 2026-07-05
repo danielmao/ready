@@ -16,11 +16,17 @@ export function AddOutfitScreen({
       submitLabel="Guardar outfit"
       submitting={createOutfit.isPending}
       onCancel={() => navigation.goBack()}
+      onGoToWardrobe={() =>
+        navigation.navigate('MainTabs', { screen: 'ArmarioTab' })
+      }
       onSubmit={(input) =>
         createOutfit.mutate(input, {
           onSuccess: () => navigation.goBack(),
           onError: () =>
-            Alert.alert('Error', 'No se pudo crear el outfit. Intentá de nuevo.'),
+            Alert.alert(
+              'Error',
+              'No se pudo crear el outfit. Intentá de nuevo.',
+            ),
         })
       }
     />

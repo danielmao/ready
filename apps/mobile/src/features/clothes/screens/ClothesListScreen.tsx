@@ -10,7 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../shared/components/Button';
 import { EmptyState } from '../../../shared/components/EmptyState';
-import type { RootStackScreenProps } from '../../../navigation/types';
+import type { MainTabScreenProps } from '../../../navigation/types';
 import { colors, fonts } from '../../../theme';
 import { ClothingCard } from '../components/ClothingCard';
 import { FilterChips } from '../components/FilterChips';
@@ -25,7 +25,7 @@ import { useClothes } from '../hooks/useClothes';
  */
 export function ClothesListScreen({
   navigation,
-}: RootStackScreenProps<'ClothesList'>) {
+}: MainTabScreenProps<'ArmarioTab'>) {
   const [search, setSearch] = useState('');
   const [categoryId, setCategoryId] = useState<string | null>(null);
 
@@ -41,18 +41,9 @@ export function ClothesListScreen({
   const header = (
     <View>
       <View className="px-6 pb-1 pt-3">
-        <View className="flex-row items-center justify-between">
-          <Text className="text-sm font-medium uppercase tracking-[3px] text-secondary">
-            Ready
-          </Text>
-          <Pressable
-            testID="go-to-outfits"
-            onPress={() => navigation.navigate('OutfitsList')}
-            hitSlop={8}
-          >
-            <Text className="text-sm font-medium text-primary">Mis outfits ›</Text>
-          </Pressable>
-        </View>
+        <Text className="text-sm font-medium uppercase tracking-[3px] text-secondary">
+          Ready
+        </Text>
         <Text
           className="mt-1.5 text-[42px] leading-none text-text-primary"
           style={{ fontFamily: fonts.serif }}
