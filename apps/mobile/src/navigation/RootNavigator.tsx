@@ -5,6 +5,10 @@ import { AddClothingItemScreen } from '../features/clothes/screens/AddClothingIt
 import { ClothesListScreen } from '../features/clothes/screens/ClothesListScreen';
 import { ClothingDetailScreen } from '../features/clothes/screens/ClothingDetailScreen';
 import { EditClothingItemScreen } from '../features/clothes/screens/EditClothingItemScreen';
+import { AddOutfitScreen } from '../features/outfits/screens/AddOutfitScreen';
+import { EditOutfitScreen } from '../features/outfits/screens/EditOutfitScreen';
+import { OutfitDetailScreen } from '../features/outfits/screens/OutfitDetailScreen';
+import { OutfitsListScreen } from '../features/outfits/screens/OutfitsListScreen';
 import { colors } from '../theme';
 import type { RootStackParamList } from './types';
 
@@ -38,6 +42,26 @@ export function RootNavigator() {
         <Stack.Screen
           name="EditClothingItem"
           component={EditClothingItemScreen}
+          options={{ headerShown: false, presentation: 'modal' }}
+        />
+        <Stack.Screen
+          name="OutfitsList"
+          component={OutfitsListScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="OutfitDetail"
+          component={OutfitDetailScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="AddOutfit"
+          component={AddOutfitScreen}
+          options={{ headerShown: false, presentation: 'modal' }}
+        />
+        <Stack.Screen
+          name="EditOutfit"
+          component={EditOutfitScreen}
           options={{ headerShown: false, presentation: 'modal' }}
         />
       </Stack.Navigator>
