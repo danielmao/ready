@@ -13,6 +13,7 @@ export function AddOutfitScreen({
   return (
     <OutfitForm
       title="Nuevo outfit"
+      variant="sheet"
       submitLabel="Guardar outfit"
       submitting={createOutfit.isPending}
       onCancel={() => navigation.goBack()}

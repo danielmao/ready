@@ -28,6 +28,12 @@ interface OutfitFormProps {
   onCancel: () => void;
   /** Navega al armario (CTA "Ir a mi armario" del estado vacío). Por defecto vuelve atrás. */
   onGoToWardrobe?: () => void;
+  /**
+   * Header según diseño, igual que `ClothingItemForm`:
+   * - `sheet` (crear): grabber + ✕ arriba-izq; guardado SOLO en el botón inferior.
+   * - `bar` (editar): Cancelar / título / Guardar (arriba-der); sin botón inferior.
+   */
+  variant?: 'sheet' | 'bar';
 }
 
 /** Chip de ocasión seleccionable (compacto, con ✓ al elegir). */
@@ -156,6 +162,7 @@ export function OutfitForm({
   title,
   onCancel,
   onGoToWardrobe,
+  variant = 'sheet',
 }: OutfitFormProps) {
   const { state, data, actions, flags } = useOutfitForm({
     onSubmit,
@@ -168,10 +175,10 @@ export function OutfitForm({
   const emptyWardrobe = data.clothes.length === 0 && !flags.isFiltering;
   const noResults = data.clothes.length === 0 && flags.isFiltering;
 
-  return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
-      {/* Barra título */}
-      <View className="flex-row items-center justify-between px-[22px] pb-3 pt-1.5">
+  // Header espejo de `ClothingItemForm`: bar (editar) o sheet (crear).
+  const header =
+    variant === 'bar' ? (
+      <View className="flex-row items-center justify-between px-[22px] pb-3.5 pt-1.5">
         <Pressable onPress={onCancel} hitSlop={8}>
           <Text className="text-[15px] text-text-secondary">Cancelar</Text>
         </Pressable>
@@ -181,11 +188,52 @@ export function OutfitForm({
         >
           {title}
         </Text>
-        <View className="w-[52px]" />
+        <Pressable
+          testID="outfit-header-save"
+          onPress={actions.submit}
+          disabled={!flags.canSubmit || submitting}
+          hitSlop={8}
+        >
+          <Text
+            className={`text-[15px] font-semibold ${
+              flags.canSubmit && !submitting
+                ? 'text-primary'
+                : 'text-text-muted'
+            }`}
+          >
+            Guardar
+          </Text>
+        </Pressable>
       </View>
+    ) : (
+      <View className="pt-2.5">
+        <View className="mx-auto h-[5px] w-[38px] rounded-[3px] bg-border" />
+        <View className="flex-row items-center justify-between px-[22px] pb-3 pt-3.5">
+          <Pressable
+            testID="outfit-sheet-close"
+            onPress={onCancel}
+            className="h-[30px] w-[30px] items-center justify-center rounded-full bg-surface-alt"
+          >
+            <Text className="text-base text-text-secondary">✕</Text>
+          </Pressable>
+          <Text
+            className="text-2xl text-text-primary"
+            style={{ fontFamily: fonts.serif }}
+          >
+            {title}
+          </Text>
+          <View className="w-[30px]" />
+        </View>
+        <View className="h-px bg-[#E4DCD3]" />
+      </View>
+    );
+
+  return (
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+      {header}
 
       {/* Nombre + ocasiones (compacto, fijo) */}
-      <View className="px-[22px] pb-3">
+      <View className="px-[22px] pb-3 pt-3">
         <TextInput
           value={state.name}
           onChangeText={actions.setName}
@@ -351,15 +399,17 @@ export function OutfitForm({
         />
       )}
 
-      {/* CTA fijo */}
-      <View className="absolute bottom-0 left-0 right-0 bg-background px-[22px] pb-8 pt-3">
-        <Button
-          label={submitLabel}
-          onPress={actions.submit}
-          loading={submitting}
-          disabled={!flags.canSubmit}
-        />
-      </View>
+      {/* CTA fijo (solo sheet/crear; en bar/editar el Guardar va en el header) */}
+      {variant !== 'bar' ? (
+        <View className="absolute bottom-0 left-0 right-0 bg-background px-[22px] pb-8 pt-3">
+          <Button
+            label={submitLabel}
+            onPress={actions.submit}
+            loading={submitting}
+            disabled={!flags.canSubmit}
+          />
+        </View>
+      ) : null}
     </SafeAreaView>
   );
 }
