@@ -29,3 +29,12 @@ export function useOccasions() {
     staleTime: 5 * 60_000,
   });
 }
+
+/** Tags del usuario (para el selector de tags del form). */
+export function useTags() {
+  return useQuery({
+    queryKey: clothesKeys.tags,
+    queryFn: () => clothesApi.tags(),
+    staleTime: 5 * 60_000,
+  });
+}

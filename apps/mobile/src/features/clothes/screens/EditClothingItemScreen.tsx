@@ -33,6 +33,8 @@ export function EditClothingItemScreen({
 
   return (
     <ClothingItemForm
+      title="Editar prenda"
+      onCancel={() => navigation.goBack()}
       submitLabel="Guardar cambios"
       submitting={update.isPending}
       initialImageUrl={item.imageUrls?.[0] ?? null}
@@ -42,6 +44,7 @@ export function EditClothingItemScreen({
         colorId: item.colorId,
         description: item.description ?? undefined,
         occasionIds: item.occasions?.map((o) => o.id) ?? [],
+        tagIds: item.tags?.map((t) => t.id) ?? [],
       }}
       onSubmit={(values, imageUrl) =>
         update.mutate(
@@ -53,6 +56,7 @@ export function EditClothingItemScreen({
               colorId: values.colorId,
               description: values.description || undefined,
               occasionIds: values.occasionIds,
+              tagIds: values.tagIds,
               imageUrls: imageUrl ? [imageUrl] : undefined,
             },
           },

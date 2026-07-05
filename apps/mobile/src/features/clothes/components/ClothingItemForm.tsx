@@ -14,11 +14,21 @@ import {
 } from 'react-native';
 import { z } from 'zod';
 
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { Button } from '../../../shared/components/Button';
-import { colors as palette } from '../../../theme';
+import { colors as palette, fonts } from '../../../theme';
 import { resolveImageUrl } from '../../../shared/utils/resolveImageUrl';
-import { useCategories, useColors, useOccasions } from '../hooks/useCatalogs';
-import { useUploadClothingImage } from '../hooks/useClothes';
+import {
+  useCategories,
+  useColors,
+  useOccasions,
+  useTags,
+} from '../hooks/useCatalogs';
+import { useCreateTag, useUploadClothingImage } from '../hooks/useClothes';
+import { ColorSwatchPicker } from './ColorSwatchPicker';
+import { SelectField } from './SelectField';
+import { TagSelector } from './TagSelector';
 
 const schema = z.object({
   name: z.string().trim().min(1, 'El nombre es obligatorio'),
@@ -26,6 +36,7 @@ const schema = z.object({
   colorId: z.string().uuid('Elegí un color'),
   description: z.string().trim().optional(),
   occasionIds: z.array(z.string().uuid()).optional(),
+  tagIds: z.array(z.string().uuid()).optional(),
 });
 
 export type ClothingItemFormValues = z.infer<typeof schema>;
@@ -36,6 +47,14 @@ interface ClothingItemFormProps {
   defaultValues?: Partial<ClothingItemFormValues>;
   initialImageUrl?: string | null;
   submitting?: boolean;
+  title?: string;
+  onCancel?: () => void;
+  /**
+   * Header + guardado según diseño:
+   * - `sheet` (crear, 04): grabber + ✕ arriba-izq; guardado SOLO en el botón inferior.
+   * - `bar` (editar, 03): Cancelar / título / Guardar (arriba-der); sin botón inferior.
+   */
+  variant?: 'sheet' | 'bar';
 }
 
 interface ChipOption {
@@ -126,10 +145,15 @@ export function ClothingItemForm({
   defaultValues,
   initialImageUrl = null,
   submitting = false,
+  title,
+  onCancel,
+  variant = 'sheet',
 }: ClothingItemFormProps) {
   const categories = useCategories();
   const colors = useColors();
   const occasions = useOccasions();
+  const tags = useTags();
+  const createTag = useCreateTag();
   const uploadImage = useUploadClothingImage();
 
   // Imagen: uri local (preview) + url pública ya subida al backend.
@@ -200,19 +224,16 @@ export function ClothingItemForm({
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useForm<ClothingItemFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { name: '', occasionIds: [], ...defaultValues },
+    mode: 'onChange',
+    defaultValues: { name: '', occasionIds: [], tagIds: [], ...defaultValues },
   });
 
   const categoryOptions: ChipOption[] = (categories.data ?? []).map((c) => ({
     id: c.id,
     label: `${c.icon ?? ''} ${c.name}`.trim(),
-  }));
-  const colorOptions: ChipOption[] = (colors.data ?? []).map((c) => ({
-    id: c.id,
-    label: c.name,
   }));
   const occasionOptions: ChipOption[] = (occasions.data ?? []).map((o) => ({
     id: o.id,
@@ -221,11 +242,68 @@ export function ClothingItemForm({
 
   const submit = handleSubmit((values) => onSubmit(values, imageUrl));
 
+  const header =
+    variant === 'bar' ? (
+      // Diseño 03 (editar): Cancelar / título / Guardar (arriba-derecha).
+      <View className="flex-row items-center justify-between px-5 pb-3 pt-1">
+        <Pressable onPress={onCancel} hitSlop={8}>
+          <Text className="text-[15px] text-text-secondary">Cancelar</Text>
+        </Pressable>
+        <Text
+          className="text-[22px] text-text-primary"
+          style={{ fontFamily: fonts.serif }}
+        >
+          {title}
+        </Text>
+        <Pressable
+          testID="form-header-save"
+          onPress={submit}
+          disabled={!isValid || submitting}
+          hitSlop={8}
+        >
+          <Text
+            className={`text-[15px] font-semibold ${
+              isValid && !submitting ? 'text-primary' : 'text-text-muted'
+            }`}
+          >
+            Guardar
+          </Text>
+        </Pressable>
+      </View>
+    ) : (
+      // Diseño 04 (crear): bottom-sheet — grabber + ✕ arriba-izquierda + título.
+      <View className="pt-2.5">
+        <View className="mx-auto h-[5px] w-[38px] rounded-[3px] bg-border" />
+        <View className="flex-row items-center justify-between px-5 pb-3 pt-3.5">
+          <Pressable
+            testID="sheet-close"
+            onPress={onCancel}
+            className="h-[30px] w-[30px] items-center justify-center rounded-full bg-surface-alt"
+          >
+            <Text className="text-base text-text-secondary">✕</Text>
+          </Pressable>
+          <Text
+            className="text-2xl text-text-primary"
+            style={{ fontFamily: fonts.serif }}
+          >
+            {title}
+          </Text>
+          <View className="w-[30px]" />
+        </View>
+        <View className="h-px bg-border" />
+      </View>
+    );
+
   return (
-    <ScrollView
-      className="flex-1 bg-background"
-      contentContainerClassName="p-6 pb-10"
-    >
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
+      {title ? header : null}
+      <ScrollView
+        className="flex-1 bg-background"
+        contentContainerClassName="px-6 pb-8 pt-4"
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+        automaticallyAdjustKeyboardInsets
+      >
       <View className="mb-5">
         <Text className="mb-2 text-xs uppercase tracking-wider text-text-muted">
           Foto
@@ -233,13 +311,13 @@ export function ClothingItemForm({
         <Pressable
           onPress={chooseImageSource}
           disabled={uploadImage.isPending}
-          className="h-44 items-center justify-center overflow-hidden rounded-[18px] border border-dashed border-border bg-surface-alt"
+          className="aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-[18px] border-[1.5px] border-dashed border-border bg-surface-alt"
         >
           {imageUri ? (
             <>
               <Image
                 source={{ uri: imageUri }}
-                className="h-44 w-full"
+                className="h-full w-full"
                 resizeMode="cover"
               />
               {uploadImage.isPending ? (
@@ -249,11 +327,12 @@ export function ClothingItemForm({
               ) : null}
             </>
           ) : (
-            <View className="items-center">
-              <Text className="text-3xl">📷</Text>
-              <Text className="mt-1 text-sm text-text-secondary">
-                Tomá o elegí una foto (opcional)
-              </Text>
+            <View className="items-center gap-2.5">
+              <View className="h-[52px] w-[52px] items-center justify-center rounded-full bg-primary-soft">
+                <Text className="text-2xl text-primary">＋</Text>
+              </View>
+              <Text className="text-sm text-text-secondary">Agregá una foto</Text>
+              <Text className="text-xs text-text-muted">Cámara o galería</Text>
             </View>
           )}
         </Pressable>
@@ -268,7 +347,7 @@ export function ClothingItemForm({
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
-              placeholder="Ej. Camisa de lino blanca"
+              placeholder="Ej: Camisa de lino blanca"
               placeholderTextColor={palette.text.muted}
               className="mt-2 rounded-[14px] bg-surface-alt px-4 py-3.5 text-[15px] text-text-primary"
             />
@@ -281,10 +360,11 @@ export function ClothingItemForm({
           control={control}
           name="categoryId"
           render={({ field: { onChange, value } }) => (
-            <ChipGroup
+            <SelectField
               options={categoryOptions}
               value={value}
-              onChange={(next) => onChange(next as string)}
+              placeholder="Elegí una categoría"
+              onChange={onChange}
             />
           )}
         />
@@ -295,10 +375,10 @@ export function ClothingItemForm({
           control={control}
           name="colorId"
           render={({ field: { onChange, value } }) => (
-            <ChipGroup
-              options={colorOptions}
+            <ColorSwatchPicker
+              colors={colors.data ?? []}
               value={value}
-              onChange={(next) => onChange(next as string)}
+              onChange={onChange}
             />
           )}
         />
@@ -319,6 +399,34 @@ export function ClothingItemForm({
         />
       </Field>
 
+      <Field label="Tags">
+        <Controller
+          control={control}
+          name="tagIds"
+          render={({ field: { onChange, value } }) => {
+            const selected = value ?? [];
+            return (
+              <TagSelector
+                tags={tags.data ?? []}
+                selectedIds={selected}
+                onToggle={(id) =>
+                  onChange(
+                    selected.includes(id)
+                      ? selected.filter((t) => t !== id)
+                      : [...selected, id],
+                  )
+                }
+                onCreate={(name) =>
+                  createTag.mutate(name, {
+                    onSuccess: (tag) => onChange([...selected, tag.id]),
+                  })
+                }
+              />
+            );
+          }}
+        />
+      </Field>
+
       <Field label="Descripción">
         <Controller
           control={control}
@@ -328,7 +436,7 @@ export function ClothingItemForm({
               value={value}
               onChangeText={onChange}
               onBlur={onBlur}
-              placeholder="Algodón, manga corta…"
+              placeholder="Añadí una nota sobre la prenda (opcional)"
               placeholderTextColor={palette.text.muted}
               multiline
               className="mt-2 min-h-[76px] rounded-[14px] bg-surface-alt px-4 py-3.5 text-[15px] text-text-primary"
@@ -337,12 +445,17 @@ export function ClothingItemForm({
         />
       </Field>
 
-      <Button
-        label={submitLabel}
-        onPress={submit}
-        loading={submitting}
-        disabled={uploadImage.isPending}
-      />
-    </ScrollView>
+      </ScrollView>
+      {variant !== 'bar' ? (
+        <View className="px-6 pb-8 pt-3">
+          <Button
+            label={submitLabel}
+            onPress={submit}
+            loading={submitting}
+            disabled={uploadImage.isPending}
+          />
+        </View>
+      ) : null}
+    </SafeAreaView>
   );
 }

@@ -12,6 +12,8 @@ export function AddClothingItemScreen({
 
   return (
     <ClothingItemForm
+      title="Nueva prenda"
+      onCancel={() => navigation.goBack()}
       submitLabel="Guardar prenda"
       submitting={createItem.isPending}
       onSubmit={(values, imageUrl) =>
@@ -22,6 +24,7 @@ export function AddClothingItemScreen({
             colorId: values.colorId,
             description: values.description || undefined,
             occasionIds: values.occasionIds,
+            tagIds: values.tagIds,
             imageUrls: imageUrl ? [imageUrl] : undefined,
           },
           {

@@ -7,6 +7,7 @@ import type {
   LocalImageFile,
   Occasion,
   Paginated,
+  Tag,
   UpdateClothingItemInput,
   UploadedImage,
 } from '../../../domain/models/clothing';
@@ -86,6 +87,18 @@ export const clothesApi = {
 
   async occasions(): Promise<Occasion[]> {
     const { data } = await apiClient.get<Occasion[]>('/clothes/occasions');
+    return data;
+  },
+
+  async tags(search?: string): Promise<Tag[]> {
+    const { data } = await apiClient.get<Tag[]>('/clothes/tags', {
+      params: search ? { search } : undefined,
+    });
+    return data;
+  },
+
+  async createTag(name: string): Promise<Tag> {
+    const { data } = await apiClient.post<Tag>('/clothes/tags', { name });
     return data;
   },
 };

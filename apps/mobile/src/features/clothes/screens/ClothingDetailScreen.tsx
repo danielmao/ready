@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -7,6 +8,7 @@ import {
   View,
 } from 'react-native';
 
+import { ConfirmDialog } from '../../../shared/components/ConfirmDialog';
 import { EmptyState } from '../../../shared/components/EmptyState';
 import type { RootStackScreenProps } from '../../../navigation/types';
 import { colors, fonts } from '../../../theme';
@@ -42,6 +44,7 @@ export function ClothingDetailScreen({
   const { id } = route.params;
   const { data: item, isLoading, isError } = useClothingItem(id);
   const archive = useArchiveClothingItem();
+  const [confirmArchive, setConfirmArchive] = useState(false);
 
   if (isLoading) {
     return (
@@ -68,6 +71,7 @@ export function ClothingDetailScreen({
 
   const handleArchive = () => {
     archive.mutate(item.id);
+    setConfirmArchive(false);
     navigation.goBack();
   };
 
@@ -184,7 +188,7 @@ export function ClothingDetailScreen({
             <Text className="text-[15px] font-medium text-text-primary">Editar</Text>
           </Pressable>
           <Pressable
-            onPress={handleArchive}
+            onPress={() => setConfirmArchive(true)}
             disabled={archive.isPending}
             className="h-[50px] flex-1 items-center justify-center rounded-2xl border border-error"
           >
@@ -192,6 +196,16 @@ export function ClothingDetailScreen({
           </Pressable>
         </View>
       </View>
+
+      <ConfirmDialog
+        visible={confirmArchive}
+        title="¿Archivar esta prenda?"
+        message="¿Estás seguro que deseás archivar esta prenda? Podrás recuperarla desde tu archivo cuando quieras."
+        confirmLabel="Sí, archivar"
+        confirming={archive.isPending}
+        onConfirm={handleArchive}
+        onCancel={() => setConfirmArchive(false)}
+      />
     </View>
   );
 }

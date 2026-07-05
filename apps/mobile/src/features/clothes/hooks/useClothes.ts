@@ -19,6 +19,7 @@ export const clothesKeys = {
   categories: ['clothes', 'categories'] as const,
   colors: ['clothes', 'colors'] as const,
   occasions: ['clothes', 'occasions'] as const,
+  tags: ['clothes', 'tags'] as const,
 };
 
 /** Lista de prendas (estado servidor). */
@@ -63,6 +64,17 @@ export function useUpdateClothingItem() {
     onSuccess: (_data, { id }) => {
       void queryClient.invalidateQueries({ queryKey: clothesKeys.all });
       void queryClient.invalidateQueries({ queryKey: clothesKeys.detail(id) });
+    },
+  });
+}
+
+/** Crea un tag del usuario e invalida el catálogo de tags. */
+export function useCreateTag() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (name: string) => clothesApi.createTag(name),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: clothesKeys.tags });
     },
   });
 }
