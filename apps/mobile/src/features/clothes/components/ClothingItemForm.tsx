@@ -1,10 +1,6 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as ImagePicker from 'expo-image-picker';
-import { useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller } from 'react-hook-form';
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -12,34 +8,21 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { z } from 'zod';
-
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../shared/components/Button';
 import { colors as palette, fonts } from '../../../theme';
-import { resolveImageUrl } from '../../../shared/utils/resolveImageUrl';
 import {
-  useCategories,
-  useColors,
-  useOccasions,
-  useTags,
-} from '../hooks/useCatalogs';
-import { useCreateTag, useUploadClothingImage } from '../hooks/useClothes';
+  useClothingItemForm,
+  type ChipOption,
+  type ClothingItemFormValues,
+} from '../hooks/useClothingItemForm';
 import { ColorSwatchPicker } from './ColorSwatchPicker';
 import { SelectField } from './SelectField';
 import { TagSelector } from './TagSelector';
 
-const schema = z.object({
-  name: z.string().trim().min(1, 'El nombre es obligatorio'),
-  categoryId: z.string().uuid('Elegí una categoría'),
-  colorId: z.string().uuid('Elegí un color'),
-  description: z.string().trim().optional(),
-  occasionIds: z.array(z.string().uuid()).optional(),
-  tagIds: z.array(z.string().uuid()).optional(),
-});
-
-export type ClothingItemFormValues = z.infer<typeof schema>;
+// Re-export para consumidores que ya lo importaban desde acá (Add/Edit screens).
+export type { ClothingItemFormValues } from '../hooks/useClothingItemForm';
 
 interface ClothingItemFormProps {
   submitLabel: string;
@@ -55,11 +38,6 @@ interface ClothingItemFormProps {
    * - `bar` (editar, 03): Cancelar / título / Guardar (arriba-der); sin botón inferior.
    */
   variant?: 'sheet' | 'bar';
-}
-
-interface ChipOption {
-  id: string;
-  label: string;
 }
 
 /** Selector de chips (una o varias). RN puro; reemplaza pickers nativos en el MVP. */
@@ -136,8 +114,9 @@ function Field({
 }
 
 /**
- * Formulario compartido de prenda (crear y editar), estilo diseño 03. RHF + Zod.
- * La persistencia la decide el consumidor vía `onSubmit(values, imageUrl)`.
+ * Formulario compartido de prenda (crear y editar), estilo diseño 03/04. Vista presentacional:
+ * toda la lógica (RHF/Zod, subida de imagen, permisos, mapeos) vive en `useClothingItemForm`
+ * (`docs/CODING-CONVENTIONS.md §5`). La persistencia la decide el consumidor vía `onSubmit`.
  */
 export function ClothingItemForm({
   submitLabel,
@@ -149,98 +128,12 @@ export function ClothingItemForm({
   onCancel,
   variant = 'sheet',
 }: ClothingItemFormProps) {
-  const categories = useCategories();
-  const colors = useColors();
-  const occasions = useOccasions();
-  const tags = useTags();
-  const createTag = useCreateTag();
-  const uploadImage = useUploadClothingImage();
-
-  // Imagen: uri local (preview) + url pública ya subida al backend.
-  const [imageUri, setImageUri] = useState<string | null>(
-    initialImageUrl ? resolveImageUrl(initialImageUrl) : null,
-  );
-  const [imageUrl, setImageUrl] = useState<string | null>(initialImageUrl);
-
-  const handleAsset = (asset: ImagePicker.ImagePickerAsset) => {
-    setImageUri(asset.uri);
-    setImageUrl(null);
-    uploadImage.mutate(
-      {
-        uri: asset.uri,
-        name: asset.fileName ?? asset.uri.split('/').pop() ?? 'photo.jpg',
-        type: asset.mimeType ?? 'image/jpeg',
-      },
-      {
-        onSuccess: (img) => setImageUrl(img.url),
-        onError: () =>
-          Alert.alert('Error', 'No se pudo subir la imagen. Probá de nuevo.'),
-      },
-    );
-  };
-
-  const takePhoto = async () => {
-    const perm = await ImagePicker.requestCameraPermissionsAsync();
-    if (!perm.granted) {
-      Alert.alert(
-        'Permiso requerido',
-        'Necesitamos acceso a la cámara para tomar la foto de la prenda.',
-      );
-      return;
-    }
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ['images'],
-      quality: 0.7,
-    });
-    if (result.canceled) return;
-    handleAsset(result.assets[0]);
-  };
-
-  const pickImage = async () => {
-    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!perm.granted) {
-      Alert.alert(
-        'Permiso requerido',
-        'Necesitamos acceso a tus fotos para elegir la imagen de la prenda.',
-      );
-      return;
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      quality: 0.7,
-    });
-    if (result.canceled) return;
-    handleAsset(result.assets[0]);
-  };
-
-  const chooseImageSource = () => {
-    Alert.alert('Foto de la prenda', '¿De dónde querés sacar la imagen?', [
-      { text: 'Tomar foto', onPress: () => void takePhoto() },
-      { text: 'Elegir de galería', onPress: () => void pickImage() },
-      { text: 'Cancelar', style: 'cancel' },
-    ]);
-  };
-
-  const {
-    control,
-    handleSubmit,
-    formState: { errors, isValid },
-  } = useForm<ClothingItemFormValues>({
-    resolver: zodResolver(schema),
-    mode: 'onChange',
-    defaultValues: { name: '', occasionIds: [], tagIds: [], ...defaultValues },
+  const { form, state, data, actions, flags } = useClothingItemForm({
+    onSubmit,
+    defaultValues,
+    initialImageUrl,
   });
-
-  const categoryOptions: ChipOption[] = (categories.data ?? []).map((c) => ({
-    id: c.id,
-    label: `${c.icon ?? ''} ${c.name}`.trim(),
-  }));
-  const occasionOptions: ChipOption[] = (occasions.data ?? []).map((o) => ({
-    id: o.id,
-    label: `${o.icon ?? ''} ${o.name}`.trim(),
-  }));
-
-  const submit = handleSubmit((values) => onSubmit(values, imageUrl));
+  const { control, errors, isValid } = form;
 
   const header =
     variant === 'bar' ? (
@@ -257,7 +150,7 @@ export function ClothingItemForm({
         </Text>
         <Pressable
           testID="form-header-save"
-          onPress={submit}
+          onPress={actions.submit}
           disabled={!isValid || submitting}
           hitSlop={8}
         >
@@ -309,18 +202,18 @@ export function ClothingItemForm({
           Foto
         </Text>
         <Pressable
-          onPress={chooseImageSource}
-          disabled={uploadImage.isPending}
+          onPress={actions.chooseImageSource}
+          disabled={flags.uploadPending}
           className="aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-[18px] border-[1.5px] border-dashed border-border bg-surface-alt"
         >
-          {imageUri ? (
+          {state.imageUri ? (
             <>
               <Image
-                source={{ uri: imageUri }}
+                source={{ uri: state.imageUri }}
                 className="h-full w-full"
                 resizeMode="cover"
               />
-              {uploadImage.isPending ? (
+              {flags.uploadPending ? (
                 <View className="absolute inset-0 items-center justify-center bg-primary-dark/40">
                   <ActivityIndicator color={palette.text.inverse} />
                 </View>
@@ -361,7 +254,7 @@ export function ClothingItemForm({
           name="categoryId"
           render={({ field: { onChange, value } }) => (
             <SelectField
-              options={categoryOptions}
+              options={data.categoryOptions}
               value={value}
               placeholder="Elegí una categoría"
               onChange={onChange}
@@ -376,7 +269,7 @@ export function ClothingItemForm({
           name="colorId"
           render={({ field: { onChange, value } }) => (
             <ColorSwatchPicker
-              colors={colors.data ?? []}
+              colors={data.colors}
               value={value}
               onChange={onChange}
             />
@@ -391,7 +284,7 @@ export function ClothingItemForm({
           render={({ field: { onChange, value } }) => (
             <ChipGroup
               multiple
-              options={occasionOptions}
+              options={data.occasionOptions}
               value={value}
               onChange={(next) => onChange(next as string[])}
             />
@@ -407,7 +300,7 @@ export function ClothingItemForm({
             const selected = value ?? [];
             return (
               <TagSelector
-                tags={tags.data ?? []}
+                tags={data.tags}
                 selectedIds={selected}
                 onToggle={(id) =>
                   onChange(
@@ -417,7 +310,7 @@ export function ClothingItemForm({
                   )
                 }
                 onCreate={(name) =>
-                  createTag.mutate(name, {
+                  actions.createTag(name, {
                     onSuccess: (tag) => onChange([...selected, tag.id]),
                   })
                 }
@@ -450,9 +343,9 @@ export function ClothingItemForm({
         <View className="px-6 pb-8 pt-3">
           <Button
             label={submitLabel}
-            onPress={submit}
+            onPress={actions.submit}
             loading={submitting}
-            disabled={uploadImage.isPending}
+            disabled={flags.uploadPending}
           />
         </View>
       ) : null}

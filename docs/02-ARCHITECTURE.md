@@ -57,6 +57,8 @@ graph TB
 | Backend framework | NestJS + DDD por capas | Estructura clara por dominio; alineado con experiencia del autor. |
 | Capas por dominio | `domain` / `application` / `infrastructure` | Regla `infra → application → domain`; dominio puro y testeable, infra reemplazable. |
 | Acoplamiento entre módulos | Solo vía **facade** del otro dominio | Boundary explícito; evita acceso directo a repos/tablas ajenas. |
+| Wiring cross-dominio (Nest DI) | Facade expuesta como provider **`@Global`** | Importar el módulo de infra ajeno viola `cross-domain-only-via-facade`; `@Global` deja inyectable sólo la facade (la superficie pública) sin ese import. Patrón para `outfits`→`clothes` y luego `planning`. |
+| Presentación mobile | Patrón **controller-hook** (container/presenter) | Lógica (permisos, mutaciones, RHF, estado, derivados) en `use<X>Controller`/`use<X>Form`; las vistas quedan presentacionales. Rige `CODING-CONVENTIONS.md §5`. |
 | Inyección de dependencias | Contra contratos vía token (`@Inject(SYMBOL)`) | El dominio depende de interfaces, no de clases concretas de infra. |
 | ORM / DB | Prisma + PostgreSQL | Dominio relacional (N:M tags/ocasiones, OutfitItem); migraciones y tipado fuertes. |
 | Single-user en MVP | `userId` fijo vía guard | Evita el costo de auth sin condicionar el modelo (todas las entidades ya tienen `userId`). |
@@ -141,17 +143,25 @@ graph LR
 
 ```
 apps/mobile/src/
-├── screens/{clothes,outfits,planning,settings,search,modals}/
-├── components/{common,clothes,outfits,planning,filters,search}/
-├── app/providers/   # QueryProvider (QueryClient) + provider raíz
-├── features/{clothes,outfits,planning}/{components,hooks,services,stores}
-├── navigation/   # RootNavigator, MainTabs, *Stack, ModalStack, types
-├── services/     # apiClient + *Service por dominio
-├── hooks/        # useApi, useDebounce, ...
-├── shared/stores/  # Zustand global: appPreferences, auth (chicos por responsabilidad)
+├── features/<feature>/           # organización por feature (clothes, outfits, planning)
+│   ├── components/               # UI de la feature (presentacional)
+│   ├── hooks/                    # DOS clases (se distinguen por nombre):
+│   │                             #   · data hooks    → useClothes, useCatalogs (TanStack Query)
+│   │                             #   · controller hooks → use<Screen>Controller / use<Entity>Form
+│   ├── screens/                  # pantallas conectadas a navegación (presentacionales)
+│   └── services/                 # cliente HTTP de la feature (clothesApi)
+├── navigation/   # RootNavigator, *Stack, types
+├── providers/    # QueryProvider (QueryClient) + provider raíz
+├── services/     # apiClient transversal
+├── shared/       # components/ utils/ transversales (Button, EmptyState, ConfirmDialog)
 ├── domain/models # tipos espejo de las entidades
-└── utils/ constants/ types/ config/
+└── config/ theme
 ```
+
+> **Presentación (controller-hook, ADR §2 · reglas en `CODING-CONVENTIONS.md §5`):** la lógica
+> de una pantalla/formulario (estado local, efectos, permisos, mutaciones, RHF/Zod, derivados)
+> vive en un **controller hook** dentro de `features/<f>/hooks/`, no en la vista. El **estado
+> local** (`useState`/`useReducer`) por tanto vive en el controller, no en el `.tsx` de la vista.
 
 Recomendaciones de implementación:
 
@@ -220,8 +230,7 @@ cd apps/backend && npx depcruise src --config .dependency-cruiser.cjs
 ### Dominio `clothes`
 
 - **Casos de uso:** `ArchiveClothingItemUseCase`, `CreateClothingItemUseCase`, `CreateOccasionUseCase`, `CreateTagUseCase`, `GetClothingItemImageUseCase`, `GetClothingItemUseCase`, `ListCategoriesUseCase`, `ListClothingItemsUseCase`, `ListColorsUseCase`, `ListOccasionsUseCase`, `ListTagsUseCase`, `UpdateClothingItemUseCase`, `UploadClothingItemImageUseCase`
-- **Fachada `ClothesFacade`** (API pública) — métodos: `findActiveItemById(id: string, userId: string): Promise<ClothingItem | null>`; `findExistingActiveItemIds(ids: string[],
-    userId: string,): Promise<string[]>`
+- **Fachada `ClothesFacade`** (API pública) — métodos: `findActiveItemById(id: string, userId: string): Promise<ClothingItem | null>`; `findExistingActiveItemIds(ids: string[], userId: string): Promise<string[]>`; `findExistingOccasionIds(ids: string[], userId: string): Promise<string[]>`; `findExistingTagIds(ids: string[], userId: string): Promise<string[]>`
 - **Contrato `CatalogRepository`** — token: `CATALOG_REPOSITORY`
 - **Contrato `ClothingItemFilters`** — token: `CLOTHING_ITEM_REPOSITORY`
 - **Contrato `ClothingItemRepository`** — token: `CLOTHING_ITEM_REPOSITORY`
@@ -230,6 +239,19 @@ cd apps/backend && npx depcruise src --config .dependency-cruiser.cjs
 - **Services:** `CatalogValidationService`
 - **Emitters:** —
 - **Controllers:** `ClothesController`
+
+### Dominio `outfits`
+
+- **Casos de uso:** `ArchiveOutfitUseCase`, `CreateOutfitUseCase`, `GetOutfitUseCase`, `ListOutfitsUseCase`, `UpdateOutfitUseCase`
+- **Fachada `OutfitsFacade`** (API pública) — métodos: `findActiveOutfitById(id: string, userId: string): Promise<Outfit | null>`
+- **Contrato `NewOutfit`** — token: `OUTFIT_REPOSITORY`
+- **Contrato `OutfitFilters`** — token: `OUTFIT_REPOSITORY`
+- **Contrato `OutfitItemInput`** — token: `OUTFIT_REPOSITORY`
+- **Contrato `OutfitRepository`** — token: `OUTFIT_REPOSITORY`
+- **Contrato `OutfitUpdate`** — token: `OUTFIT_REPOSITORY`
+- **Services:** `OutfitValidationService`
+- **Emitters:** —
+- **Controllers:** `OutfitsController`
 
 <!-- AUTO-GENERATED:modules:end -->
 
@@ -241,10 +263,11 @@ cd apps/backend && npx depcruise src --config .dependency-cruiser.cjs
 | Dominio | Consume (vía fachada) |
 |---|---|
 | `clothes` | — |
+| `outfits` | `clothes` |
 
 ```mermaid
 graph LR
-    %% sin dependencias entre dominios
+    outfits --> clothes
 ```
 
 > El cruce entre dominios ocurre **solo vía fachada**. La tabla lista las fachadas ajenas efectivamente referenciadas en el código de cada dominio.

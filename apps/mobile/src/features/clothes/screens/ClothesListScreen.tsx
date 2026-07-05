@@ -41,9 +41,18 @@ export function ClothesListScreen({
   const header = (
     <View>
       <View className="px-6 pb-1 pt-3">
-        <Text className="text-sm font-medium uppercase tracking-[3px] text-secondary">
-          Ready
-        </Text>
+        <View className="flex-row items-center justify-between">
+          <Text className="text-sm font-medium uppercase tracking-[3px] text-secondary">
+            Ready
+          </Text>
+          <Pressable
+            testID="go-to-outfits"
+            onPress={() => navigation.navigate('OutfitsList')}
+            hitSlop={8}
+          >
+            <Text className="text-sm font-medium text-primary">Mis outfits ›</Text>
+          </Pressable>
+        </View>
         <Text
           className="mt-1.5 text-[42px] leading-none text-text-primary"
           style={{ fontFamily: fonts.serif }}

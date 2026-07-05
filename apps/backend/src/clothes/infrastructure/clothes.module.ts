@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 
 import { ClothesFacade } from '../application/facades/clothes.facade';
 import { CATALOG_REPOSITORY } from '../application/repositories/catalog.repository.interface';
@@ -29,7 +29,13 @@ import { S3ImageStorageService } from './storage/s3-image-storage.service';
  * Wiring del dominio `clothes`. `providers` registra use-cases, el service interno, la facade
  * y bindea los contratos de repositorio a sus impl Prisma. `exports`: SÓLO la facade (lo único
  * que otros dominios pueden ver).
+ *
+ * `@Global`: la facade —única superficie pública— queda inyectable en todo el composition root
+ * sin que otros dominios importen este módulo de infraestructura (importar `clothes/infrastructure`
+ * viola `cross-domain-only-via-facade`). Los consumidores (`outfits`, luego `planning`) inyectan
+ * `ClothesFacade` directamente; sólo importan el *tipo* facade, que está exento del boundary.
  */
+@Global()
 @Module({
   controllers: [ClothesController],
   providers: [

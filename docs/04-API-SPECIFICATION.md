@@ -95,16 +95,15 @@ Query: `occasionId?, tagId?, clothingId?, search?, page?, limit?` → paginado.
 **Regla:** mínimo 2 `outfitItems` → si no, `400`.
 
 ### `PUT /api/outfits/:id`
-Body `{ name?, occasionIds?, tagIds? }` → `Outfit`.
+Body `{ name?, occasionIds?, tagIds?, outfitItems? }` → `Outfit`. Update parcial. Si se envía
+`outfitItems`, **reemplaza el set entero** y debe seguir teniendo ≥2 prendas válidas (si no, `400`).
 
 ### `DELETE /api/outfits/:id`
-→ `{ success: true }` (archiva).
+→ `{ success: true }` (archiva; `isActive=false`).
 
-### Items
-| Método | Ruta | Body | Respuesta |
-|--------|------|------|-----------|
-| POST | `/api/outfits/:id/items` | `{ clothingItemId, order }` | `OutfitItem` |
-| DELETE | `/api/outfits/:id/items/:itemId` | — | `{ success }` (valida que queden ≥2) |
+> **Nota (MVP):** el set de prendas se edita **entero vía `PUT`** (array `outfitItems` completo).
+> No hay endpoints item-level (`POST/DELETE /api/outfits/:id/items`): quedan como roadmap. Ver
+> `docs/specs/active/outfits-domain.md`.
 
 ---
 
