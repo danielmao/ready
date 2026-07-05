@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
-import type { ClothingItem } from '../../../domain/models/clothing';
+import type { Category, ClothingItem } from '../../../domain/models/clothing';
 import type { CreateOutfitInput, Outfit } from '../../../domain/models/outfit';
-import { useOccasions, useTags } from '../../clothes/hooks/useCatalogs';
+import { useCategories, useOccasions, useTags } from '../../clothes/hooks/useCatalogs';
 import { useClothes } from '../../clothes/hooks/useClothes';
 
 /** Opción de chip (ocasión/tag) ya mapeada para la vista. */
@@ -19,12 +19,13 @@ interface UseOutfitFormParams {
 
 /**
  * Controller hook del formulario de outfit (crear/editar). Concentra la selección ordenada de
- * prendas (≥2), el nombre y las ocasiones/tags, más el mapeo de catálogos. La vista (`OutfitForm`)
- * queda presentacional. Ver `docs/CODING-CONVENTIONS.md §5`.
+ * prendas (≥2), la búsqueda/filtro del armario, el nombre y las ocasiones/tags. La vista
+ * (`OutfitForm`) queda presentacional. Ver `docs/CODING-CONVENTIONS.md §5`.
  */
 export function useOutfitForm({ onSubmit, defaultOutfit }: UseOutfitFormParams) {
   const [name, setName] = useState(defaultOutfit?.name ?? '');
   const [search, setSearch] = useState('');
+  const [categoryId, setCategoryId] = useState<string | null>(null);
   // Ids de prendas seleccionadas, en orden de selección (define `order`).
   const [selectedIds, setSelectedIds] = useState<string[]>(
     defaultOutfit?.items
@@ -39,11 +40,32 @@ export function useOutfitForm({ onSubmit, defaultOutfit }: UseOutfitFormParams) 
     defaultOutfit?.tags?.map((t) => t.id) ?? [],
   );
 
-  const clothesQuery = useClothes({ search: search.trim() || undefined });
+  const clothesQuery = useClothes({
+    search: search.trim() || undefined,
+    categoryId: categoryId ?? undefined,
+  });
+  const categories = useCategories();
   const occasions = useOccasions();
   const tags = useTags();
 
   const clothes = clothesQuery.data?.data ?? [];
+
+  // Caché de prendas conocidas (por id): acumula lo que se vio en la grilla + las del outfit
+  // en edición. Resolver las seleccionadas contra esta caché evita que la bandeja se vacíe al
+  // buscar/filtrar (el filtro achica `clothes`, pero la elegida sigue siendo parte del outfit).
+  const knownItems = useRef<Map<string, ClothingItem>>(new Map());
+  if (defaultOutfit?.items) {
+    for (const it of defaultOutfit.items) {
+      if (it.clothingItem && !knownItems.current.has(it.clothingItemId)) {
+        // El read-model embebido alcanza para la bandeja (id, name, imageUrls).
+        knownItems.current.set(
+          it.clothingItemId,
+          it.clothingItem as unknown as ClothingItem,
+        );
+      }
+    }
+  }
+  for (const c of clothes) knownItems.current.set(c.id, c);
 
   const toggleId = (
     id: string,
@@ -54,18 +76,24 @@ export function useOutfitForm({ onSubmit, defaultOutfit }: UseOutfitFormParams) 
     );
 
   const toggleItem = (id: string) => toggleId(id, setSelectedIds);
+  const removeItem = (id: string) =>
+    setSelectedIds((prev) => prev.filter((x) => x !== id));
   const toggleOccasion = (id: string) => toggleId(id, setOccasionIds);
   const toggleTag = (id: string) => toggleId(id, setTagIds);
+  const clearSearch = () => setSearch('');
 
-  // Prendas seleccionadas resueltas (para la tira de preview), en orden.
+  // Prendas seleccionadas resueltas (para la bandeja), en orden, contra la caché.
   const selectedItems: ClothingItem[] = useMemo(
     () =>
       selectedIds
-        .map((id) => clothes.find((c) => c.id === id))
+        .map((id) => knownItems.current.get(id))
         .filter((c): c is ClothingItem => Boolean(c)),
     [selectedIds, clothes],
   );
 
+  const categoryOptions: Pick<Category, 'id' | 'name'>[] = (
+    categories.data ?? []
+  ).map((c) => ({ id: c.id, name: c.name }));
   const occasionOptions: ChipOption[] = (occasions.data ?? []).map((o) => ({
     id: o.id,
     label: `${o.icon ?? ''} ${o.name}`.trim(),
@@ -75,6 +103,7 @@ export function useOutfitForm({ onSubmit, defaultOutfit }: UseOutfitFormParams) 
     label: t.name,
   }));
 
+  const isFiltering = search.trim().length > 0 || categoryId !== null;
   const canSubmit = name.trim().length > 0 && selectedIds.length >= 2;
 
   const submit = () => {
@@ -91,18 +120,28 @@ export function useOutfitForm({ onSubmit, defaultOutfit }: UseOutfitFormParams) 
   };
 
   return {
-    state: { name, search, selectedIds, occasionIds, tagIds },
-    data: { clothes, selectedItems, occasionOptions, tagOptions },
+    state: { name, search, categoryId, selectedIds, occasionIds, tagIds },
+    data: {
+      clothes,
+      selectedItems,
+      categoryOptions,
+      occasionOptions,
+      tagOptions,
+    },
     actions: {
       setName,
       setSearch,
+      clearSearch,
+      setCategoryId,
       toggleItem,
+      removeItem,
       toggleOccasion,
       toggleTag,
       submit,
     },
     flags: {
       isLoadingClothes: clothesQuery.isLoading,
+      isFiltering,
       selectedCount: selectedIds.length,
       canSubmit,
     },

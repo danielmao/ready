@@ -224,3 +224,22 @@ las vistas (`OutfitForm`, `*Screen`) son presentacionales.
 | `@Global` filtra más de la facade | low | Los módulos exportan **sólo** la facade; `@Global` sólo hace global lo exportado. |
 | Editar set entero pisa el orden por error | low | `order` derivado del índice de selección; transacción en `update`. Cubierto por e2e paso 6. |
 | Prenda archivada dentro de un outfit | med | Fuera de alcance MVP (sin cascada); anotado en Preguntas abiertas. |
+
+### UX — Outfit builder (definido por el Product UX Architect, 2026-07-04)
+
+La pantalla de crear/editar outfit (`OutfitForm`) debe escalar cuando el usuario tiene muchas
+prendas. Decisiones para el MVP (implementadas):
+
+- **Buscador siempre visible** (`SearchBar`) + **filtro por categoría** (`FilterChips`): usan
+  `GET /api/clothes?search=&categoryId=` (ya existente). Antes el buscador era inaccesible (el
+  controller filtraba pero la vista no lo renderizaba) — corregido.
+- **Bandeja "Tu outfit"**: tira horizontal fija con las prendas ya elegidas en orden, con quitar
+  rápido (`removeItem`) y contador con la regla de mínimo 2. No scrollea con la grilla, para no
+  perder de vista el conjunto mientras se busca.
+- **Resolución de seleccionadas contra una caché** (`knownItems`) en `useOutfitForm`: evita que
+  la bandeja se vacíe al filtrar (el filtro achica la grilla, pero la elegida sigue en el outfit).
+- **Empty states diferenciados**: "armario vacío" (sin filtro) vs "sin resultados" (con filtro).
+- **Roadmap** (fuera del MVP): reordenar por drag-and-drop, filtros por color/ocasión dentro del
+  picker, sugerencias/"completá el look".
+
+Toda la lógica vive en el controller `useOutfitForm` (patrón controller-hook, `CODING-CONVENTIONS.md §5`).
