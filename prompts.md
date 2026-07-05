@@ -268,6 +268,35 @@ como corro la app y veo el resultado?
 > (no `localhost`). Resultado: app corriendo en el teléfono listando las prendas. Curado en
 > [`prompts/mobile/04-…`](prompts/mobile/04-correr-la-app-y-upgrade-expo-sdk54.md).
 
+**Prompt 3 — segundo feature (Outfits) end-to-end + PR + deploy:**
+```
+hacer que se puedan crear, modificar y eliminar outfits. crear pr y desplegar esta rama
+(desde una rama que salga de entrega2, haciendo el flujo de trabajo propuesto)
+```
+
+> Intención: construir el **segundo dominio del MVP** de punta a punta con el workflow de skills
+> (`/write-spec → /new-domain → e2e → /new-screen → /review-spec → PR → deploy`). Resultado:
+> dominio `outfits` (DDD, consume `ClothesFacade`, expone `OutfitsFacade`, wiring `@Global`), sin
+> migración (tablas ya existían), e2e local + en producción PASS, UI mobile con el patrón
+> controller-hook. **PR #9 `feat/outfits-domain` → `feature-entrega2-dmtu`**, desplegado a AWS.
+> Curado en [`prompts/backend/04-…`](prompts/backend/04-dominio-outfits-crud-pr-deploy.md).
+
+**Prompt 4 — separar lógica de la vista (patrón controller-hook):**
+```
+veo que a veces sueles poner muucho codigo en la vista, mezclando la logica de visualizacion
+con el html, puedes separar usando un hook como view controller o algo asi que haga ver el
+codigo mas ordenado. Usa el arquitecto para definir y establecer esto. documentalo si lo haces
+```
+
+> Intención: ordenar el código mobile separando lógica de presentación con un hook tipo
+> "view-controller", **definido por el arquitecto** y **documentado**. Resultado: convención
+> **controller-hook** en `docs/CODING-CONVENTIONS.md §5` + ADRs en `docs/02 §2`; refactor testigo
+> `ClothingItemForm → useClothingItemForm` y toda la feature `outfits` con el patrón. Curado en
+> [`prompts/mobile/06-…`](prompts/mobile/06-patron-controller-hook.md). (La captura de foto por
+> cámara/galería y la verificación contra la API pública quedaron en
+> [`mobile/05`](prompts/mobile/05-foto-camara-o-galeria.md) e
+> [`infra/05`](prompts/infra/05-probar-api-publica-deploy.md).)
+
 ---
 
 ## Meta — tooling y gobernanza de agentes
@@ -338,7 +367,7 @@ sistema funciona así:
 
 - 🧭 **Kickoff / producto** — definición de Ready, stack y entregable 1 (1 prompt).
 - 📐 **Documentación / estructura** — especificación del proyecto, MVP y formato AI4Devs (2 prompts).
-- 🏗️ **Arquitectura backend** — DDD por capas, contratos, boundaries, decisión de mantener la estructura y la implementación del primer feature `clothes` con TDD/e2e/deploy (3 prompts).
-- 📱 **Mobile** — stack móvil (Expo/NativeWind), gestión de estado por capas, tema/paleta y correr la app (upgrade a Expo SDK 54) (4 prompts).
-- ☁️ **Infra / tooling** — hook de drift de arquitectura + DevOps Architect/Technical Mentor (2 prompts).
+- 🏗️ **Arquitectura backend** — DDD por capas, contratos, boundaries, decisión de mantener la estructura, y la implementación de los features `clothes` y `outfits` con TDD/e2e/deploy (4 prompts).
+- 📱 **Mobile** — stack móvil (Expo/NativeWind), gestión de estado por capas, tema/paleta, correr la app (Expo SDK 54), captura de foto (cámara/galería) y el patrón de presentación **controller-hook** (6 prompts).
+- ☁️ **Infra / tooling** — hook de drift de arquitectura, DevOps Architect/Technical Mentor, prerequisitos y dos cuentas de AWS, y verificación contra la API pública desplegada (5 prompts).
 - 🧰 **Meta** — sistema de captura de prompts + creación/contrato de roles + Spec Planner de `AGENTS.md` (4 prompts).

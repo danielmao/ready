@@ -108,15 +108,18 @@ se guarda lo que el usuario marca como importante.
 - ✅ **Entregable 1 (documentación) redactado**: `README.md` raíz (secciones 0–7) +
   `docs/` modular (01–09 + índice). Falta sólo `prompts.md` curado vía `/curate-prompts`.
 
+- ✅ **Backend + mobile scaffoldeados y corriendo** (Expo SDK 54; NestJS + Prisma + Docker
+  Postgres/MinIO; deploy AWS EC2+Caddy vivo).
+- ✅ **Dominio `clothes`** (armario) completo: backend CRUD + catálogos + imágenes S3 + UI mobile.
+- ✅ **Dominio `outfits`** (crear/modificar/eliminar conjuntos) completo: backend DDD (consume
+  `ClothesFacade`, expone `OutfitsFacade`, `@Global`) + UI mobile con el **patrón controller-hook**
+  (`CODING-CONVENTIONS.md §5`). e2e local + `jest src/outfits` + `lint:arch` verdes. PR #9 sobre
+  `feature-entrega2-dmtu`; desplegado desde `feat/outfits-domain`. Spec: `docs/specs/active/outfits-domain.md`.
+
 **Siguiente:**
-1. Curar prompts (`/curate-prompts`) para completar la evidencia de IA del entregable.
-2. Scaffolding de `apps/backend` (NestJS + Prisma + Docker Postgres) y `apps/mobile` (RN).
-   Al crear `apps/backend`: fusionar el bloque listo para pegar de
-   `apps/backend/ARCH-SETUP.md` (devDep `dependency-cruiser` + script `lint:arch`). La
-   config ya está en `apps/backend/.dependency-cruiser.cjs` y el pre-commit ya lo ejecuta
-   condicionalmente (dormido hasta que exista el backend).
-3. Implementar módulos backend (clothes → outfits → planning) con tests. Usar
-   **`/new-domain`** para scaffoldear cada dominio con la convención de capas.
+1. **Dominio `planning`** (último del MVP): un único `PlannedOutfit` activo por usuario. Consume
+   `OutfitsFacade` (ya `@Global`). Scaffoldear con **`/new-domain`**; mobile con controller-hooks.
+2. Mantener la evidencia de IA curada (`/save-prompt` + `/curate-prompts`).
 
 ## 7. Reglas de trabajo (enforcement y Definición de terminado)
 

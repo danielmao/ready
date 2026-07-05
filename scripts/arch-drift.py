@@ -181,6 +181,11 @@ def detect(changes: list[tuple[str, str]]) -> list[dict]:
         findings.append({"desc": desc, "doc": doc, "path": path})
 
     for status, path in changes:
+        # Los archivos de test no son arquitectura: se excluyen igual que en arch-docs.py
+        # (que deriva 18 use-cases ignorando *.spec.ts/*.test.ts). Mantener ambos consistentes.
+        if path.endswith((".spec.ts", ".test.ts")):
+            continue
+
         dom = _domain(path)
         if dom in NON_DOMAIN_DIRS:
             # shared/ no es un dominio; el module.ts no aplica, pero schema sí (abajo).
