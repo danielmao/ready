@@ -165,7 +165,7 @@ export function ClothingItemForm({
       // Diseño 04 (crear): bottom-sheet — grabber + ✕ arriba-izquierda + título.
       <View className="pt-2.5">
         <View className="mx-auto h-[5px] w-[38px] rounded-[3px] bg-border" />
-        <View className="flex-row items-center justify-between px-5 pb-3 pt-3.5">
+        <View className="flex-row items-center justify-between px-[22px] pb-3 pt-3.5">
           <Pressable
             testID="sheet-close"
             onPress={onCancel}
@@ -181,7 +181,7 @@ export function ClothingItemForm({
           </Text>
           <View className="w-[30px]" />
         </View>
-        <View className="h-px bg-border" />
+        <View className="h-px bg-[#E4DCD3]" />
       </View>
     );
 
