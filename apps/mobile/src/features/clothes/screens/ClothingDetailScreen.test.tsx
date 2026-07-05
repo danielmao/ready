@@ -1,5 +1,4 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import { Alert } from 'react-native';
 
 import type { ClothingItem } from '../../../domain/models/clothing';
 import type { RootStackScreenProps } from '../../../navigation/types';
@@ -85,23 +84,22 @@ describe('ClothingDetailScreen', () => {
     expect(screen.getByText('Archivar')).toBeOnTheScreen();
   });
 
-  it('pedir archivar abre la alerta de confirmación (no archiva directo)', () => {
+  it('pedir archivar abre el diálogo de confirmación (no archiva directo)', () => {
     const mutate = jest.fn();
     mockUseArchive.mockReturnValue({
       mutate,
       isPending: false,
     } as unknown as ReturnType<typeof useArchiveClothingItem>);
     mockUseClothingItem.mockReturnValue(detailResult(item));
-    const alertSpy = jest.spyOn(Alert, 'alert');
 
     render(<ClothingDetailScreen {...makeProps()} />);
     fireEvent.press(screen.getByText('Archivar'));
 
-    expect(alertSpy).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('¿Archivar esta prenda?')).toBeOnTheScreen();
     expect(mutate).not.toHaveBeenCalled();
   });
 
-  it('confirmar en la alerta archiva la prenda y vuelve atrás', () => {
+  it('confirmar en el diálogo archiva la prenda y vuelve atrás', () => {
     const mutate = jest.fn();
     mockUseArchive.mockReturnValue({
       mutate,
@@ -109,17 +107,30 @@ describe('ClothingDetailScreen', () => {
     } as unknown as ReturnType<typeof useArchiveClothingItem>);
     mockUseClothingItem.mockReturnValue(detailResult(item));
     const props = makeProps();
-    const alertSpy = jest.spyOn(Alert, 'alert');
 
     render(<ClothingDetailScreen {...props} />);
     fireEvent.press(screen.getByText('Archivar'));
-
-    // Dispara la acción destructiva "Archivar" de la alerta.
-    const buttons = alertSpy.mock.calls[0][2];
-    buttons?.find((b) => b.style === 'destructive')?.onPress?.();
+    fireEvent.press(screen.getByTestId('confirm-dialog-confirm'));
 
     expect(mutate).toHaveBeenCalledWith('c1');
     expect(props.navigation.goBack as jest.Mock).toHaveBeenCalledTimes(1);
+  });
+
+  it('cancelar en el diálogo no archiva ni navega', () => {
+    const mutate = jest.fn();
+    mockUseArchive.mockReturnValue({
+      mutate,
+      isPending: false,
+    } as unknown as ReturnType<typeof useArchiveClothingItem>);
+    mockUseClothingItem.mockReturnValue(detailResult(item));
+    const props = makeProps();
+
+    render(<ClothingDetailScreen {...props} />);
+    fireEvent.press(screen.getByText('Archivar'));
+    fireEvent.press(screen.getByTestId('confirm-dialog-cancel'));
+
+    expect(mutate).not.toHaveBeenCalled();
+    expect(props.navigation.goBack as jest.Mock).not.toHaveBeenCalled();
   });
 
   it('el botón back vuelve atrás', () => {
