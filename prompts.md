@@ -297,6 +297,19 @@ codigo mas ordenado. Usa el arquitecto para definir y establecer esto. documenta
 > [`mobile/05`](prompts/mobile/05-foto-camara-o-galeria.md) e
 > [`infra/05`](prompts/infra/05-probar-api-publica-deploy.md).)
 
+**Prompt 5 — buscar prendas en el outfit builder (UX):**
+```
+veo que al crear los outfits no se pueden buscar las prendas. Si se tienen muchas prendas
+posiblemente no sea algo cómodo. Usa el UX agent para definir muy bien esta pantalla.
+```
+
+> Intención: el picker de prendas no escalaba (búsqueda inaccesible, sin filtro). El **Product
+> UX Architect** definió el builder: buscador siempre visible + filtro por categoría + bandeja
+> "Tu outfit" fija (elegidas en orden, quitar rápido) + empty states diferenciados. Resultado:
+> `OutfitForm`/`useOutfitForm` reestructurados, tests del hook + smoke HTTP del filtrado; doc en
+> el spec. Curado en
+> [`prompts/mobile/07-…`](prompts/mobile/07-buscar-prendas-outfit-builder-ux.md).
+
 ---
 
 ## Meta — tooling y gobernanza de agentes
@@ -351,6 +364,28 @@ entonces debemos hacer lo siguiente
 > carpeta `learnings/` con el tutorial de primer deploy en AWS, y esta misma traza de prompts
 > curada. Patrón del proyecto: convertir cada trabajo concreto en tooling + docs + evidencia.
 
+**Prompt 5:**
+```
+no pares hasta terminar, haz el tdd y las pruebas locales http con el servidor prendido, si
+vez que alguien esta usando ese puerto, lanzalo en otro puerto y haz las pruebas. recuerda
+hacer la documentacion, guardar los prompts importantes y curarlos
+```
+
+> Intención: cerrar outfits de forma autónoma (`/loop` dinámico) con TDD + pruebas HTTP con el
+> server prendido y selección de puerto ante conflicto (3000→3100→3200), documentando y curando
+> evidencia. Resultado: specs completados, pruebas HTTP (cayó a :3100), fix del hook
+> `arch-drift.py` (ignora tests), docs + prompts. Curado en
+> [`prompts/meta/07-…`](prompts/meta/07-loop-tdd-pruebas-http-cierre.md).
+
+**Prompt 6:**
+```
+dame un prompt para claude design que ayude a diseñar las pantallas de outfits
+```
+
+> Intención: un prompt reutilizable para que Claude diseñe las pantallas de outfits (lista,
+> detalle, builder) con el design system real de Ready, salida como Artifact HTML. Curado en
+> [`prompts/meta/08-…`](prompts/meta/08-prompt-para-disenar-pantallas-outfits.md).
+
 ---
 
 ## Conversación / evidencia completa
@@ -368,6 +403,6 @@ sistema funciona así:
 - 🧭 **Kickoff / producto** — definición de Ready, stack y entregable 1 (1 prompt).
 - 📐 **Documentación / estructura** — especificación del proyecto, MVP y formato AI4Devs (2 prompts).
 - 🏗️ **Arquitectura backend** — DDD por capas, contratos, boundaries, decisión de mantener la estructura, y la implementación de los features `clothes` y `outfits` con TDD/e2e/deploy (4 prompts).
-- 📱 **Mobile** — stack móvil (Expo/NativeWind), gestión de estado por capas, tema/paleta, correr la app (Expo SDK 54), captura de foto (cámara/galería) y el patrón de presentación **controller-hook** (6 prompts).
+- 📱 **Mobile** — stack móvil (Expo/NativeWind), gestión de estado por capas, tema/paleta, correr la app (Expo SDK 54), captura de foto (cámara/galería), el patrón de presentación **controller-hook** y el UX del **outfit builder** (buscar/filtrar prendas) (7 prompts).
 - ☁️ **Infra / tooling** — hook de drift de arquitectura, DevOps Architect/Technical Mentor, prerequisitos y dos cuentas de AWS, y verificación contra la API pública desplegada (5 prompts).
-- 🧰 **Meta** — sistema de captura de prompts + creación/contrato de roles + Spec Planner de `AGENTS.md` (4 prompts).
+- 🧰 **Meta** — sistema de captura de prompts, creación/contrato de roles, Spec Planner, directiva de cierre con `/loop` (TDD + HTTP) y prompt de diseño de pantallas (`AGENTS.md`) (6 prompts).
