@@ -124,40 +124,37 @@ pesado; es un organizador rápido centrado en el acto de *alistar* el outfit.
 
 ### **1.3. Diseño y experiencia de usuario:**
 
-La app se organiza en **3 tabs** (bottom tabs), cada uno con su stack, más modales y
-stacks transversales (Settings, Search).
+La app se organiza en **3 tabs** (bottom tabs) — **Armario · Outfits · Perfil**, según el diseño
+aprobado (Claude Design `Ready.dc`). Los detalles/altas/ediciones se apilan en el stack raíz
+sobre los tabs. *(El tab **Planear** y los stacks de Settings/Search son roadmap — Épica 2.)*
 
 ```mermaid
 graph TD
     Root[RootNavigator] --> Tabs[MainTabs]
-    Tabs --> T1[Tab Prendas]
+    Tabs --> T1[Tab Armario]
     Tabs --> T2[Tab Outfits]
-    Tabs --> T3[Tab Planear]
+    Tabs --> T3[Tab Perfil]
 
     T1 --> CL[ClothesListScreen]
-    CL --> CD[ClothingDetailScreen]
-    CL -. modal .-> CC[CreateClothingScreen]
-
     T2 --> OL[OutfitsListScreen]
-    OL --> OD[OutfitDetailScreen]
-    OL -. modal .-> OC[CreateOutfitScreen]
+    T3 --> PR[ProfileScreen · placeholder]
 
-    T3 --> PO[PlannedOutfitScreen]
-    PO --> TP[TodayOutfitPreviewScreen]
-    PO -. modal .-> SO[SelectOutfitForPlanningScreen]
+    Root -. stack .-> CD[ClothingDetailScreen]
+    Root -. modal .-> CC[Add/Edit ClothingItem]
+    Root -. stack .-> OD[OutfitDetailScreen]
+    Root -. modal .-> OC[Add/Edit Outfit]
 
-    Root -. stack .-> SET[SettingsStack]
-    Root -. stack .-> SEA[SearchStack]
+    T3 -. roadmap .-> PO[Planear · Épica 2]
 ```
 
 **Flujos principales:**
 
 | Flujo | Pantallas |
 |-------|-----------|
-| Crear prenda | ClothesList → *CreateClothing (modal)* → ClothingDetail |
-| Crear outfit | OutfitsList → *CreateOutfit (modal)* → OutfitDetail |
-| Planear outfit | PlannedOutfit → *SelectOutfitForPlanning (modal)* → PlannedOutfit → TodayOutfitPreview |
-| Ver detalle | ClothesList/OutfitsList → Detail |
+| Crear prenda | ClothesList → *AddClothingItem (modal)* → vuelve a la lista |
+| Crear outfit | OutfitsList → *AddOutfit (modal)* → vuelve a la lista |
+| Ver detalle | ClothesList/OutfitsList → Detail → *Edit (modal)* |
+| Planear outfit *(roadmap)* | PlannedOutfit → *SelectOutfitForPlanning* → TodayOutfitPreview |
 
 Detalle de cada pantalla (propósito, componentes, datos que consume/modifica) en
 [`docs/05-FRONTEND-INTEGRATION.md`](docs/05-FRONTEND-INTEGRATION.md).

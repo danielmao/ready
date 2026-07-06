@@ -5,29 +5,31 @@
 
 ## 1. Navegación
 
+**Estado actual (shippeado).** Los tabs del MVP son **Armario · Outfits · Perfil**, tal como el
+diseño aprobado (Claude Design `Ready.dc`). Los detalles/altas/ediciones se **apilan en el stack
+raíz** sobre los tabs (aún no hay stacks anidados por tab).
+
 ```
-RootNavigator
+RootNavigator (native stack)
 ├── MainTabs (bottom tabs)
-│   ├── Tab "Prendas"  → ClothesStack
-│   │     ├── ClothesListScreen
-│   │     └── ClothingDetailScreen
-│   ├── Tab "Outfits"  → OutfitsStack
-│   │     ├── OutfitsListScreen
-│   │     └── OutfitDetailScreen
-│   └── Tab "Planear"  → PlanningStack
-│         ├── PlannedOutfitScreen
-│         └── TodayOutfitPreviewScreen
-├── SettingsStack (Settings, Profile, About)
-├── SearchStack (SearchClothes, SearchOutfits)
-└── ModalStack (CreateClothing, CreateOutfit, SelectOutfitForPlanning,
-                GalleryUpload, ColorPicker)
+│   ├── Tab "Armario" → ClothesListScreen
+│   ├── Tab "Outfits" → OutfitsListScreen
+│   └── Tab "Perfil"  → ProfileScreen   (placeholder; login con Google diferido)
+├── ClothingDetail
+├── AddClothingItem (modal) · EditClothingItem (modal)
+├── OutfitDetail
+└── AddOutfit (modal) · EditOutfit (modal)
 ```
 
 | Tab | Pantalla raíz | Ícono |
 |-----|---------------|-------|
-| Prendas | ClothesListScreen | 👕 |
+| Armario | ClothesListScreen | 👕 |
 | Outfits | OutfitsListScreen | 👔 |
-| Planear | PlannedOutfitScreen | 🗓️ |
+| Perfil | ProfileScreen | 👤 |
+
+> **Roadmap (Épica 2+).** El tab **Planear** (planning: `PlannedOutfitScreen`,
+> `TodayOutfitPreviewScreen`), los stacks anidados por tab, y `SettingsStack`/`SearchStack`
+> todavía **no están implementados**. La sección "Tab Planear" de abajo describe ese destino.
 
 ## 2. Pantallas (propósito · datos · acciones)
 
