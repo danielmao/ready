@@ -37,7 +37,7 @@ export function EditOutfitScreen({
   return (
     <OutfitForm
       title="Editar outfit"
-      variant="bar"
+      variant="sheet"
       submitLabel="Guardar cambios"
       defaultOutfit={outfit}
       submitting={updateOutfit.isPending}
