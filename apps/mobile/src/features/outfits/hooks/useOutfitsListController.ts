@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import type { RootStackScreenProps } from '../../../navigation/types';
+import type { MainTabScreenProps } from '../../../navigation/types';
 import { useOutfits } from './useOutfits';
 
 /**
@@ -8,7 +8,7 @@ import { useOutfits } from './useOutfits';
  * navegación. La vista (`OutfitsListScreen`) queda presentacional (`docs/CODING-CONVENTIONS.md §5`).
  */
 export function useOutfitsListController(
-  navigation: RootStackScreenProps<'OutfitsList'>['navigation'],
+  navigation: MainTabScreenProps<'OutfitsTab'>['navigation'],
 ) {
   const [search, setSearch] = useState('');
 

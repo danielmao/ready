@@ -310,6 +310,35 @@ posiblemente no sea algo cómodo. Usa el UX agent para definir muy bien esta pan
 > el spec. Curado en
 > [`prompts/mobile/07-…`](prompts/mobile/07-buscar-prendas-outfit-builder-ux.md).
 
+**Prompt 6 — rediseño de outfits + tabs (fiel a Claude Design):**
+```
+estamos en la rama entrega2, quiero que desde allí saques una rama nueva e implementes el
+diseño de outfits (Claude Design Ready.dc.html), mira los tabs también para transición de
+pantallas. se muy fiel al diseño. /goal Usa el flujo de trabajo que se tiene para hacer esto
+y lanza un agente de verificación de diseño al terminar
+```
+
+> Intención: implementar las pantallas de outfits del canvas de Claude Design y montar la
+> **barra de tabs** (Armario · Outfits · Perfil). El diseño se obtuvo del link público del
+> prototipo (y se confirmó contra la fuente vía **DesignSync**), no por WebFetch (403). Resultado:
+> `BottomTabNavigator` nuevo, lista/tarjeta/skeleton/vacío, detalle con hero + dot de color y
+> builder con bandeja oscura; TDD + typecheck verdes; **agente de verificación de diseño** con
+> veredicto de alta fidelidad. Curado en
+> [`prompts/mobile/08-…`](prompts/mobile/08-diseno-outfits-y-tabs.md).
+
+**Prompt 7 — fidelidad de los headers de los modales:**
+```
+revisa con detalle el modal de armario hay diferencia con el diseño. fijate en el header.
+el header de los formularios del outfit debe ser como los de prenda. el header editar
+también debe ser igual al crear.
+```
+
+> Intención: dejar los headers de los modales (prenda y outfit) 1:1 con el mockup. Resultado:
+> orden de campos corregido, `variant` (`sheet`/`bar`) explícito por pantalla, y unificación de
+> crear/editar outfit al header **sheet** (grabber + ✕). Verificado contra la fuente autoritativa
+> del diseño (DesignSync). Curado en
+> [`prompts/mobile/09-…`](prompts/mobile/09-fidelidad-headers-modales.md).
+
 ---
 
 ## Meta — tooling y gobernanza de agentes
@@ -386,6 +415,27 @@ dame un prompt para claude design que ayude a diseñar las pantallas de outfits
 > detalle, builder) con el design system real de Ready, salida como Artifact HTML. Curado en
 > [`prompts/meta/08-…`](prompts/meta/08-prompt-para-disenar-pantallas-outfits.md).
 
+**Prompt 7 — no subir el template de diseño al PR:**
+```
+no subas la información del template al PR elimina esos archivos
+```
+
+> Intención: el HTML del diseño se había descargado para leerlo; no versionarlo. Resultado:
+> `docs/specs/assets/` eliminado; la referencia visual quedó descrita **en texto** dentro de la
+> spec, no como copia del HTML de terceros. Curado en
+> [`prompts/meta/09-…`](prompts/meta/09-no-subir-template-al-pr.md).
+
+**Prompt 8 — cierre: guardar prompts, merge a entrega 2, verificar docs y apagar el server:**
+```
+haz el guardado de los prompts, el merge, verifica que la documentacion este actualizada y
+finalmente apaga el servidor, el merge es a la rama entrega 2
+```
+
+> Intención: rutina de cierre de la sesión de outfits. Resultado: prompts curados, merge del
+> PR #10 a `feature-entrega2-dmtu`, verificación de docs y apagado de la instancia EC2 (skill
+> `ready-deploy stop`). Curado en
+> [`prompts/meta/10-…`](prompts/meta/10-cierre-prompts-merge-docs-apagar.md).
+
 ---
 
 ## Conversación / evidencia completa
@@ -403,6 +453,6 @@ sistema funciona así:
 - 🧭 **Kickoff / producto** — definición de Ready, stack y entregable 1 (1 prompt).
 - 📐 **Documentación / estructura** — especificación del proyecto, MVP y formato AI4Devs (2 prompts).
 - 🏗️ **Arquitectura backend** — DDD por capas, contratos, boundaries, decisión de mantener la estructura, y la implementación de los features `clothes` y `outfits` con TDD/e2e/deploy (4 prompts).
-- 📱 **Mobile** — stack móvil (Expo/NativeWind), gestión de estado por capas, tema/paleta, correr la app (Expo SDK 54), captura de foto (cámara/galería), el patrón de presentación **controller-hook** y el UX del **outfit builder** (buscar/filtrar prendas) (7 prompts).
+- 📱 **Mobile** — stack móvil (Expo/NativeWind), gestión de estado por capas, tema/paleta, correr la app (Expo SDK 54), captura de foto (cámara/galería), el patrón de presentación **controller-hook**, el UX del **outfit builder**, el **rediseño de outfits + tabs** (fiel a Claude Design) y la **fidelidad de los headers de los modales** (9 prompts).
 - ☁️ **Infra / tooling** — hook de drift de arquitectura, DevOps Architect/Technical Mentor, prerequisitos y dos cuentas de AWS, y verificación contra la API pública desplegada (5 prompts).
-- 🧰 **Meta** — sistema de captura de prompts, creación/contrato de roles, Spec Planner, directiva de cierre con `/loop` (TDD + HTTP) y prompt de diseño de pantallas (`AGENTS.md`) (6 prompts).
+- 🧰 **Meta** — sistema de captura de prompts, creación/contrato de roles, Spec Planner, directiva de cierre con `/loop` (TDD + HTTP), prompt de diseño de pantallas, higiene del PR (no subir el template) y rutina de cierre (guardar/curar prompts + merge + docs + apagar server) (8 prompts).

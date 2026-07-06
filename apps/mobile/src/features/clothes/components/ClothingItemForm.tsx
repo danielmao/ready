@@ -62,9 +62,7 @@ function ChipGroup({
     }
     const current = (value as string[] | undefined) ?? [];
     onChange(
-      current.includes(id)
-        ? current.filter((v) => v !== id)
-        : [...current, id],
+      current.includes(id) ? current.filter((v) => v !== id) : [...current, id],
     );
   };
 
@@ -167,7 +165,7 @@ export function ClothingItemForm({
       // Diseño 04 (crear): bottom-sheet — grabber + ✕ arriba-izquierda + título.
       <View className="pt-2.5">
         <View className="mx-auto h-[5px] w-[38px] rounded-[3px] bg-border" />
-        <View className="flex-row items-center justify-between px-5 pb-3 pt-3.5">
+        <View className="flex-row items-center justify-between px-[22px] pb-3 pt-3.5">
           <Pressable
             testID="sheet-close"
             onPress={onCancel}
@@ -183,7 +181,7 @@ export function ClothingItemForm({
           </Text>
           <View className="w-[30px]" />
         </View>
-        <View className="h-px bg-border" />
+        <View className="h-px bg-[#E4DCD3]" />
       </View>
     );
 
@@ -197,147 +195,150 @@ export function ClothingItemForm({
         keyboardDismissMode="interactive"
         automaticallyAdjustKeyboardInsets
       >
-      <View className="mb-5">
-        <Text className="mb-2 text-xs uppercase tracking-wider text-text-muted">
-          Foto
-        </Text>
-        <Pressable
-          onPress={actions.chooseImageSource}
-          disabled={flags.uploadPending}
-          className="aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-[18px] border-[1.5px] border-dashed border-border bg-surface-alt"
-        >
-          {state.imageUri ? (
-            <>
-              <Image
-                source={{ uri: state.imageUri }}
-                className="h-full w-full"
-                resizeMode="cover"
-              />
-              {flags.uploadPending ? (
-                <View className="absolute inset-0 items-center justify-center bg-primary-dark/40">
-                  <ActivityIndicator color={palette.text.inverse} />
+        <View className="mb-5">
+          <Text className="mb-2 text-xs uppercase tracking-wider text-text-muted">
+            Foto
+          </Text>
+          <Pressable
+            onPress={actions.chooseImageSource}
+            disabled={flags.uploadPending}
+            className="aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-[18px] border-[1.5px] border-dashed border-border bg-surface-alt"
+          >
+            {state.imageUri ? (
+              <>
+                <Image
+                  source={{ uri: state.imageUri }}
+                  className="h-full w-full"
+                  resizeMode="cover"
+                />
+                {flags.uploadPending ? (
+                  <View className="absolute inset-0 items-center justify-center bg-primary-dark/40">
+                    <ActivityIndicator color={palette.text.inverse} />
+                  </View>
+                ) : null}
+              </>
+            ) : (
+              <View className="items-center gap-2.5">
+                <View className="h-[52px] w-[52px] items-center justify-center rounded-full bg-primary-soft">
+                  <Text className="text-2xl text-primary">＋</Text>
                 </View>
-              ) : null}
-            </>
-          ) : (
-            <View className="items-center gap-2.5">
-              <View className="h-[52px] w-[52px] items-center justify-center rounded-full bg-primary-soft">
-                <Text className="text-2xl text-primary">＋</Text>
+                <Text className="text-sm text-text-secondary">
+                  Agregá una foto
+                </Text>
+                <Text className="text-xs text-text-muted">
+                  Cámara o galería
+                </Text>
               </View>
-              <Text className="text-sm text-text-secondary">Agregá una foto</Text>
-              <Text className="text-xs text-text-muted">Cámara o galería</Text>
-            </View>
-          )}
-        </Pressable>
-      </View>
+            )}
+          </Pressable>
+        </View>
 
-      <Field label="Nombre" error={errors.name?.message}>
-        <Controller
-          control={control}
-          name="name"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              placeholder="Ej: Camisa de lino blanca"
-              placeholderTextColor={palette.text.muted}
-              className="mt-2 rounded-[14px] bg-surface-alt px-4 py-3.5 text-[15px] text-text-primary"
-            />
-          )}
-        />
-      </Field>
-
-      <Field label="Categoría" error={errors.categoryId?.message}>
-        <Controller
-          control={control}
-          name="categoryId"
-          render={({ field: { onChange, value } }) => (
-            <SelectField
-              options={data.categoryOptions}
-              value={value}
-              placeholder="Elegí una categoría"
-              onChange={onChange}
-            />
-          )}
-        />
-      </Field>
-
-      <Field label="Color" error={errors.colorId?.message}>
-        <Controller
-          control={control}
-          name="colorId"
-          render={({ field: { onChange, value } }) => (
-            <ColorSwatchPicker
-              colors={data.colors}
-              value={value}
-              onChange={onChange}
-            />
-          )}
-        />
-      </Field>
-
-      <Field label="Ocasiones">
-        <Controller
-          control={control}
-          name="occasionIds"
-          render={({ field: { onChange, value } }) => (
-            <ChipGroup
-              multiple
-              options={data.occasionOptions}
-              value={value}
-              onChange={(next) => onChange(next as string[])}
-            />
-          )}
-        />
-      </Field>
-
-      <Field label="Tags">
-        <Controller
-          control={control}
-          name="tagIds"
-          render={({ field: { onChange, value } }) => {
-            const selected = value ?? [];
-            return (
-              <TagSelector
-                tags={data.tags}
-                selectedIds={selected}
-                onToggle={(id) =>
-                  onChange(
-                    selected.includes(id)
-                      ? selected.filter((t) => t !== id)
-                      : [...selected, id],
-                  )
-                }
-                onCreate={(name) =>
-                  actions.createTag(name, {
-                    onSuccess: (tag) => onChange([...selected, tag.id]),
-                  })
-                }
+        <Field label="Nombre" error={errors.name?.message}>
+          <Controller
+            control={control}
+            name="name"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                placeholder="Ej: Camisa de lino blanca"
+                placeholderTextColor={palette.text.muted}
+                className="mt-2 rounded-[14px] bg-surface-alt px-4 py-3.5 text-[15px] text-text-primary"
               />
-            );
-          }}
-        />
-      </Field>
+            )}
+          />
+        </Field>
 
-      <Field label="Descripción">
-        <Controller
-          control={control}
-          name="description"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              placeholder="Añadí una nota sobre la prenda (opcional)"
-              placeholderTextColor={palette.text.muted}
-              multiline
-              className="mt-2 min-h-[76px] rounded-[14px] bg-surface-alt px-4 py-3.5 text-[15px] text-text-primary"
-            />
-          )}
-        />
-      </Field>
+        <Field label="Categoría" error={errors.categoryId?.message}>
+          <Controller
+            control={control}
+            name="categoryId"
+            render={({ field: { onChange, value } }) => (
+              <SelectField
+                options={data.categoryOptions}
+                value={value}
+                placeholder="Elegí una categoría"
+                onChange={onChange}
+              />
+            )}
+          />
+        </Field>
 
+        <Field label="Color" error={errors.colorId?.message}>
+          <Controller
+            control={control}
+            name="colorId"
+            render={({ field: { onChange, value } }) => (
+              <ColorSwatchPicker
+                colors={data.colors}
+                value={value}
+                onChange={onChange}
+              />
+            )}
+          />
+        </Field>
+
+        <Field label="Descripción">
+          <Controller
+            control={control}
+            name="description"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                placeholder="Añadí una nota sobre la prenda (opcional)"
+                placeholderTextColor={palette.text.muted}
+                multiline
+                className="mt-2 min-h-[76px] rounded-[14px] bg-surface-alt px-4 py-3.5 text-[15px] text-text-primary"
+              />
+            )}
+          />
+        </Field>
+
+        <Field label="Ocasiones">
+          <Controller
+            control={control}
+            name="occasionIds"
+            render={({ field: { onChange, value } }) => (
+              <ChipGroup
+                multiple
+                options={data.occasionOptions}
+                value={value}
+                onChange={(next) => onChange(next as string[])}
+              />
+            )}
+          />
+        </Field>
+
+        <Field label="Tags">
+          <Controller
+            control={control}
+            name="tagIds"
+            render={({ field: { onChange, value } }) => {
+              const selected = value ?? [];
+              return (
+                <TagSelector
+                  tags={data.tags}
+                  selectedIds={selected}
+                  onToggle={(id) =>
+                    onChange(
+                      selected.includes(id)
+                        ? selected.filter((t) => t !== id)
+                        : [...selected, id],
+                    )
+                  }
+                  onCreate={(name) =>
+                    actions.createTag(name, {
+                      onSuccess: (tag) => onChange([...selected, tag.id]),
+                    })
+                  }
+                />
+              );
+            }}
+          />
+        </Field>
       </ScrollView>
       {variant !== 'bar' ? (
         <View className="px-6 pb-8 pt-3">
