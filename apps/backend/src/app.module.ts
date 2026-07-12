@@ -3,8 +3,10 @@ import { LoggerModule } from 'nestjs-pino';
 
 import { ClothesModule } from './clothes/infrastructure/clothes.module';
 import { OutfitsModule } from './outfits/infrastructure/outfits.module';
+import { PlanningModule } from './planning/infrastructure/planning.module';
 import { HealthModule } from './shared/health/health.module';
 import { PrismaModule } from './shared/prisma/prisma.module';
+import { UsersModule } from './users/infrastructure/users.module';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { PrismaModule } from './shared/prisma/prisma.module';
     HealthModule,
     ClothesModule,
     OutfitsModule,
+    PlanningModule,
+    UsersModule,
   ],
 })
 export class AppModule {}
