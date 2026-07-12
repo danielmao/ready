@@ -116,10 +116,18 @@ se guarda lo que el usuario marca como importante.
   (`CODING-CONVENTIONS.md §5`). e2e local + `jest src/outfits` + `lint:arch` verdes. PR #9 sobre
   `feature-entrega2-dmtu`; desplegado desde `feat/outfits-domain`. Spec: `docs/specs/active/outfits-domain.md`.
 
+- ✅ **Dominio `planning`** (último del MVP) completo: backend DDD (get/set/update/confirm/cancel;
+  un único `PlannedOutfit` activo, fijar otro cancela el anterior atómicamente; consume
+  `OutfitsFacade`, dominio terminal sin facade) + UI mobile con controller-hooks (tab **Planear**
+  + `PlanPicker` modal). `jest src/planning` (13) + `lint:arch` + e2e HTTP 15/15 verdes.
+- ✅ **Dominio `users` (mínimo)**: `GET/PUT /api/users/me` sobre el usuario único (DDD por capas).
+- ✅ **Login (no funcional)**: `LoginScreen` + `AuthProvider` (React Context, sin deps nuevas).
+  Botón "Continuar con Google" que sólo marca la sesión y deja pasar; `RootNavigator` actúa de
+  gate (Login ↔ app). Auth real de Google sigue **diferida** (§1); punto de extensión listo.
+
 **Siguiente:**
-1. **Dominio `planning`** (último del MVP): un único `PlannedOutfit` activo por usuario. Consume
-   `OutfitsFacade` (ya `@Global`). Scaffoldear con **`/new-domain`**; mobile con controller-hooks.
-2. Mantener la evidencia de IA curada (`/save-prompt` + `/curate-prompts`).
+1. MVP funcional cerrado. Curar la evidencia de IA (`/save-prompt` + `/curate-prompts`) y, si se
+   quiere, redeploy con `ready-deploy` desde la rama de esta sesión.
 
 ## 7. Reglas de trabajo (enforcement y Definición de terminado)
 
