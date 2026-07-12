@@ -253,6 +253,27 @@ cd apps/backend && npx depcruise src --config .dependency-cruiser.cjs
 - **Emitters:** —
 - **Controllers:** `OutfitsController`
 
+### Dominio `planning`
+
+- **Casos de uso:** `ConfirmPlannedOutfitUseCase`, `GetPlannedOutfitUseCase`, `RemovePlannedOutfitUseCase`, `SetPlannedOutfitUseCase`, `UpdatePlannedOutfitUseCase`
+- **Fachada:** —
+- **Contrato `NewPlannedOutfit`** — token: `PLANNED_OUTFIT_REPOSITORY`
+- **Contrato `PlannedOutfitRepository`** — token: `PLANNED_OUTFIT_REPOSITORY`
+- **Contrato `PlannedOutfitUpdate`** — token: `PLANNED_OUTFIT_REPOSITORY`
+- **Services:** —
+- **Emitters:** —
+- **Controllers:** `PlanningController`
+
+### Dominio `users`
+
+- **Casos de uso:** `GetMeUseCase`, `UpdateMeUseCase`
+- **Fachada:** —
+- **Contrato `UserRepository`** — token: `USER_REPOSITORY`
+- **Contrato `UserUpdate`** — token: `USER_REPOSITORY`
+- **Services:** —
+- **Emitters:** —
+- **Controllers:** `UsersController`
+
 <!-- AUTO-GENERATED:modules:end -->
 
 ## Dependencias entre dominios (derivado del código)
@@ -264,10 +285,13 @@ cd apps/backend && npx depcruise src --config .dependency-cruiser.cjs
 |---|---|
 | `clothes` | — |
 | `outfits` | `clothes` |
+| `planning` | `outfits` |
+| `users` | — |
 
 ```mermaid
 graph LR
     outfits --> clothes
+    planning --> outfits
 ```
 
 > El cruce entre dominios ocurre **solo vía fachada**. La tabla lista las fachadas ajenas efectivamente referenciadas en el código de cada dominio.

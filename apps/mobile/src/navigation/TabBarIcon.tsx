@@ -66,6 +66,30 @@ export function TabBarIcon({
     );
   }
 
+  if (name === 'PlanearTab') {
+    // Planear — hoja de calendario (marco + anillas + barra de encabezado).
+    return (
+      <View
+        style={{
+          width: 20,
+          height: 20,
+          borderWidth: 2,
+          borderColor: color,
+          borderRadius: 4,
+        }}
+      >
+        <View
+          style={{
+            height: 5,
+            backgroundColor: color,
+            borderTopLeftRadius: 1,
+            borderTopRightRadius: 1,
+          }}
+        />
+      </View>
+    );
+  }
+
   // PerfilTab — persona (cabeza + hombros).
   return (
     <View style={{ width: 20, height: 20 }}>
