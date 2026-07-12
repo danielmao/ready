@@ -3,6 +3,7 @@ import { Text } from 'react-native';
 
 import { ClothesListScreen } from '../features/clothes/screens/ClothesListScreen';
 import { OutfitsListScreen } from '../features/outfits/screens/OutfitsListScreen';
+import { PlannedOutfitScreen } from '../features/planning/screens/PlannedOutfitScreen';
 import { ProfileScreen } from '../features/profile/screens/ProfileScreen';
 import { colors } from '../theme';
 import { TabBarIcon } from './TabBarIcon';
@@ -13,6 +14,7 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 const LABELS: Record<keyof MainTabParamList, string> = {
   ArmarioTab: 'Armario',
   OutfitsTab: 'Outfits',
+  PlanearTab: 'Planear',
   PerfilTab: 'Perfil',
 };
 
@@ -49,6 +51,7 @@ export function MainTabs() {
     >
       <Tab.Screen name="ArmarioTab" component={ClothesListScreen} />
       <Tab.Screen name="OutfitsTab" component={OutfitsListScreen} />
+      <Tab.Screen name="PlanearTab" component={PlannedOutfitScreen} />
       <Tab.Screen name="PerfilTab" component={ProfileScreen} />
     </Tab.Navigator>
   );

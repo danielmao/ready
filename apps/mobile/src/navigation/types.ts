@@ -13,11 +13,13 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 export type MainTabParamList = {
   ArmarioTab: undefined;
   OutfitsTab: undefined;
+  PlanearTab: undefined;
   PerfilTab: undefined;
 };
 
-/** Rutas del stack principal: los tabs + las pantallas que se apilan sobre ellos. */
+/** Rutas del stack principal: login (gate) + los tabs + las pantallas que se apilan sobre ellos. */
 export type RootStackParamList = {
+  Login: undefined;
   MainTabs: NavigatorScreenParams<MainTabParamList>;
   ClothingDetail: { id: string };
   AddClothingItem: undefined;
@@ -25,6 +27,7 @@ export type RootStackParamList = {
   OutfitDetail: { id: string };
   AddOutfit: undefined;
   EditOutfit: { id: string };
+  PlanPicker: undefined;
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =
