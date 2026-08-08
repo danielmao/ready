@@ -86,20 +86,25 @@ case "$ACTION" in
     ensure_running
     wait_ssh
     echo ">>> desplegando rama '$BRANCH' en el host..."
-    # Credenciales S3 de la app: se leen del .env.deploy local (gitignored, user scopeado
-    # ready-app-s3), NO del perfil deployer. Se inyectan en el .env del host EC2.
+    # Secretos de la app (S3 + auth de Google): se leen del .env.deploy local (gitignored),
+    # NO del perfil deployer. Se inyectan en el .env del host EC2.
     ENV_DEPLOY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)/apps/backend/.env.deploy"
     S3_ACCESS_KEY=""; S3_SECRET_KEY=""
+    JWT_SECRET=""; GOOGLE_CLIENT_ID=""; GOOGLE_CLIENT_SECRET=""; AUTH_ALLOWED_REDIRECTS="ready://auth"
     if [ -f "$ENV_DEPLOY" ]; then
       set -a; . "$ENV_DEPLOY"; set +a
-      echo ">>> credenciales S3 cargadas de .env.deploy"
+      echo ">>> secretos cargados de .env.deploy"
+      [ -n "$GOOGLE_CLIENT_ID" ] || echo ">>> aviso: sin GOOGLE_CLIENT_ID, el login con Google fallará"
     else
-      echo ">>> sin .env.deploy: la app arranca sin S3 (subir imágenes fallará)"
+      echo ">>> sin .env.deploy: la app arranca sin S3 ni login con Google"
     fi
     ssh "${SSH_OPTS[@]}" "ec2-user@${EIP}" \
       BRANCH="$BRANCH" DOMAIN="$DOMAIN" \
       S3_BUCKET_NAME="ready-uploads" AWS_REGION="us-east-1" \
       S3_ACCESS_KEY="$S3_ACCESS_KEY" S3_SECRET_KEY="$S3_SECRET_KEY" \
+      JWT_SECRET="$JWT_SECRET" GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" \
+      GOOGLE_CLIENT_SECRET="$GOOGLE_CLIENT_SECRET" \
+      AUTH_ALLOWED_REDIRECTS="$AUTH_ALLOWED_REDIRECTS" \
       'bash -s' <<'REMOTE' 2>&1 | grep -vE "$NOISE"
 set -e
 cd ready
@@ -108,7 +113,7 @@ git checkout --quiet "$BRANCH"
 git pull --quiet --ff-only
 echo "HEAD: $(git log -1 --oneline)"
 cd apps/backend
-# .env del host (no versionado): DOMAIN + credenciales S3 reales de la app.
+# .env del host (no versionado): DOMAIN + secretos reales de la app (S3 y auth de Google).
 cat > .env <<ENV
 DOMAIN=$DOMAIN
 S3_BUCKET_NAME=$S3_BUCKET_NAME
@@ -116,6 +121,11 @@ AWS_REGION=$AWS_REGION
 S3_ACCESS_KEY=$S3_ACCESS_KEY
 S3_SECRET_KEY=$S3_SECRET_KEY
 IMAGE_PUBLIC_BASE_URL=https://$DOMAIN
+JWT_SECRET=$JWT_SECRET
+GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET
+GOOGLE_REDIRECT_URI=https://$DOMAIN/api/auth/google/callback
+AUTH_ALLOWED_REDIRECTS=$AUTH_ALLOWED_REDIRECTS
 ENV
 # `docker compose build` exige buildx >= 0.17; si está ausente o es muy viejo (instancias
 # bootstrapeadas antes del fix traen 0.12), cae al builder clásico. En vez de chequear la

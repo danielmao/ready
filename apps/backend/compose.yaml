@@ -41,6 +41,17 @@ services:
       S3_ACCESS_KEY: ${S3_ACCESS_KEY:-}
       S3_SECRET_KEY: ${S3_SECRET_KEY:-}
       IMAGE_PUBLIC_BASE_URL: ${IMAGE_PUBLIC_BASE_URL:-https://${DOMAIN}}
+      # --- Auth: login con Google. Los valores reales los inyecta el deploy en el .env del
+      # host (no versionado), igual que las llaves S3. Sin ellos la API arranca, pero el
+      # login falla; el resto de la app sigue andando por el fallback del guard.
+      JWT_SECRET: ${JWT_SECRET:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-https://${DOMAIN}/api/auth/google/callback}
+      # Acá NODE_ENV=production, así que NO aplica la excepción de dev para los exp:// de
+      # Expo Go: el deep link del teléfono tiene que estar listado explícitamente.
+      AUTH_ALLOWED_REDIRECTS: ${AUTH_ALLOWED_REDIRECTS:-ready://auth}
+      AUTH_REQUIRED: ${AUTH_REQUIRED:-false}
     depends_on:
       postgres:
         condition: service_healthy
