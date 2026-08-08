@@ -6,6 +6,7 @@ import { Alert } from 'react-native';
 import { z } from 'zod';
 
 import { resolveImageUrl } from '../../../shared/utils/resolveImageUrl';
+import { resizeForUpload } from '../services/resizeForUpload';
 import {
   useCategories,
   useColors,
@@ -61,21 +62,23 @@ export function useClothingItemForm({
   );
   const [imageUrl, setImageUrl] = useState<string | null>(initialImageUrl);
 
-  const handleAsset = (asset: ImagePicker.ImagePickerAsset) => {
+  const handleAsset = async (asset: ImagePicker.ImagePickerAsset) => {
     setImageUri(asset.uri);
     setImageUrl(null);
-    uploadImage.mutate(
-      {
-        uri: asset.uri,
-        name: asset.fileName ?? asset.uri.split('/').pop() ?? 'photo.jpg',
-        type: asset.mimeType ?? 'image/jpeg',
-      },
-      {
-        onSuccess: (img) => setImageUrl(img.url),
-        onError: () =>
-          Alert.alert('Error', 'No se pudo subir la imagen. Probá de nuevo.'),
-      },
-    );
+    let file;
+    try {
+      // Reescala + re-encodea a JPEG antes de subir: normaliza HEIC del carrete y
+      // achica el peso, evitando los rechazos 415/413 del backend. Ver resizeForUpload.
+      file = await resizeForUpload(asset.uri);
+    } catch {
+      Alert.alert('Error', 'No se pudo procesar la imagen. Probá de nuevo.');
+      return;
+    }
+    uploadImage.mutate(file, {
+      onSuccess: (img) => setImageUrl(img.url),
+      onError: () =>
+        Alert.alert('Error', 'No se pudo subir la imagen. Probá de nuevo.'),
+    });
   };
 
   const takePhoto = async () => {
@@ -89,10 +92,11 @@ export function useClothingItemForm({
     }
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ['images'],
-      quality: 0.7,
+      // La compresión la hace resizeForUpload (única fuente); acá tomamos calidad plena.
+      quality: 1,
     });
     if (result.canceled) return;
-    handleAsset(result.assets[0]);
+    await handleAsset(result.assets[0]);
   };
 
   const pickImage = async () => {
@@ -106,10 +110,11 @@ export function useClothingItemForm({
     }
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
-      quality: 0.7,
+      // La compresión la hace resizeForUpload (única fuente); acá tomamos calidad plena.
+      quality: 1,
     });
     if (result.canceled) return;
-    handleAsset(result.assets[0]);
+    await handleAsset(result.assets[0]);
   };
 
   const chooseImageSource = () => {
