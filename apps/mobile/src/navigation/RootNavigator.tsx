@@ -1,5 +1,6 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { ActivityIndicator, View } from 'react-native';
 
 import { LoginScreen } from '../features/auth/screens/LoginScreen';
 import { AddClothingItemScreen } from '../features/clothes/screens/AddClothingItemScreen';
@@ -23,7 +24,17 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
  * desde una pantalla-tab lo empuja sobre la barra de tabs.
  */
 export function RootNavigator() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isRestoring } = useAuth();
+
+  // Leer el token del almacenamiento seguro es asíncrono: sin esta espera, quien ya tenía
+  // sesión vería el Login por un instante antes de que la app lo reemplace.
+  if (isRestoring) {
+    return (
+      <View className="flex-1 items-center justify-center bg-background">
+        <ActivityIndicator color={colors.primary.DEFAULT} />
+      </View>
+    );
+  }
 
   return (
     <NavigationContainer>
@@ -42,46 +53,46 @@ export function RootNavigator() {
           />
         ) : (
           <>
-        <Stack.Screen
-          name="MainTabs"
-          component={MainTabs}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="ClothingDetail"
-          component={ClothingDetailScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="AddClothingItem"
-          component={AddClothingItemScreen}
-          options={{ headerShown: false, presentation: 'modal' }}
-        />
-        <Stack.Screen
-          name="EditClothingItem"
-          component={EditClothingItemScreen}
-          options={{ headerShown: false, presentation: 'modal' }}
-        />
-        <Stack.Screen
-          name="OutfitDetail"
-          component={OutfitDetailScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="AddOutfit"
-          component={AddOutfitScreen}
-          options={{ headerShown: false, presentation: 'modal' }}
-        />
-        <Stack.Screen
-          name="EditOutfit"
-          component={EditOutfitScreen}
-          options={{ headerShown: false, presentation: 'modal' }}
-        />
-        <Stack.Screen
-          name="PlanPicker"
-          component={PlanPickerScreen}
-          options={{ headerShown: false, presentation: 'modal' }}
-        />
+            <Stack.Screen
+              name="MainTabs"
+              component={MainTabs}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="ClothingDetail"
+              component={ClothingDetailScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="AddClothingItem"
+              component={AddClothingItemScreen}
+              options={{ headerShown: false, presentation: 'modal' }}
+            />
+            <Stack.Screen
+              name="EditClothingItem"
+              component={EditClothingItemScreen}
+              options={{ headerShown: false, presentation: 'modal' }}
+            />
+            <Stack.Screen
+              name="OutfitDetail"
+              component={OutfitDetailScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="AddOutfit"
+              component={AddOutfitScreen}
+              options={{ headerShown: false, presentation: 'modal' }}
+            />
+            <Stack.Screen
+              name="EditOutfit"
+              component={EditOutfitScreen}
+              options={{ headerShown: false, presentation: 'modal' }}
+            />
+            <Stack.Screen
+              name="PlanPicker"
+              component={PlanPickerScreen}
+              options={{ headerShown: false, presentation: 'modal' }}
+            />
           </>
         )}
       </Stack.Navigator>

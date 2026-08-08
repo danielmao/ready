@@ -1,15 +1,18 @@
-import { Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { MainTabScreenProps } from '../../../navigation/types';
-import { fonts } from '../../../theme';
+import { colors, fonts } from '../../../theme';
+import { useProfileController } from '../hooks/useProfileController';
 
 /**
- * Pantalla · Perfil (tab del diseño). El canvas Ready.dc no detalla su contenido, así que en
- * el MVP es un placeholder con la identidad de marca. Auth de Google está diferida (ver
- * CLAUDE.md §1): por ahora la sesión es single-user con `userId` fijo en el backend.
+ * Pantalla · Perfil (tab del diseño). Muestra la cuenta de Google con la que entraste y
+ * permite cerrar sesión. Presentacional: toda la lógica vive en `useProfileController`.
  */
 export function ProfileScreen(_props: MainTabScreenProps<'PerfilTab'>) {
+  const { data, state, actions } = useProfileController();
+  const { user } = data;
+
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <View className="px-6 pb-1 pt-3">
@@ -25,20 +28,62 @@ export function ProfileScreen(_props: MainTabScreenProps<'PerfilTab'>) {
       </View>
 
       <View className="flex-1 items-center justify-center px-11">
-        <View className="h-[132px] w-[132px] items-center justify-center rounded-full bg-primary-soft">
-          <View className="h-3.5 w-3.5 rounded-full bg-primary" />
-          <View className="mt-1 h-4 w-8 rounded-t-2xl bg-primary" />
-        </View>
-        <Text
-          className="mt-7 text-center text-[28px] leading-tight text-text-primary"
-          style={{ fontFamily: fonts.serif }}
+        {state.isLoading ? (
+          <ActivityIndicator color={colors.primary.DEFAULT} />
+        ) : state.isError ? (
+          <>
+            <Text className="text-center text-[15px] leading-relaxed text-text-secondary">
+              No pudimos cargar tu perfil.
+            </Text>
+            <Pressable
+              onPress={actions.refetch}
+              className="mt-5 h-11 items-center justify-center rounded-2xl border border-border px-6"
+            >
+              <Text className="text-[15px] font-medium text-text-primary">
+                Reintentar
+              </Text>
+            </Pressable>
+          </>
+        ) : (
+          <>
+            {user?.photoUrl ? (
+              <Image
+                source={{ uri: user.photoUrl }}
+                className="h-[132px] w-[132px] rounded-full"
+              />
+            ) : (
+              <View className="h-[132px] w-[132px] items-center justify-center rounded-full bg-primary-soft">
+                <Text
+                  className="text-5xl text-primary"
+                  style={{ fontFamily: fonts.serif }}
+                >
+                  {user?.name?.[0]?.toUpperCase() ?? 'R'}
+                </Text>
+              </View>
+            )}
+            <Text
+              className="mt-7 text-center text-[28px] leading-tight text-text-primary"
+              style={{ fontFamily: fonts.serif }}
+            >
+              {user?.name}
+            </Text>
+            <Text className="mt-1.5 text-center text-[15px] text-text-secondary">
+              {user?.email}
+            </Text>
+          </>
+        )}
+      </View>
+
+      <View className="px-8 pb-10">
+        <Pressable
+          testID="sign-out"
+          onPress={actions.signOut}
+          className="h-[52px] items-center justify-center rounded-2xl border border-border bg-surface"
         >
-          Tu cuenta, próximamente
-        </Text>
-        <Text className="mt-2.5 text-center text-[15px] leading-relaxed text-text-secondary">
-          Acá vas a poder iniciar sesión con Google y gestionar tus
-          preferencias. Por ahora Ready funciona en modo single-user.
-        </Text>
+          <Text className="text-base font-medium text-error">
+            Cerrar sesión
+          </Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );

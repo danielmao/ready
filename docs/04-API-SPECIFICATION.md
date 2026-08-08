@@ -1,13 +1,40 @@
 # 04 · Especificación de la API
 
-> Expansión de la sección 4 del [README](../README.md). Base: `/api`. JSON. MVP sin auth
-> (single-user; el `userId` lo resuelve el guard `@CurrentUser`).
+> Expansión de la sección 4 del [README](../README.md). Base: `/api`. JSON. El `userId` lo
+> resuelve el guard `@CurrentUser` a partir del Bearer token; sin token cae al usuario único
+> del MVP mientras `AUTH_REQUIRED=false` (ver Módulo: Auth).
 
 ## Convenciones
 
 - Listados paginados: `?page=1&limit=20` → `{ data, total, page, limit }`.
 - Errores: formato NestJS `{ statusCode, message, error }`.
 - `DELETE` = archivado lógico (`isActive=false`), no borrado físico.
+- **Autenticación:** `Authorization: Bearer <jwt>` en todos los endpoints salvo los de
+  `/api/auth` y `/api/health`. Token inválido o vencido → `401`.
+
+---
+
+## Módulo: Auth
+
+Los dos endpoints son **navegables**: no los consume `fetch`, los abre el navegador que la app
+levanta con `openAuthSessionAsync`. Por eso responden `302` en vez de JSON.
+
+### `GET /api/auth/google?redirect_uri=<deep link>`
+Arranca el login. Valida el destino contra la lista blanca (`AUTH_ALLOWED_REDIRECTS`; en dev
+también acepta los `exp://` de Expo Go hacia IP privada) y redirige a Google con `state`
+firmado y `code_challenge` (PKCE S256).
+
+- `302` → `accounts.google.com`
+- `400` si el `redirect_uri` no está permitido.
+
+### `GET /api/auth/google/callback?code&state`
+Lo llama Google. Canjea el código, verifica el `id_token` (firma, emisor, audiencia y
+`email_verified`), resuelve o crea el usuario y emite el JWT de Ready.
+
+- `302` → `<redirect_uri>?token=<jwt>` en el camino feliz.
+- `302` → `<redirect_uri>?error=<code>` si el usuario canceló (`access_denied`) o falló el
+  canje (`exchange_failed`): al usuario hay que devolverlo a la app, no dejarlo en el navegador.
+- `400` si el `state` es inválido o expiró — sin él no hay destino confiable.
 
 ---
 
@@ -138,14 +165,14 @@ Quita el planeado activo → `{ success: true }`.
 
 | Método | Ruta | Propósito |
 |--------|------|-----------|
-| GET | `/api/users/me` | Perfil del usuario único (MVP) |
+| GET | `/api/users/me` | Perfil del usuario de la sesión |
 | PUT | `/api/users/me` | Actualizar `name`, `photoUrl` |
 
 ---
 
 ## Futuro (NO en MVP)
 
-- `POST /api/auth/google`, `GET /api/auth/verify` — Épica 1.
+- Refresh tokens y expiración corta del access token (hoy dura 30 días, sin refresh).
 - `/api/history`, `/api/ratings` — Épica 2.
 - `/api/suggestions` (ocasión/clima/IA) — Épica 2/3.
 

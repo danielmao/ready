@@ -4,18 +4,31 @@
 
 ## Seguridad
 
-| Aspecto | MVP | Futuro (Épica 1) |
-|---------|-----|------------------|
-| Autenticación | `userId` fijo inyectado por guard `@CurrentUser` (single-user) | Google OAuth + JWT |
-| Autorización | Scope implícito al único usuario | Filtrado por `userId` del token en cada repo/query |
+| Aspecto | Estado actual | Futuro |
+|---------|---------------|--------|
+| Autenticación | **Google OAuth 2.0 mediado por el backend + JWT propio** (`Bearer`). Sin token se cae al usuario del MVP mientras `AUTH_REQUIRED=false` | `AUTH_REQUIRED=true` cuando la app publicada sólo entre con Google |
+| Sesión | JWT firmado con `JWT_SECRET`, 30 días, guardado en el dispositivo con `expo-secure-store` (Keychain / EncryptedSharedPreferences) | Refresh tokens + access token de minutos |
+| Autorización | Filtrado por el `userId` del token en cada repo/query | igual |
 | Validación de entrada | DTOs con `class-validator` en todos los endpoints | igual |
-| Subida de imágenes | Validar tipo/tamaño; almacenar en `UPLOADS_DIR` | mover a bucket S3 + URLs firmadas |
+| Subida de imágenes | Bucket S3 privado; la API sirve los objetos, el host de storage no se expone | URLs firmadas |
 | Errores | Filtro global de excepciones (no filtra stack al cliente) | igual |
-| Secrets | Sólo `DATABASE_URL` en `.env` (no commiteado) | secret manager |
+| Secrets | `DATABASE_URL`, `JWT_SECRET`, `GOOGLE_CLIENT_SECRET` y llaves S3 en `.env` (no commiteado) | secret manager |
 
 > **Nota de diseño:** todas las entidades llevan `userId` desde el MVP. Activar auth
-> multi-usuario sólo cambia *cómo* se resuelve ese `userId` (del guard fijo al JWT), no
+> multi-usuario sólo cambió *cómo* se resuelve ese `userId` (del guard fijo al JWT), no
 > el modelo ni los casos de uso.
+
+### Superficie de ataque del login y cómo se cierra
+
+| Riesgo | Mitigación |
+|--------|------------|
+| **Robo del `client_secret`** | Nunca entra al bundle de la app: el canje del código ocurre server-to-server. Es la razón principal de mediar el OAuth por el backend. |
+| **Open redirect / robo de sesión** | El callback redirige con el token en la URL, así que el destino se valida contra `AUTH_ALLOWED_REDIRECTS` antes de emitirlo. En dev se acepta además `exp://` hacia loopback o IP privada (RFC 1918), nunca en producción. |
+| **Interceptación del `code`** | PKCE S256: el `code_verifier` nunca sale del backend (viaja firmado dentro del `state`). |
+| **CSRF / manipulación del `state`** | El `state` es un JWT firmado con TTL de 10 min; si no valida, `400` y el flujo muere. |
+| **`id_token` de otra aplicación** | Se verifica firma, emisor y **audiencia** contra nuestro `client_id`. |
+| **Apropiación de cuenta por email** | La vinculación por email sólo procede si Google marcó `email_verified`. |
+| **Token vencido usado en silencio** | Un Bearer inválido siempre es `401`, incluso con el fallback demo activo: nunca degrada a otro usuario. |
 
 ## Estrategia de testing
 

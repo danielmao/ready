@@ -16,12 +16,18 @@ const MVP_USER_ID =
 
 async function main(): Promise<void> {
   // 1) Usuario único del MVP.
+  // El email NO es decorativo: al entrar con Google, `auth` vincula la identidad al usuario
+  // que ya tenga ese email (ver FindOrCreateByGoogleUseCase). Poniendo acá el mail del dueño
+  // del demo, el login real cae sobre este usuario y su armario sembrado, en vez de crear
+  // una cuenta nueva y vacía. Configurable con MVP_USER_EMAIL.
+  const MVP_USER_EMAIL = process.env.MVP_USER_EMAIL ?? 'dnl.mtorres@gmail.com';
+
   await prisma.user.upsert({
     where: { id: MVP_USER_ID },
-    update: {},
+    update: { email: MVP_USER_EMAIL },
     create: {
       id: MVP_USER_ID,
-      email: 'mvp@ready.app',
+      email: MVP_USER_EMAIL,
       name: 'Ready MVP User',
     },
   });
@@ -87,7 +93,9 @@ async function main(): Promise<void> {
   }
 
   // eslint-disable-next-line no-console
-  console.log('Seed OK: user fijo + categorías + colores + occasions globales.');
+  console.log(
+    'Seed OK: user fijo + categorías + colores + occasions globales.',
+  );
 }
 
 main()

@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { LoggerModule } from 'nestjs-pino';
 
+import { AuthModule } from './auth/infrastructure/auth.module';
 import { ClothesModule } from './clothes/infrastructure/clothes.module';
 import { OutfitsModule } from './outfits/infrastructure/outfits.module';
 import { PlanningModule } from './planning/infrastructure/planning.module';
@@ -25,6 +26,7 @@ import { UsersModule } from './users/infrastructure/users.module';
     OutfitsModule,
     PlanningModule,
     UsersModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

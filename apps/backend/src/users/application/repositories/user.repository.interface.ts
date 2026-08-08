@@ -6,6 +6,14 @@ export interface UserUpdate {
   photoUrl?: string | null;
 }
 
+/** Identidad que devuelve Google tras un login exitoso. */
+export interface GoogleIdentity {
+  googleId: string;
+  email: string;
+  name: string;
+  photoUrl: string | null;
+}
+
 /**
  * Contrato del repositorio de usuarios. Lo define `application` (no conoce Prisma); lo
  * implementa `infrastructure/persistence`.
@@ -13,6 +21,11 @@ export interface UserUpdate {
 export interface UserRepository {
   findById(id: string): Promise<User | null>;
   update(id: string, data: UserUpdate): Promise<User>;
+  findByGoogleId(googleId: string): Promise<User | null>;
+  findByEmail(email: string): Promise<User | null>;
+  /** Vincula una identidad de Google a un usuario que ya existía (match por email). */
+  linkGoogleId(id: string, identity: GoogleIdentity): Promise<User>;
+  createFromGoogle(identity: GoogleIdentity): Promise<User>;
 }
 
 export const USER_REPOSITORY = Symbol('UserRepository');

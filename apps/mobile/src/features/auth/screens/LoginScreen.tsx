@@ -1,17 +1,16 @@
-import { Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuth } from '../../../providers/AuthProvider';
-import { fonts } from '../../../theme';
+import { colors, fonts } from '../../../theme';
 
 /**
- * Pantalla de bienvenida / login. En el MVP la auth de Google está **diferida**: el botón no
- * valida nada, sólo marca la sesión como iniciada y deja pasar a la app (single-user en el
- * backend, ver CLAUDE.md §1). Cuando entre OAuth real, acá se cablea el flujo; el resto de la
- * app no cambia.
+ * Pantalla de bienvenida / login con Google. El botón abre la sesión de navegador contra
+ * `/api/auth/google`; el resto (canje del código, alta del usuario, emisión del token) lo
+ * resuelve el backend y vuelve por deep link. Ver `features/auth/services/googleLogin.ts`.
  */
 export function LoginScreen() {
-  const { signIn } = useAuth();
+  const { signIn, isSigningIn, error } = useAuth();
 
   return (
     <SafeAreaView className="flex-1 bg-background">
@@ -42,19 +41,31 @@ export function LoginScreen() {
       <View className="px-8 pb-12">
         <Pressable
           testID="google-signin"
-          onPress={signIn}
+          onPress={() => void signIn()}
+          disabled={isSigningIn}
+          style={{ opacity: isSigningIn ? 0.6 : 1 }}
           className="h-[56px] flex-row items-center justify-center gap-3 rounded-2xl border border-border bg-surface"
         >
-          <View className="h-6 w-6 items-center justify-center rounded-full bg-surface-alt">
-            <Text className="text-base font-bold text-secondary">G</Text>
-          </View>
-          <Text className="text-base font-medium text-text-primary">
-            Continuar con Google
-          </Text>
+          {isSigningIn ? (
+            <ActivityIndicator color={colors.secondary.DEFAULT} />
+          ) : (
+            <>
+              <View className="h-6 w-6 items-center justify-center rounded-full bg-surface-alt">
+                <Text className="text-base font-bold text-secondary">G</Text>
+              </View>
+              <Text className="text-base font-medium text-text-primary">
+                Continuar con Google
+              </Text>
+            </>
+          )}
         </Pressable>
-        <Text className="mt-4 text-center text-xs text-text-muted">
-          Modo demo · el ingreso es de muestra (single-user).
-        </Text>
+        {error ? (
+          <Text className="mt-4 text-center text-xs text-error">{error}</Text>
+        ) : (
+          <Text className="mt-4 text-center text-xs text-text-muted">
+            Entrás con tu cuenta de Google. Sólo leemos tu nombre, mail y foto.
+          </Text>
+        )}
       </View>
     </SafeAreaView>
   );

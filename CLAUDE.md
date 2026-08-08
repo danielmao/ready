@@ -24,7 +24,7 @@ Decisiones de alcance confirmadas con el usuario:
 |------|--------------|
 | Planning | Un único "próximo outfit" activo. Calendario por fecha = roadmap (Épica 2; `plannedFor` deja la puerta abierta). |
 | Sugerencias clima/ocasión | **Fuera del MVP** (Épica 2/3). |
-| Auth (Google) | **Diferida** — backend single-user con `userId` fijo vía guard `@CurrentUser`. |
+| Auth (Google) | ~~Diferida~~ → **implementada** (2026-08-08): OAuth 2.0 mediado por el backend + JWT propio. El guard `@CurrentUser` resuelve el `userId` del token; sin token cae al usuario fijo mientras `AUTH_REQUIRED=false`. Ver `docs/specs/active/google-auth.md`. |
 | Base de datos | **PostgreSQL + Prisma**. |
 
 ## 2. Stack y decisiones confirmadas
@@ -121,13 +121,26 @@ se guarda lo que el usuario marca como importante.
   `OutfitsFacade`, dominio terminal sin facade) + UI mobile con controller-hooks (tab **Planear**
   + `PlanPicker` modal). `jest src/planning` (13) + `lint:arch` + e2e HTTP 15/15 verdes.
 - ✅ **Dominio `users` (mínimo)**: `GET/PUT /api/users/me` sobre el usuario único (DDD por capas).
-- ✅ **Login (no funcional)**: `LoginScreen` + `AuthProvider` (React Context, sin deps nuevas).
-  Botón "Continuar con Google" que sólo marca la sesión y deja pasar; `RootNavigator` actúa de
-  gate (Login ↔ app). Auth real de Google sigue **diferida** (§1); punto de extensión listo.
+- ✅ **Dominio `auth` — login con Google FUNCIONAL** (rama `finalproject-dmtu`): OAuth 2.0
+  **mediado por el backend** (cliente *Web application*; el `client_secret` nunca entra al
+  bundle y la app sigue en **Expo Go**, sin dev build). `GET /api/auth/google` → 302 a Google
+  con `state` firmado + PKCE S256; `GET /api/auth/google/callback` → canje, verificación del
+  `id_token` (firma/emisor/audiencia/`email_verified`), alta o vinculación del usuario vía
+  `UsersFacade` (nueva) y 302 al deep link con el JWT de Ready. `CurrentUserGuard` valida el
+  Bearer con fallback a `MVP_USER_ID` mientras `AUTH_REQUIRED=false` (mantiene vivos demo y
+  e2e). Migración `users.googleId`. Mobile: `expo-web-browser` + `expo-secure-store`,
+  interceptor Bearer, 401 → cierra sesión, Perfil real con "Cerrar sesión".
+  `jest src/auth src/users` + `lint:arch` + typecheck mobile + smoke HTTP verdes.
+  Spec: `docs/specs/active/google-auth.md`.
+  - ⚠️ El seed fija `email: dnl.mtorres@gmail.com` **a propósito**: `auth` vincula por email,
+    así el login real cae sobre el usuario sembrado (con su armario) en vez de crear uno vacío.
+  - ⚠️ Requiere `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` en `apps/backend/.env` (ver
+    `.env.example`). Sin ellas la API arranca igual, pero el login falla.
 
 **Siguiente:**
-1. MVP funcional cerrado. Curar la evidencia de IA (`/save-prompt` + `/curate-prompts`) y, si se
-   quiere, redeploy con `ready-deploy` desde la rama de esta sesión.
+1. Completar las credenciales de Google en `.env` y hacer el primer login real end-to-end.
+2. Curar la evidencia de IA (`/save-prompt` + `/curate-prompts`) y, si se quiere, redeploy con
+   `ready-deploy` (recordá agregar el redirect URI del deploy en Google Cloud).
 
 ## 7. Reglas de trabajo (enforcement y Definición de terminado)
 

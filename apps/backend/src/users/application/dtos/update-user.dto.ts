@@ -1,4 +1,10 @@
-import { IsOptional, IsString, IsUrl, MaxLength, MinLength } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsUrl,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 /** Body de `PUT /api/users/me`. Actualiza el perfil del usuario único. */
 export class UpdateUserDto {

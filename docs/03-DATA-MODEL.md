@@ -341,6 +341,7 @@ Valores: `planned`, `confirmed`, `cancelled`
 | Campo | Tipo |
 |---|---|
 | `id` | `String` |
+| `googleId` | `String?` |
 | `email` | `String` |
 | `name` | `String` |
 | `photoUrl` | `String?` |

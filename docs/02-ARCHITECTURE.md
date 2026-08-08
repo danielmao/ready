@@ -61,7 +61,11 @@ graph TB
 | Presentación mobile | Patrón **controller-hook** (container/presenter) | Lógica (permisos, mutaciones, RHF, estado, derivados) en `use<X>Controller`/`use<X>Form`; las vistas quedan presentacionales. Rige `CODING-CONVENTIONS.md §5`. |
 | Inyección de dependencias | Contra contratos vía token (`@Inject(SYMBOL)`) | El dominio depende de interfaces, no de clases concretas de infra. |
 | ORM / DB | Prisma + PostgreSQL | Dominio relacional (N:M tags/ocasiones, OutfitItem); migraciones y tipado fuertes. |
-| Single-user en MVP | `userId` fijo vía guard | Evita el costo de auth sin condicionar el modelo (todas las entidades ya tienen `userId`). |
+| Single-user en MVP | ~~`userId` fijo vía guard~~ → **JWT propio, con fallback al usuario fijo** | `CurrentUserGuard` resuelve el `userId` del Bearer token si viene; si no viene y `AUTH_REQUIRED=false`, cae a `MVP_USER_ID`. Ese fallback es lo que mantiene vivos el modo demo y los e2e sin login. Un token presente pero inválido siempre es 401: degradar a otro usuario en silencio sería peor que fallar. |
+| Login con Google | **OAuth 2.0 mediado por el backend** (cliente tipo *Web application*), no SDK nativo | El canje del código ocurre server-to-server, así el `client_secret` nunca vive en el bundle de la app —de donde cualquiera podría extraerlo—. Además evita módulos nativos: la app sigue corriendo en **Expo Go**, sin development build ni EAS. El costo es que el login abre el navegador del sistema en vez de la hoja nativa de Google. Ver `docs/specs/active/google-auth.md`. |
+| Estado del flujo OAuth | `state` = **JWT firmado de vida corta** (10 min) con el destino y el verifier PKCE | Sin sesiones en memoria: el intento de login sobrevive a un reinicio del proceso y funcionaría con más de una instancia. El `state` firmado es además lo que impide que alguien elija a mano a qué app volver. |
+| Destino del token | **Lista blanca** de deep links (`AUTH_ALLOWED_REDIRECTS`) | El callback termina redirigiendo **con el access token en la URL**: sin lista blanca sería un open redirect que entrega sesiones ajenas. En dev se aceptan además los `exp://` de Expo Go hacia IP privada, porque el host cambia con la red. |
+| Vinculación de cuentas | Match por `googleId`; si no, por **email verificado** | Deja que el usuario sembrado del MVP (con su armario ya cargado) sea el mismo que entra por Google, en vez de aparecer una cuenta nueva y vacía. Es seguro porque Google ya validó el email (`email_verified`) y es el único IdP admitido. |
 | Planning = 1 activo | Estado `planned/confirmed/cancelled` | Fiel al producto "próximo outfit"; `plannedFor` deja abierto el calendario. |
 | Imágenes | ~~Filesystem local (MVP)~~ → **S3 (MinIO en local)** | Reemplaza el filesystem: la subida real de fotos usa object storage (AWS S3 en prod, MinIO S3-compatible en dev vía `compose.dev.yaml`), nunca disco del servidor. Un **puerto** `ImageStorageService` (token `IMAGE_STORAGE`) vive en `application/storage/` y el **adapter** `S3ImageStorageService` (`@aws-sdk/client-s3`) en `infrastructure/storage/`. El **bucket es privado**: la API lee los objetos con credenciales y los sirve por `GET /api/clothes/images/:key`; el host de storage nunca se expone. El contrato API sigue exponiendo sólo URLs. Ver `docs/specs/active/clothes-image-upload.md`. |
 | Logging | **`nestjs-pino` (structured)** | Logs estructurados (objeto-primero) con IDs de dominio; integración nativa con Nest. Reglas en `CODING-CONVENTIONS.md §3`. |
@@ -227,6 +231,15 @@ cd apps/backend && npx depcruise src --config .dependency-cruiser.cjs
 <!-- AUTO-GENERATED:modules:start -->
 <!-- Generado por scripts/arch-docs.py — no editar a mano dentro de este bloque. -->
 
+### Dominio `auth`
+
+- **Casos de uso:** `CompleteGoogleLoginUseCase`, `StartGoogleLoginUseCase`
+- **Fachada:** —
+- **Contrato de repositorio:** —
+- **Services:** `app-redirect.validator`, `pkce`
+- **Emitters:** —
+- **Controllers:** `AuthController`
+
 ### Dominio `clothes`
 
 - **Casos de uso:** `ArchiveClothingItemUseCase`, `CreateClothingItemUseCase`, `CreateOccasionUseCase`, `CreateTagUseCase`, `GetClothingItemImageUseCase`, `GetClothingItemUseCase`, `ListCategoriesUseCase`, `ListClothingItemsUseCase`, `ListColorsUseCase`, `ListOccasionsUseCase`, `ListTagsUseCase`, `UpdateClothingItemUseCase`, `UploadClothingItemImageUseCase`
@@ -266,8 +279,9 @@ cd apps/backend && npx depcruise src --config .dependency-cruiser.cjs
 
 ### Dominio `users`
 
-- **Casos de uso:** `GetMeUseCase`, `UpdateMeUseCase`
-- **Fachada:** —
+- **Casos de uso:** `FindOrCreateByGoogleUseCase`, `GetMeUseCase`, `UpdateMeUseCase`
+- **Fachada `UsersFacade`** (API pública) — métodos: `resolveFromGoogle(identity: GoogleIdentityInput,): Promise<ResolvedUser>`
+- **Contrato `GoogleIdentity`** — token: `USER_REPOSITORY`
 - **Contrato `UserRepository`** — token: `USER_REPOSITORY`
 - **Contrato `UserUpdate`** — token: `USER_REPOSITORY`
 - **Services:** —
@@ -283,6 +297,7 @@ cd apps/backend && npx depcruise src --config .dependency-cruiser.cjs
 
 | Dominio | Consume (vía fachada) |
 |---|---|
+| `auth` | `users` |
 | `clothes` | — |
 | `outfits` | `clothes` |
 | `planning` | `outfits` |
@@ -290,6 +305,7 @@ cd apps/backend && npx depcruise src --config .dependency-cruiser.cjs
 
 ```mermaid
 graph LR
+    auth --> users
     outfits --> clothes
     planning --> outfits
 ```
