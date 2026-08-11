@@ -281,6 +281,23 @@ hacer que se puedan crear, modificar y eliminar outfits. crear pr y desplegar es
 > controller-hook. **PR #9 `feat/outfits-domain` → `feature-entrega2-dmtu`**, desplegado a AWS.
 > Curado en [`prompts/backend/04-…`](prompts/backend/04-dominio-outfits-crud-pr-deploy.md).
 
+**Prompt 3 bis — login con Google funcional (dominio Auth):**
+```
+funcional el autenticador de google (para eso necesito el link del proyecto google)
+asisteme para crearte uno y dejarlo como variable de entorno .
+```
+
+> Intención: cerrar la última deuda del MVP —el botón de Google no validaba nada— y hacerlo con
+> las credenciales fuera del código. La bifurcación clave: el SDK **nativo** de Google Sign-In ya
+> no corre en Expo Go (exige development build y 3 clientes OAuth con SHA-1), así que se eligió
+> **OAuth mediado por el backend** con un único cliente *Web application*: el `client_secret`
+> nunca entra al bundle y la app sigue en Expo Go. Resultado: dominio `auth` (DDD, terminal),
+> `UsersFacade` nueva, migración `users.googleId`, `state` firmado + PKCE S256, lista blanca de
+> deep links (el callback viaja con el token en la URL), y guard con fallback a `MVP_USER_ID`
+> para no romper demo ni e2e. El asistente guió la creación del cliente en Google Cloud pero
+> **nunca manipuló el secret**: lo cargó el usuario en el `.env` gitignoreado. Curado en
+> [`prompts/backend/05-…`](prompts/backend/05-login-google-oauth-mediado-backend.md).
+
 **Prompt 4 — separar lógica de la vista (patrón controller-hook):**
 ```
 veo que a veces sueles poner muucho codigo en la vista, mezclando la logica de visualizacion
@@ -452,7 +469,7 @@ sistema funciona así:
 
 - 🧭 **Kickoff / producto** — definición de Ready, stack y entregable 1 (1 prompt).
 - 📐 **Documentación / estructura** — especificación del proyecto, MVP y formato AI4Devs (2 prompts).
-- 🏗️ **Arquitectura backend** — DDD por capas, contratos, boundaries, decisión de mantener la estructura, y la implementación de los features `clothes` y `outfits` con TDD/e2e/deploy (4 prompts).
+- 🏗️ **Arquitectura backend** — DDD por capas, contratos, boundaries, decisión de mantener la estructura, la implementación de los features `clothes` y `outfits` con TDD/e2e/deploy, y el **login con Google** (OAuth mediado por el backend, PKCE, JWT propio) (5 prompts).
 - 📱 **Mobile** — stack móvil (Expo/NativeWind), gestión de estado por capas, tema/paleta, correr la app (Expo SDK 54), captura de foto (cámara/galería), el patrón de presentación **controller-hook**, el UX del **outfit builder**, el **rediseño de outfits + tabs** (fiel a Claude Design) y la **fidelidad de los headers de los modales** (9 prompts).
 - ☁️ **Infra / tooling** — hook de drift de arquitectura, DevOps Architect/Technical Mentor, prerequisitos y dos cuentas de AWS, y verificación contra la API pública desplegada (5 prompts).
 - 🧰 **Meta** — sistema de captura de prompts, creación/contrato de roles, Spec Planner, directiva de cierre con `/loop` (TDD + HTTP), prompt de diseño de pantallas, higiene del PR (no subir el template) y rutina de cierre (guardar/curar prompts + merge + docs + apagar server) (8 prompts).
