@@ -14,6 +14,7 @@ Documentación modular del proyecto. El entregable principal es el
 | [07-WORK-TICKETS](07-WORK-TICKETS.md) | Backlog y tickets detallados |
 | [08-INSTALLATION-GUIDE](08-INSTALLATION-GUIDE.md) | Setup local backend + mobile |
 | [09-SECURITY-TESTING](09-SECURITY-TESTING.md) | Seguridad y estrategia de tests |
+| [evidence/deployment](evidence/deployment.md) | Salida real de la API pública desplegada |
 
 ## Decisiones del MVP
 
@@ -21,6 +22,6 @@ Documentación modular del proyecto. El entregable principal es el
 |------|----------|
 | Planning | Un único "próximo outfit" activo (no calendario en v1) |
 | Sugerencias | Fuera del MVP (roadmap Épica 2/3) |
-| Auth | Diferida — single-user con `userId` fijo |
+| Auth | Login con Google (OAuth mediado por el backend) + JWT propio — ver [`specs/active/google-auth.md`](specs/active/google-auth.md) |
 | Base de datos | PostgreSQL + Prisma |
 | Backend | DDD por capas (`domain` / `application` / `infrastructure`); cruce entre dominios solo vía facade |

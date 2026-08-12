@@ -42,7 +42,25 @@ AI4Devs (LIDR Academy); stack **React Native + NestJS + PostgreSQL/Prisma**.
 
 ### **0.4. URL del proyecto:**
 
-Sin URL pública aún (MVP en desarrollo local; ver [§1.4](#14-instrucciones-de-instalación)).
+**API pública (desplegada en AWS):** https://32-195-76-205.nip.io/api/health
+
+Endpoints navegables sin instalar nada:
+
+| Recurso | URL |
+|---------|-----|
+| Health | https://32-195-76-205.nip.io/api/health |
+| Catálogo de categorías | https://32-195-76-205.nip.io/api/clothes/categories |
+| Armario (paginado) | https://32-195-76-205.nip.io/api/clothes |
+| Outfits | https://32-195-76-205.nip.io/api/outfits |
+| Próximo outfit | https://32-195-76-205.nip.io/api/planning |
+
+**App Android:** [`ready-aws.apk`](ready-aws.apk) en la raíz del repo — build de release que
+ya apunta a esa API, listo para instalar por sideload. No hay build de iOS porque distribuir
+en iOS exige cuenta de Apple Developer.
+
+> El backend corre en una instancia EC2 que se **apaga cuando no se usa** para no gastar
+> crédito. Si los links no responden, está detenida: se prende con
+> `.claude/skills/ready-deploy/run.sh start` (~1 min). Ver [§2.4](#24-infraestructura-y-despliegue).
 
 ### 0.5. URL o archivo comprimido del repositorio
 
@@ -54,7 +72,7 @@ https://github.com/danielmao/ready
 |----------|------------------------|
 | **Planning** | Un único **"próximo outfit" activo** por usuario (no calendario). |
 | **Sugerencias por clima/ocasión** | **Fuera del MVP** → roadmap (Épica 2/3). |
-| **Autenticación** | **Diferida** → backend single-user con `userId` fijo. |
+| **Autenticación** | ~~Diferida~~ → **implementada**: login con Google (OAuth 2.0 mediado por el backend) + JWT propio. |
 | **Base de datos** | **PostgreSQL + Prisma**. |
 
 > El diseño deja explícitamente **puertas abiertas** (calendario, historial, ratings,
@@ -98,6 +116,7 @@ pesado; es un organizador rápido centrado en el acto de *alistar* el outfit.
 | Planear próximo outfit | Fijar **un** outfit como el próximo (`PlannedOutfit` activo). |
 | Ver outfit planeado | Vista del outfit listo + checklist de prendas antes de salir. |
 | Cambiar outfit planeado | Reemplazar el outfit activo (el anterior se cancela). |
+| **Login con Google** | Ingreso con la cuenta de Google; la sesión sobrevive a cerrar la app. Cada usuario ve su propio armario. |
 
 #### Importantes pero no bloqueantes (MVP si alcanza el tiempo)
 
@@ -117,51 +136,65 @@ pesado; es un organizador rápido centrado en el acto de *alistar* el outfit.
 | Recordatorios / notificaciones | Épica 2 |
 | Sugerencias por ocasión | Épica 2 |
 | Sugerencias con IA y por clima (API externa) | Épica 3 |
-| Login con Google (multi-usuario, sync) | Épica 1 (post-MVP) |
 
 > El **modelo de datos del MVP ya contempla estas extensiones** (campos opcionales,
 > entidades futuras documentadas) para no requerir migraciones disruptivas.
 
 ### **1.3. Diseño y experiencia de usuario:**
 
-La app se organiza en **3 tabs** (bottom tabs) — **Armario · Outfits · Perfil**, según el diseño
+La app se organiza en **4 tabs** (bottom tabs) — **Armario · Outfits · Planear · Perfil**, según el diseño
 aprobado (Claude Design `Ready.dc`). Los detalles/altas/ediciones se apilan en el stack raíz
-sobre los tabs. *(El tab **Planear** y los stacks de Settings/Search son roadmap — Épica 2.)*
+sobre los tabs. El stack raíz actúa además de **gate de sesión**: sin login muestra `Login`;
+con sesión, los tabs. *(Los stacks de Settings/Search son roadmap — Épica 2.)*
 
 ```mermaid
 graph TD
-    Root[RootNavigator] --> Tabs[MainTabs]
+    Root[RootNavigator · gate de sesión] -->|sin sesión| LG[LoginScreen · Google]
+    Root -->|con sesión| Tabs[MainTabs]
     Tabs --> T1[Tab Armario]
     Tabs --> T2[Tab Outfits]
-    Tabs --> T3[Tab Perfil]
+    Tabs --> T3[Tab Planear]
+    Tabs --> T4[Tab Perfil]
 
     T1 --> CL[ClothesListScreen]
     T2 --> OL[OutfitsListScreen]
-    T3 --> PR[ProfileScreen · placeholder]
+    T3 --> PL[PlannedOutfitScreen]
+    T4 --> PR[ProfileScreen · cuenta + cerrar sesión]
 
     Root -. stack .-> CD[ClothingDetailScreen]
     Root -. modal .-> CC[Add/Edit ClothingItem]
     Root -. stack .-> OD[OutfitDetailScreen]
     Root -. modal .-> OC[Add/Edit Outfit]
-
-    T3 -. roadmap .-> PO[Planear · Épica 2]
+    Root -. modal .-> PP[PlanPickerScreen]
 ```
 
 **Flujos principales:**
 
 | Flujo | Pantallas |
 |-------|-----------|
+| Ingresar | Login → *navegador de Google* → vuelve por deep link → MainTabs |
 | Crear prenda | ClothesList → *AddClothingItem (modal)* → vuelve a la lista |
 | Crear outfit | OutfitsList → *AddOutfit (modal)* → vuelve a la lista |
 | Ver detalle | ClothesList/OutfitsList → Detail → *Edit (modal)* |
-| Planear outfit *(roadmap)* | PlannedOutfit → *SelectOutfitForPlanning* → TodayOutfitPreview |
+| Planear outfit | Planear → *PlanPicker (modal)* → outfit fijado como el próximo |
+| Cerrar sesión | Perfil → confirmación → vuelve a Login |
 
 Detalle de cada pantalla (propósito, componentes, datos que consume/modifica) en
 [`docs/05-FRONTEND-INTEGRATION.md`](docs/05-FRONTEND-INTEGRATION.md).
 
 ### **1.4. Instrucciones de instalación:**
 
-Requisitos: Node 20+, Docker (Postgres), y entorno React Native (Expo o RN CLI).
+#### Opción A — probar sin instalar nada (recomendado)
+
+1. **La API ya está desplegada:** abrí https://32-195-76-205.nip.io/api/health en el navegador.
+   Los demás endpoints navegables están en [§0.4](#04-url-del-proyecto).
+2. **La app:** instalá [`ready-aws.apk`](ready-aws.apk) en un Android. Ya apunta a esa API;
+   no hay que configurar nada. Android va a pedir permitir "instalar apps de origen
+   desconocido" porque viene por sideload y no de Play Store.
+
+#### Opción B — correr todo en local
+
+Requisitos: Node 20+, Docker (Postgres) y Expo Go en el teléfono.
 
 ```bash
 # 1. Clonar
@@ -169,17 +202,31 @@ git clone git@github-dnl:danielmao/ready.git && cd ready
 
 # 2. Backend
 cd apps/backend
-cp .env.example .env            # configurar DATABASE_URL
-docker compose up -d postgres   # levantar Postgres local
+cp .env.example .env            # configurar DATABASE_URL y, si querés login, las GOOGLE_*
+docker compose -f compose.dev.yaml up -d postgres
 npm install
 npx prisma migrate dev          # crear esquema
-npm run seed                    # catálogos (categorías, colores, ocasiones) + user fijo
+npm run seed                    # catálogos (categorías, colores, ocasiones) + usuario del MVP
 npm run start:dev               # API en http://localhost:3000
 
 # 3. Mobile (en otra terminal)
 cd ../mobile
 npm install
-npm run start                   # Metro / Expo
+npm run start                   # Metro / Expo Go
+```
+
+Sin credenciales de Google la API arranca igual: el login falla, pero **el resto de la app
+funciona** porque las requests sin token caen al usuario del MVP (`AUTH_REQUIRED=false`).
+
+> **Ojo con el login en local desde un teléfono:** Google sólo acepta redirect URIs `https://`
+> —con `localhost` como única excepción—, y ese `localhost` es el del teléfono, no el de tu
+> máquina. Para probar el login real desde un dispositivo hay que apuntar la app al backend
+> desplegado: `EXPO_PUBLIC_API_URL=https://32-195-76-205.nip.io/api npm run start`.
+
+#### Regenerar el APK
+
+```bash
+cd apps/mobile && npm run build:apk
 ```
 
 Guía detallada (variables de entorno, troubleshooting, seeds): [`docs/08-INSTALLATION-GUIDE.md`](docs/08-INSTALLATION-GUIDE.md).
@@ -219,10 +266,14 @@ graph LR
 **Patrón:** cliente móvil (RN) ↔ API REST (NestJS) ↔ PostgreSQL (Prisma). Arquitectura
 **monolito modular** organizado por **bounded context**, cada uno con tres capas
 (`domain` / `application` / `infrastructure`) y la regla de dependencias
-`infra → application → domain`. Los dominios se comunican **solo vía facade**. MVP
-single-user: el backend asume un `userId` fijo inyectado por un guard/decorator; cuando
-se incorpore auth (Épica 1), ese guard pasa a resolver el usuario desde el JWT sin tocar
-los casos de uso.
+`infra → application → domain`. Los dominios se comunican **solo vía facade**.
+
+El usuario de cada request lo resuelve `CurrentUserGuard` a partir del **JWT** que Ready
+emite al terminar el login con Google. La predicción del diseño original se cumplió: al
+entrar la auth real **sólo cambió el guard** — ningún caso de uso ni controller se tocó,
+porque todos ya recibían el `userId` como parámetro. Sin token, el guard cae al usuario
+único del MVP mientras `AUTH_REQUIRED=false`, que es lo que mantiene navegables los links
+de arriba y los e2e sin login.
 
 **Por qué esta arquitectura:** permite testear el dominio sin framework ni base de datos,
 aísla Prisma en una sola capa (cambiar de ORM no toca la lógica) y hace explícitos los
@@ -267,24 +318,48 @@ ready/
 
 ### **2.4. Infraestructura y despliegue**
 
-- **MVP / desarrollo:** todo local. Postgres en Docker; API con `npm run start:dev`;
-  app con Metro/Expo.
-- **Imágenes:** se guardan en filesystem y se sirven por URL estática. Migrable a un
-  bucket S3-compatible sin cambiar el contrato de la API (sólo cambia la `imageUrl`).
-- **Despliegue futuro:** backend containerizado (Docker) + Postgres gestionado; app
-  distribuida vía Expo/EAS o stores. Fuera del alcance del entregable 1.
+**Desplegado y funcionando:** https://32-195-76-205.nip.io/api/health
+
+- **Backend:** una instancia **EC2 `t3.micro`** (Amazon Linux 2023) con **Docker Compose**:
+  `api` (NestJS sobre `node:20-slim`), `postgres:16-alpine` con volumen persistente, y
+  **Caddy** como reverse proxy, que emite el certificado TLS por Let's Encrypt sin ALB.
+  Ni la API ni la base se exponen a internet: sólo Caddy publica 80/443.
+- **Dominio:** `nip.io` sobre la Elastic IP — resuelve a la IP sin registrar un dominio.
+- **Migraciones y seed** corren al arrancar el contenedor (`docker-entrypoint.sh`), así que
+  un deploy sobre base vacía queda operativo solo.
+- **Imágenes:** bucket S3 **privado** (`ready-uploads`). El host de storage nunca se expone:
+  la API lee los objetos con credenciales y los sirve por `GET /api/clothes/images/:key` con
+  `Cache-Control` inmutable. La app reescala a 1080px antes de subir, así una foto de cámara
+  de 3 MB viaja como ~250 KB.
+- **Deploy:** un comando — `.claude/skills/ready-deploy/run.sh deploy <rama>` — que prende la
+  instancia si hace falta, hace `git pull` de la rama, reescribe el `.env` del host con los
+  secretos (S3 y Google OAuth, leídos de un `.env.deploy` local no versionado) y levanta el
+  stack. Termina verificando el health público.
+- **App móvil:** APK de release ([`ready-aws.apk`](ready-aws.apk)) construido con
+  `expo prebuild` + Gradle, sin EAS. Regenerable con `npm run build:apk`.
 - **Enforcement de arquitectura:** `dependency-cruiser` (`npm run lint:arch`) hace cumplir
-  los boundaries de capas/facades en CI; un hook de pre-commit detecta drift entre el
-  código y la documentación de arquitectura.
+  los boundaries de capas/facades; un hook de pre-commit detecta drift entre el código y la
+  documentación de arquitectura.
+
+**Costo:** la instancia se apaga cuando no se usa (`run.sh stop`). Por eso los links públicos
+pueden no responder: no están caídos, están detenidos.
+
+**Evidencia del sistema funcionando:** [`docs/evidence/deployment.md`](docs/evidence/deployment.md)
+— salida real de la API pública (health, catálogos, armario con imágenes, y los cuatro caminos
+del flujo de auth: redirect a Google con PKCE, rechazo de `redirect_uri` no permitido, 401 con
+token inválido, y el perfil resultante de un login real con Google).
 
 ### **2.5. Seguridad**
 
-| Aspecto | MVP | Futuro |
-|---------|-----|--------|
-| Autenticación | `userId` fijo (single-user) | Google OAuth + JWT |
-| Autorización | Scope implícito al único usuario | Guards por `userId` del token |
+| Aspecto | Implementado | Futuro |
+|---------|--------------|--------|
+| Autenticación | **Google OAuth 2.0 mediado por el backend** + JWT propio (`Bearer`) | `AUTH_REQUIRED=true` para cerrar el fallback anónimo |
+| Sesión en el dispositivo | Token en `expo-secure-store` (Keychain / EncryptedSharedPreferences) | Refresh tokens y access token de minutos |
+| Protección del flujo OAuth | PKCE S256, `state` firmado con TTL de 10 min, verificación de firma/emisor/**audiencia** del `id_token` | igual |
+| Robo de sesión por redirect | **Lista blanca** de deep links: el callback vuelve con el token en la URL | igual |
+| Autorización | Filtrado por el `userId` del token en cada query | igual |
 | Validación de entrada | DTOs con `class-validator` en todos los endpoints | igual |
-| Datos sensibles | No se almacenan credenciales en el MVP | Hash/secret management |
+| Secretos | `client_secret`, `JWT_SECRET` y llaves S3 sólo en el `.env` del servidor; **nunca en el bundle de la app** | Secret manager |
 
 Detalle y plan de testing de seguridad en [`docs/09-SECURITY-TESTING.md`](docs/09-SECURITY-TESTING.md).
 
@@ -350,7 +425,7 @@ Esquema Prisma, tablas pivote N:M y catálogos semilla en
 
 ## 4. Especificación de la API
 
-API REST bajo `/api`. MVP sin auth (single-user). Formato JSON. Paginación por
+API REST bajo `/api`. Autenticación por `Authorization: Bearer <jwt>`. Formato JSON. Paginación por
 `page`/`limit` en listados.
 
 ### **Clothes**
@@ -523,24 +598,37 @@ inicial y sembrar catálogos + el usuario fijo single-user.
 
 ## 7. Pull Requests
 
-Los PRs se documentarán a medida que avance la implementación (fase posterior al
-entregable 1). Convención del repo:
+Convención del repo: una rama por unidad de trabajo, PR con descripción enlazando el spec
+que cierra, y `npm run lint:arch` + tests del dominio tocado en verde antes de mergear.
 
-- Una rama por ticket (`feat/RDY-3-clothes-module`).
-- PR con descripción enlazando el ticket y las HU que cierra.
-- Checklist de tests + `npm run lint:arch` antes de merge.
+### **Pull Request 1 — [#3](https://github.com/danielmao/ready/pull/3): armario digital (dominio `clothes`)**
 
-### **Pull Request 1: _(pendiente)_**
+Primer dominio del MVP de punta a punta: backend DDD por capas (entidad `ClothingItem`,
+catálogos, contratos de repositorio, CRUD con archivado lógico), UI mobile del tab Armario y
+el primer deploy a AWS. Establece el patrón que copian los dominios siguientes.
+Spec: [`docs/specs/active/clothes-domain.md`](docs/specs/active/clothes-domain.md).
 
-Se completará al implementar el primer módulo del backend.
+### **Pull Request 2 — [#9](https://github.com/danielmao/ready/pull/9): dominio `outfits` (CRUD) + patrón controller-hook**
 
-### **Pull Request 2: _(pendiente)_**
+Segundo dominio. Consume `ClothesFacade` para validar que cada prenda existe, está activa y
+es del usuario, y expone `OutfitsFacade` para `planning`. Resuelve el wiring cross-dominio con
+módulos `@Global`, que es lo que permite respetar el boundary `cross-domain-only-via-facade`
+sin importar módulos de infraestructura ajenos. Introduce el **patrón controller-hook** en
+mobile: la lógica vive en `use<X>Controller` y las vistas quedan presentacionales.
+Spec: [`docs/specs/active/outfits-domain.md`](docs/specs/active/outfits-domain.md).
 
-Se completará al implementar el primer Tab del frontend.
+### **Pull Request 3 — [#11](https://github.com/danielmao/ready/pull/11): entrega 2 — rediseño mobile + `planning` + `users`**
 
-### **Pull Request 3: _(pendiente)_**
+Cierra el core del MVP: dominio `planning` (un único `PlannedOutfit` activo; fijar otro cancela
+el anterior de forma atómica), dominio `users` mínimo, el tab **Planear** y el rediseño de las
+pantallas de outfits fiel al diseño aprobado.
 
-Se completará con el esquema de base de datos y los seeds.
+### **Pull Request 4 — rama [`finalproject-dmtu`](https://github.com/danielmao/ready/tree/finalproject-dmtu): login con Google**
+
+Última entrega: dominio `auth` con OAuth 2.0 **mediado por el backend** (PKCE S256, `state`
+firmado, verificación del `id_token`), `UsersFacade`, migración `users.googleId`, sesión
+persistida en el dispositivo y APK de release apuntando al backend desplegado.
+Spec: [`docs/specs/active/google-auth.md`](docs/specs/active/google-auth.md).
 
 ---
 
