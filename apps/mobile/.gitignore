@@ -4,3 +4,10 @@ dist/
 web-build/
 *.log
 .DS_Store
+
+# Proyectos nativos generados por `expo prebuild` (continuous native generation): son
+# artefactos derivados de app.json, se regeneran cuando hacen falta y versionarlos
+# obligaría a mantenerlos a mano. Ver docs/08-INSTALLATION-GUIDE.md.
+/android
+/ios
+*.apk

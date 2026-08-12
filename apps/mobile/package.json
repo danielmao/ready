@@ -10,6 +10,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
+    "build:apk": "expo prebuild -p android && cd android && EXPO_PUBLIC_API_URL=https://32-195-76-205.nip.io/api ./gradlew assembleRelease && echo 'APK: android/app/build/outputs/apk/release/app-release.apk'",
     "test": "jest",
     "test:watch": "jest --watch"
   },

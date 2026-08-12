@@ -14,6 +14,9 @@ build/
 .expo/
 *.tsbuildinfo
 
+# El APK del entregable SÍ se versiona (ready-aws.apk en la raíz): es el binario que se
+# entrega/demuestra. Los intermedios del build no — los cubre apps/mobile/.gitignore.
+
 # Logs
 *.log
 npm-debug.log*
