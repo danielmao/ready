@@ -231,6 +231,42 @@ cd apps/mobile && npm run build:apk
 
 Guía detallada (variables de entorno, troubleshooting, seeds): [`docs/08-INSTALLATION-GUIDE.md`](docs/08-INSTALLATION-GUIDE.md).
 
+### **1.5. Login — cómo acceder al sistema**
+
+Ready **no tiene usuario y contraseña**: el único método de ingreso es **iniciar sesión con
+Google**. No hay credenciales que compartir, porque la app nunca ve ni almacena una contraseña
+— eso es precisamente lo que resuelve OAuth.
+
+#### Cómo se ingresa
+
+1. Abrir la app y tocar **"Continuar con Google"**.
+2. Se abre el navegador del sistema con la pantalla de Google. Elegís tu cuenta.
+3. Google devuelve a la app por deep link y ya estás adentro. **La sesión queda guardada**: la
+   próxima vez que abras la app entrás directo, sin repetir el login.
+4. Para salir: tab **Perfil → Cerrar sesión**.
+
+#### Qué datos se piden y qué se guarda
+
+Sólo los scopes `openid`, `email` y `profile`. Del `id_token` verificado se persisten **nombre,
+email y URL de la foto**; nada más. No se pide acceso a Gmail, Drive, contactos ni ningún otro
+dato. El token de Google se usa una sola vez —para saber quién sos— y se descarta: a partir de
+ahí la app viaja con un JWT propio de Ready.
+
+#### Para quien evalúe el proyecto
+
+> ⚠️ El cliente OAuth está en modo **Testing** en Google Cloud, que limita el ingreso a los
+> *test users* declarados. **Si vas a evaluar el proyecto y querés entrar con tu cuenta,
+> pedime que te agregue como test user** (basta con el email de Google) y en un minuto queda
+> habilitado. Sin eso, Google responde `access_denied` y la app muestra "No autorizaste el
+> acceso con Google".
+
+Como alternativa que **no requiere login**, la API pública expone los mismos datos que ve la
+app y es navegable directo desde el browser — ver [§0.4](#04-url-del-proyecto). El backend
+resuelve las requests sin token contra el usuario de demostración
+(`AUTH_REQUIRED=false`), así que podés recorrer armario, outfits y planificación sin
+autenticarte. La evidencia del flujo de login completo, con salida real de la API, está en
+[`docs/evidence/deployment.md`](docs/evidence/deployment.md).
+
 ---
 
 ## 2. Arquitectura del Sistema
