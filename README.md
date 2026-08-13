@@ -464,6 +464,177 @@ Esquema Prisma, tablas pivote N:M y catálogos semilla en
 API REST bajo `/api`. Autenticación por `Authorization: Bearer <jwt>`. Formato JSON. Paginación por
 `page`/`limit` en listados.
 
+### Los 3 endpoints principales (OpenAPI 3.0)
+
+Uno por cada paso del core flow del producto: **registrar una prenda → combinarlas en un outfit
+→ dejar fijado el próximo**. La especificación completa de todos los endpoints, incluidos los de
+auth, está en [`docs/04-API-SPECIFICATION.md`](docs/04-API-SPECIFICATION.md).
+
+```yaml
+openapi: 3.0.3
+info:
+  title: Ready API
+  version: 1.0.0
+servers:
+  - url: https://32-195-76-205.nip.io/api
+security:
+  - bearerAuth: []
+
+paths:
+  /clothes:
+    post:
+      summary: Registrar una prenda en el armario
+      tags: [Clothes]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, categoryId, colorId]
+              properties:
+                name:        { type: string, minLength: 1, maxLength: 120, example: "Camisa blanca de lino" }
+                categoryId:  { type: string, format: uuid }
+                colorId:     { type: string, format: uuid }
+                description: { type: string, maxLength: 500, nullable: true }
+                occasionIds: { type: array, items: { type: string, format: uuid }, uniqueItems: true }
+                tagIds:      { type: array, items: { type: string, format: uuid }, uniqueItems: true }
+                imageUrls:   { type: array, items: { type: string, format: uri } }
+      responses:
+        '201': { description: Prenda creada, content: { application/json: { schema: { $ref: '#/components/schemas/ClothingItem' } } } }
+        '400': { description: Body inválido, o categoría/color/ocasión/tag inexistente }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /outfits:
+    post:
+      summary: Crear un outfit combinando prendas
+      description: >
+        Exige **mínimo 2 prendas**: un outfit de una sola prenda no es un conjunto.
+        Cada prenda se valida contra el armario del usuario antes de componer.
+      tags: [Outfits]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, outfitItems]
+              properties:
+                name: { type: string, minLength: 1, maxLength: 120, example: "Casual de oficina" }
+                outfitItems:
+                  type: array
+                  minItems: 2
+                  items:
+                    type: object
+                    required: [clothingItemId, order]
+                    properties:
+                      clothingItemId: { type: string, format: uuid }
+                      order:          { type: integer, minimum: 1, description: "Posición en la que se muestra la prenda" }
+                occasionIds: { type: array, items: { type: string, format: uuid }, uniqueItems: true }
+                tagIds:      { type: array, items: { type: string, format: uuid }, uniqueItems: true }
+      responses:
+        '201': { description: Outfit creado }
+        '400': { description: Menos de 2 prendas, o alguna prenda no existe / no es del usuario }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /planning:
+    post:
+      summary: Fijar un outfit como el próximo
+      description: >
+        Sólo puede haber **un** `PlannedOutfit` activo por usuario. Fijar otro cancela el
+        anterior en la misma transacción, así nunca quedan dos "próximos outfits".
+      tags: [Planning]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [outfitId]
+              properties:
+                outfitId:   { type: string, format: uuid }
+                plannedFor:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  description: "Punto de extensión para el calendario (Épica 2). En el MVP viaja null."
+      responses:
+        '201': { description: Outfit fijado como el próximo }
+        '400': { description: outfitId inválido }
+        '404': { description: El outfit no existe o no es del usuario }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  responses:
+    Unauthorized:
+      description: Token ausente (con AUTH_REQUIRED=true), inválido o expirado
+  schemas:
+    ClothingItem:
+      type: object
+      properties:
+        id:          { type: string, format: uuid }
+        name:        { type: string }
+        description: { type: string, nullable: true }
+        category:    { type: object, properties: { id: { type: string }, name: { type: string } } }
+        color:       { type: object, properties: { id: { type: string }, name: { type: string }, hex: { type: string } } }
+        imageUrls:   { type: array, items: { type: string, format: uri } }
+        isActive:    { type: boolean }
+```
+
+<details>
+<summary><b>Ejemplo de petición y respuesta</b> — crear un outfit</summary>
+
+```http
+POST /api/outfits HTTP/1.1
+Host: 32-195-76-205.nip.io
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+{
+  "name": "Casual de oficina",
+  "outfitItems": [
+    { "clothingItemId": "4cf7ef8f-b329-4dd2-8cce-2eabba8b3076", "order": 1 },
+    { "clothingItemId": "45232f97-e4d4-4747-91a7-a09855296da6", "order": 2 }
+  ],
+  "occasionIds": ["a1f3c2d4-0000-4000-8000-000000000003"]
+}
+```
+
+```json
+HTTP/1.1 201 Created
+
+{
+  "id": "b7e21c90-5f3a-4d18-9c02-1e6ad4f77b21",
+  "name": "Casual de oficina",
+  "outfitItems": [
+    { "clothingItemId": "4cf7ef8f-b329-4dd2-8cce-2eabba8b3076", "order": 1 },
+    { "clothingItemId": "45232f97-e4d4-4747-91a7-a09855296da6", "order": 2 }
+  ],
+  "occasions": [{ "id": "a1f3c2d4-0000-4000-8000-000000000003", "name": "Trabajo" }],
+  "tags": [],
+  "isActive": true,
+  "createdAt": "2026-08-12T00:41:18.220Z"
+}
+```
+
+Con una sola prenda, la misma petición falla — la regla vive en el DTO, antes de tocar la base:
+
+```json
+HTTP/1.1 400 Bad Request
+
+{
+  "message": ["outfitItems must contain at least 2 elements"],
+  "error": "Bad Request",
+  "statusCode": 400
+}
+```
+
+</details>
+
+### Inventario completo de endpoints
+
 ### **Clothes**
 
 | Método | Ruta | Propósito |
