@@ -16,13 +16,14 @@ documentación** del proyecto, siguiendo el formato del repo de referencia (ver 
 ### Alcance del MVP (CERRADO — 2026-06-11)
 - **Armario digital** — catálogo de prendas con foto, categoría, color, ocasiones, tags.
 - **Crear/guardar outfits** — combinar ≥2 prendas en conjuntos reutilizables.
-- **Planear el próximo outfit** — **1 solo `PlannedOutfit` activo** por usuario (NO calendario en v1).
+- **Planear la semana** — un outfit **por día** (lunes→domingo), navegable entre semanas. Es el
+  **home** de la app. (Calendario completo/recurrencias = Épica 2.)
 
 Decisiones de alcance confirmadas con el usuario:
 
 | Tema | Decisión MVP |
 |------|--------------|
-| Planning | Un único "próximo outfit" activo. Calendario por fecha = roadmap (Épica 2; `plannedFor` deja la puerta abierta). |
+| Planning | ~~Un único "próximo outfit" activo~~ → **plan semanal** (2026-08-23): un activo por **(usuario, día)** usando `plannedFor`. Calendario completo/recurrencias siguen en Épica 2. Ver `docs/specs/active/weekly-plan-home.md`. |
 | Sugerencias clima/ocasión | **Fuera del MVP** (Épica 2/3). |
 | Auth (Google) | ~~Diferida~~ → **implementada** (2026-08-08): OAuth 2.0 mediado por el backend + JWT propio. El guard `@CurrentUser` resuelve el `userId` del token; sin token cae al usuario fijo mientras `AUTH_REQUIRED=false`. Ver `docs/specs/active/google-auth.md`. |
 | Base de datos | **PostgreSQL + Prisma**. |
@@ -116,10 +117,19 @@ se guarda lo que el usuario marca como importante.
   (`CODING-CONVENTIONS.md §5`). e2e local + `jest src/outfits` + `lint:arch` verdes. PR #9 sobre
   `feature-entrega2-dmtu`; desplegado desde `feat/outfits-domain`. Spec: `docs/specs/active/outfits-domain.md`.
 
-- ✅ **Dominio `planning`** (último del MVP) completo: backend DDD (get/set/update/confirm/cancel;
-  un único `PlannedOutfit` activo, fijar otro cancela el anterior atómicamente; consume
-  `OutfitsFacade`, dominio terminal sin facade) + UI mobile con controller-hooks (tab **Planear**
-  + `PlanPicker` modal). `jest src/planning` (13) + `lint:arch` + e2e HTTP 15/15 verdes.
+- ✅ **Dominio `planning`** (último del MVP) completo: backend DDD (consume `OutfitsFacade`,
+  dominio terminal sin facade) + UI mobile con controller-hooks.
+- ✅ **Plan semanal como home** (2026-08-23, rama `finalproject-dmtu`): `planning` pasa de "un
+  solo próximo outfit" a **un outfit por día**. Invariante: un activo por **(usuario, día)** —el
+  `updateMany` de cancelación se acota a `plannedFor`—. Nuevo `GET /api/planning/week` que
+  devuelve los **7 días siempre completos**; `POST /api/planning` exige `day`;
+  `DELETE /api/planning/:day`; `PUT /api/planning` (update) eliminado por redundante.
+  `PlanHydrationService` compone día↔outfit deduplicando por `outfitId`. Migración
+  `20260823120000_planning_by_day` = backfill + índice `(userId, plannedFor)`, sin tablas nuevas.
+  Mobile: `WeekPlanScreen` + `WeekStrip` como **primera tab** (`HomeTab`), `shared/utils/week.ts`
+  con fechas en **hora local** (el cliente manda siempre el día explícito; UTC en el server sólo
+  como default de curl). `jest src/planning` (19) + `lint:arch` + `e2e/weekly-plan.e2e.sh` 43/43
+  + mobile `tsc`/`jest` verdes. Spec: `docs/specs/active/weekly-plan-home.md`.
 - ✅ **Dominio `users` (mínimo)**: `GET/PUT /api/users/me` sobre el usuario único (DDD por capas).
 - ✅ **Dominio `auth` — login con Google FUNCIONAL** (rama `finalproject-dmtu`): OAuth 2.0
   **mediado por el backend** (cliente *Web application*; el `client_secret` nunca entra al
@@ -140,7 +150,8 @@ se guarda lo que el usuario marca como importante.
 **Siguiente:**
 1. Completar las credenciales de Google en `.env` y hacer el primer login real end-to-end.
 2. Curar la evidencia de IA (`/save-prompt` + `/curate-prompts`) y, si se quiere, redeploy con
-   `ready-deploy` (recordá agregar el redirect URI del deploy en Google Cloud).
+   `ready-deploy` (recordá agregar el redirect URI del deploy en Google Cloud). **Ojo:** el
+   redeploy corre `prisma migrate deploy`, que aplica el backfill del plan semanal.
 
 ## 7. Reglas de trabajo (enforcement y Definición de terminado)
 

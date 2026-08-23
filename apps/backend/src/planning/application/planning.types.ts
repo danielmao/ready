@@ -12,12 +12,27 @@ export type OutfitView = NonNullable<
 >;
 
 /**
- * Respuesta compuesta de planning (`GET`/`POST`/`PUT /api/planning`): el planeado + el outfit
- * hidratado + sus prendas (checklist de HU-05). `outfit` es `null` si el planeado quedó
- * huérfano (su outfit fue archivado).
+ * Un día del plan: la fecha + qué hay planeado en ella. `plannedOutfit` es `null` si el día
+ * está libre; `outfit` es `null` además cuando el planeado quedó huérfano (su outfit fue
+ * archivado), en cuyo caso la app ofrece re-elegir.
  */
-export interface PlanningView {
+export interface DayPlanView {
+  /** `YYYY-MM-DD` — la clave del día en toda la API de planning. */
+  date: string;
   plannedOutfit: PlannedOutfit | null;
   outfit: OutfitView | null;
   items: NonNullable<OutfitView['items']>;
+}
+
+/**
+ * Respuesta de `GET /api/planning/week`: los 7 días (lunes→domingo) de una semana, siempre
+ * completos —los días libres viajan con `plannedOutfit: null`— para que la home los pinte sin
+ * tener que inventar huecos.
+ */
+export interface WeekPlanView {
+  /** Lunes de la semana, `YYYY-MM-DD`. */
+  weekStart: string;
+  /** Domingo de la semana, `YYYY-MM-DD`. */
+  weekEnd: string;
+  days: DayPlanView[];
 }

@@ -1,31 +1,46 @@
 import { NotFoundException } from '@nestjs/common';
+import { Test } from '@nestjs/testing';
 
+import { PlannedOutfit } from '../../domain/entities/planned-outfit.entity';
+import { PLANNED_OUTFIT_REPOSITORY } from '../repositories/planned-outfit.repository.interface';
 import { ConfirmPlannedOutfitUseCase } from './confirm-planned-outfit.use-case';
 
 describe('ConfirmPlannedOutfitUseCase', () => {
-  const repository = { findActive: jest.fn(), confirm: jest.fn() };
-  const useCase = new ConfirmPlannedOutfitUseCase(repository as never);
+  const userId = 'user-1';
+  const repository = { findActiveByDay: jest.fn(), confirm: jest.fn() };
+  let useCase: ConfirmPlannedOutfitUseCase;
+
+  beforeEach(async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        ConfirmPlannedOutfitUseCase,
+        { provide: PLANNED_OUTFIT_REPOSITORY, useValue: repository },
+      ],
+    }).compile();
+    useCase = moduleRef.get(ConfirmPlannedOutfitUseCase);
+  });
 
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  it('confirma el planeado activo', async () => {
-    repository.findActive.mockResolvedValue({ id: 'p1' });
-    repository.confirm.mockResolvedValue({ id: 'p1', status: 'confirmed' });
+  it('confirma el planeado de ese día', async () => {
+    repository.findActiveByDay.mockResolvedValue(new PlannedOutfit({ id: 'p-1' }));
+    repository.confirm.mockResolvedValue(
+      new PlannedOutfit({ id: 'p-1', status: 'confirmed' }),
+    );
 
-    const result = await useCase.execute('user1');
+    const result = await useCase.execute({ day: '2026-08-19' }, userId);
 
-    expect(repository.confirm).toHaveBeenCalledWith('p1');
-    expect(result).toEqual({ id: 'p1', status: 'confirmed' });
+    expect(repository.confirm).toHaveBeenCalledWith('p-1');
+    expect(result.status).toBe('confirmed');
   });
 
-  it('rechaza con 404 cuando no hay planeado activo', async () => {
-    repository.findActive.mockResolvedValue(null);
+  it('falla si ese día no tiene nada planeado', async () => {
+    repository.findActiveByDay.mockResolvedValue(null);
 
-    await expect(useCase.execute('user1')).rejects.toBeInstanceOf(
+    await expect(useCase.execute({ day: '2026-08-19' }, userId)).rejects.toThrow(
       NotFoundException,
     );
-    expect(repository.confirm).not.toHaveBeenCalled();
   });
 });

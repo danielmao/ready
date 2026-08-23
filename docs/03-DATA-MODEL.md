@@ -108,12 +108,16 @@ erDiagram
 | id | UUID (PK) | |
 | userId | UUID (FK) | |
 | outfitId | UUID (FK) | |
-| plannedFor | datetime? | **punto de extensión → calendario (Épica 2)** |
+| plannedFor | datetime? | **el día planeado**, a medianoche UTC. Nullable sólo por las filas heredadas del MVP de "un solo próximo outfit" |
 | status | enum | `planned` \| `confirmed` \| `cancelled` |
 | createdAt / updatedAt | datetime | |
 
-> **Invariante:** un solo `PlannedOutfit` con `status=planned` por usuario. Al fijar uno
-> nuevo, el anterior pasa a `cancelled`.
+> **Invariante:** como mucho un `PlannedOutfit` activo (`status ≠ cancelled`) por
+> **(usuario, día)**. Al planear un día que ya tenía outfit, el anterior de **ese día** pasa a
+> `cancelled` en la misma transacción; el resto de la semana no se toca. Días distintos
+> conviven — de ahí sale el plan semanal que muestra el home.
+>
+> Índice `(userId, plannedFor)` para el acceso dominante: la semana de un usuario.
 
 ## 3. Entidades futuras (NO en MVP)
 
@@ -169,11 +173,14 @@ enum PlannedStatus { planned confirmed cancelled }
 model PlannedOutfit {
   id         String        @id @default(uuid())
   userId     String
+  plannedFor DateTime?     // el día, a medianoche UTC
   outfitId   String
-  plannedFor DateTime?
   status     PlannedStatus @default(planned)
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
+
+  @@index([userId, status])
+  @@index([userId, plannedFor])
 }
 ```
 
@@ -317,8 +324,8 @@ Valores: `planned`, `confirmed`, `cancelled`
 |---|---|
 | `id` | `String` |
 | `userId` | `String` |
-| `outfitId` | `String` |
 | `plannedFor` | `DateTime?` |
+| `outfitId` | `String` |
 | `status` | `PlannedStatus` |
 | `createdAt` | `DateTime` |
 | `updatedAt` | `DateTime` |

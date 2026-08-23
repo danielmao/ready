@@ -6,46 +6,49 @@ import { planningApi } from '../services/planningApi';
 /** Query keys centralizadas de la feature planning. */
 export const planningKeys = {
   all: ['planning'] as const,
-  current: ['planning', 'current'] as const,
+  week: (start: string) => ['planning', 'week', start] as const,
 };
 
-/** El próximo outfit activo (estado servidor). */
-export function usePlannedOutfit() {
+/** El plan de una semana (estado servidor). `weekStart` = lunes en clave `YYYY-MM-DD`. */
+export function useWeekPlan(weekStart: string) {
   return useQuery({
-    queryKey: planningKeys.current,
-    queryFn: () => planningApi.get(),
+    queryKey: planningKeys.week(weekStart),
+    queryFn: () => planningApi.getWeek(weekStart),
   });
 }
 
-/** Fija un outfit como el próximo e invalida la vista de planning. */
-export function useSetPlannedOutfit() {
+/**
+ * Invalida TODO el árbol de planning tras una mutación. Es a propósito más amplio que la
+ * semana tocada: planear un día de otra semana desde el picker también debe refrescarla.
+ */
+function useInvalidatePlanning() {
   const queryClient = useQueryClient();
+  return () => void queryClient.invalidateQueries({ queryKey: planningKeys.all });
+}
+
+/** Planea un outfit para un día e invalida la vista. */
+export function useSetPlannedOutfit() {
+  const invalidate = useInvalidatePlanning();
   return useMutation({
     mutationFn: (input: SetPlannedOutfitInput) => planningApi.set(input),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: planningKeys.all });
-    },
+    onSuccess: invalidate,
   });
 }
 
-/** Confirma el planeado activo (HU-05) e invalida la vista. */
+/** Confirma el planeado de un día (HU-05) e invalida la vista. */
 export function useConfirmPlannedOutfit() {
-  const queryClient = useQueryClient();
+  const invalidate = useInvalidatePlanning();
   return useMutation({
-    mutationFn: () => planningApi.confirm(),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: planningKeys.all });
-    },
+    mutationFn: (day: string) => planningApi.confirm(day),
+    onSuccess: invalidate,
   });
 }
 
-/** Quita el planeado activo e invalida la vista. */
+/** Libera un día del plan e invalida la vista. */
 export function useRemovePlannedOutfit() {
-  const queryClient = useQueryClient();
+  const invalidate = useInvalidatePlanning();
   return useMutation({
-    mutationFn: () => planningApi.remove(),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: planningKeys.all });
-    },
+    mutationFn: (day: string) => planningApi.remove(day),
+    onSuccess: invalidate,
   });
 }

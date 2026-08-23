@@ -3,7 +3,7 @@ import { Text } from 'react-native';
 
 import { ClothesListScreen } from '../features/clothes/screens/ClothesListScreen';
 import { OutfitsListScreen } from '../features/outfits/screens/OutfitsListScreen';
-import { PlannedOutfitScreen } from '../features/planning/screens/PlannedOutfitScreen';
+import { WeekPlanScreen } from '../features/planning/screens/WeekPlanScreen';
 import { ProfileScreen } from '../features/profile/screens/ProfileScreen';
 import { colors } from '../theme';
 import { TabBarIcon } from './TabBarIcon';
@@ -12,14 +12,15 @@ import type { MainTabParamList } from './types';
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 const LABELS: Record<keyof MainTabParamList, string> = {
+  HomeTab: 'Home',
   ArmarioTab: 'Armario',
   OutfitsTab: 'Outfits',
-  PlanearTab: 'Planear',
   PerfilTab: 'Perfil',
 };
 
 /**
- * Tabs inferiores del diseño Ready.dc (Armario · Outfits · Perfil). Barra flotante clara con
+ * Tabs inferiores del diseño Ready.dc (Home · Armario · Outfits · Perfil). La primera —y por
+ * tanto la pantalla de entrada— es Home: el plan de la semana. Barra flotante clara con
  * ícono + label; activo en petróleo `#003B4A` (label en negrita), inactivo en gris `#90989C`.
  */
 export function MainTabs() {
@@ -49,9 +50,9 @@ export function MainTabs() {
         ),
       })}
     >
+      <Tab.Screen name="HomeTab" component={WeekPlanScreen} />
       <Tab.Screen name="ArmarioTab" component={ClothesListScreen} />
       <Tab.Screen name="OutfitsTab" component={OutfitsListScreen} />
-      <Tab.Screen name="PlanearTab" component={PlannedOutfitScreen} />
       <Tab.Screen name="PerfilTab" component={ProfileScreen} />
     </Tab.Navigator>
   );

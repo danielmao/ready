@@ -1,30 +1,46 @@
 import { NotFoundException } from '@nestjs/common';
+import { Test } from '@nestjs/testing';
 
+import { PlannedOutfit } from '../../domain/entities/planned-outfit.entity';
+import { PLANNED_OUTFIT_REPOSITORY } from '../repositories/planned-outfit.repository.interface';
 import { RemovePlannedOutfitUseCase } from './remove-planned-outfit.use-case';
 
 describe('RemovePlannedOutfitUseCase', () => {
-  const repository = { findActive: jest.fn(), cancelActive: jest.fn() };
-  const useCase = new RemovePlannedOutfitUseCase(repository as never);
+  const userId = 'user-1';
+  const repository = { findActiveByDay: jest.fn(), cancelDay: jest.fn() };
+  let useCase: RemovePlannedOutfitUseCase;
+
+  beforeEach(async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        RemovePlannedOutfitUseCase,
+        { provide: PLANNED_OUTFIT_REPOSITORY, useValue: repository },
+      ],
+    }).compile();
+    useCase = moduleRef.get(RemovePlannedOutfitUseCase);
+  });
 
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  it('cancela el planeado activo', async () => {
-    repository.findActive.mockResolvedValue({ id: 'p1' });
+  it('libera únicamente ese día', async () => {
+    repository.findActiveByDay.mockResolvedValue(new PlannedOutfit({ id: 'p-1' }));
 
-    const result = await useCase.execute('user1');
+    await useCase.execute(userId, '2026-08-19');
 
-    expect(repository.cancelActive).toHaveBeenCalledWith('user1');
-    expect(result).toEqual({ success: true });
+    expect(repository.cancelDay).toHaveBeenCalledWith(
+      userId,
+      new Date('2026-08-19T00:00:00.000Z'),
+    );
   });
 
-  it('rechaza con 404 cuando no hay planeado activo', async () => {
-    repository.findActive.mockResolvedValue(null);
+  it('falla si ese día ya estaba libre', async () => {
+    repository.findActiveByDay.mockResolvedValue(null);
 
-    await expect(useCase.execute('user1')).rejects.toBeInstanceOf(
+    await expect(useCase.execute(userId, '2026-08-19')).rejects.toThrow(
       NotFoundException,
     );
-    expect(repository.cancelActive).not.toHaveBeenCalled();
+    expect(repository.cancelDay).not.toHaveBeenCalled();
   });
 });

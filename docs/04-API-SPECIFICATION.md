@@ -136,28 +136,53 @@ Body `{ name?, occasionIds?, tagIds?, outfitItems? }` → `Outfit`. Update parci
 
 ## Módulo: Planning
 
-### `GET /api/planning`
-Devuelve el planeado activo (o `null`).
+El recurso es **el plan de la semana**: el usuario elige un outfit para cada día. Un día se
+identifica siempre con la clave `YYYY-MM-DD` y se persiste a **medianoche UTC**. La app manda
+el día calculado con la **fecha local del dispositivo** (el servidor no puede adivinar el huso
+sin equivocarse en los bordes del día).
+
+**Invariante:** como mucho **un planeado activo por (usuario, día)** — `status ≠ cancelled`.
+Días distintos conviven; ahí está la semana.
+
+### `GET /api/planning/week?start=YYYY-MM-DD`
+La semana (lunes→domingo) que contiene `start`; el backend lo normaliza al lunes. Sin `start`,
+la semana de hoy. Devuelve **siempre los 7 días**, con los libres en `null` — la home los pinta
+sin inventar huecos.
 ```json
-{ "plannedOutfit": { "id":"uuid", "status":"planned", "plannedFor": null },
-  "outfit": {...}, "items": [...] }
+{ "weekStart": "2026-08-17", "weekEnd": "2026-08-23",
+  "days": [
+    { "date": "2026-08-17",
+      "plannedOutfit": { "id":"uuid", "status":"planned", "plannedFor":"2026-08-17T00:00:00.000Z" },
+      "outfit": {...}, "items": [...] },
+    { "date": "2026-08-18", "plannedOutfit": null, "outfit": null, "items": [] }
+  ] }
 ```
+`400` si `start` no es una fecha válida.
+
+### `GET /api/planning?day=YYYY-MM-DD`
+Un día suelto, con el mismo `DayPlanView` de arriba. Sin `day`, hoy en UTC (atajo para
+curl/monitoreo).
 
 ### `POST /api/planning`
 ```json
-{ "outfitId": "uuid", "plannedFor": null }
+{ "outfitId": "uuid", "day": "2026-08-19" }
 ```
-Crea el planeado y **cancela el anterior** activo. → `PlannedOutfit + Outfit + items`.
-
-### `PUT /api/planning`
-Body `{ outfitId?, plannedFor? }` → actualiza el activo.
+Planea ese outfit para ese día, **cancelando atómicamente lo que hubiera en ESE día**. El resto
+de la semana no se toca. → `DayPlanView`.
+`400` si falta `day` o la fecha no existe; `404` si el outfit no existe, está archivado o no es
+del usuario.
 
 ### `PUT /api/planning/confirm`
-Marca `status=confirmed` (el usuario salió con el outfit). → `PlannedOutfit`.
+Body `{ "day": "2026-08-19" }` → marca `status=confirmed` el planeado de ese día (el usuario
+salió con ese outfit). → `PlannedOutfit`. `404` si el día está libre.
 *(Punto de extensión: en Épica 2 esto generará un `OutfitHistory`.)*
 
-### `DELETE /api/planning`
-Quita el planeado activo → `{ success: true }`.
+### `DELETE /api/planning/:day`
+Libera ese día → `{ success: true }`. `404` si ya estaba libre.
+
+> **Día huérfano.** Si se archiva un outfit que estaba planeado, el día conserva su
+> `plannedOutfit` pero viaja con `outfit: null` e `items: []`. La app lo detecta y ofrece
+> re-elegir en vez de romper.
 
 ---
 

@@ -6,14 +6,14 @@ import type {
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 /**
- * Tabs inferiores (diseño Ready.dc §tab bar): Armario · Outfits · Perfil. Cada tab aloja
- * la pantalla-lista de su feature; los detalles/altas/ediciones viven en el stack raíz y se
- * apilan por encima de los tabs.
+ * Tabs inferiores: Home · Armario · Outfits · Perfil. `HomeTab` va primera porque es la
+ * pantalla de entrada (el plan de la semana). Cada tab aloja la pantalla principal de su
+ * feature; los detalles/altas/ediciones viven en el stack raíz y se apilan por encima.
  */
 export type MainTabParamList = {
+  HomeTab: undefined;
   ArmarioTab: undefined;
   OutfitsTab: undefined;
-  PlanearTab: undefined;
   PerfilTab: undefined;
 };
 
@@ -27,7 +27,8 @@ export type RootStackParamList = {
   OutfitDetail: { id: string };
   AddOutfit: undefined;
   EditOutfit: { id: string };
-  PlanPicker: undefined;
+  /** Selector de outfit para un día concreto (`YYYY-MM-DD`). */
+  PlanPicker: { day: string };
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =

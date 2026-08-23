@@ -7,11 +7,12 @@ import type { Outfit, OutfitItem } from './outfit';
 /** Estado de un planeado (espejo del enum backend). */
 export type PlannedStatus = 'planned' | 'confirmed' | 'cancelled';
 
-/** El "próximo outfit" del usuario. */
+/** Un outfit planeado para un día concreto de la semana. */
 export interface PlannedOutfit {
   id: string;
   userId: string;
   outfitId: string;
+  /** Día planeado en ISO (el backend lo guarda a medianoche UTC). */
   plannedFor: string | null;
   status: PlannedStatus;
   createdAt: string;
@@ -19,23 +20,27 @@ export interface PlannedOutfit {
 }
 
 /**
- * Respuesta compuesta de `GET`/`POST`/`PUT /api/planning`: el planeado + el outfit hidratado +
- * sus prendas (checklist). Cuando no hay planeado, todo viene en null/vacío.
+ * Un día del plan. `plannedOutfit` null = día libre; `outfit` null con `plannedOutfit` presente
+ * = el outfit fue archivado y hay que re-elegir.
  */
-export interface PlanningView {
+export interface DayPlanView {
+  /** `YYYY-MM-DD`, la clave del día en toda la API de planning. */
+  date: string;
   plannedOutfit: PlannedOutfit | null;
   outfit: Outfit | null;
   items: OutfitItem[];
 }
 
+/** Respuesta de `GET /api/planning/week`: los 7 días (lunes→domingo), libres incluidos. */
+export interface WeekPlanView {
+  weekStart: string;
+  weekEnd: string;
+  days: DayPlanView[];
+}
+
 /** Body de `POST /api/planning`. */
 export interface SetPlannedOutfitInput {
   outfitId: string;
-  plannedFor?: string | null;
-}
-
-/** Body de `PUT /api/planning`. */
-export interface UpdatePlannedOutfitInput {
-  outfitId?: string;
-  plannedFor?: string | null;
+  /** `YYYY-MM-DD` — lo calcula el cliente con su fecha local. */
+  day: string;
 }

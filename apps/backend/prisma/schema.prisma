@@ -14,7 +14,7 @@ datasource db {
 }
 
 model User {
-  id String @id @default(uuid())
+  id        String   @id @default(uuid())
   /// Identidad de Google (claim `sub` del id_token). Nullable: el usuario sembrado del MVP
   /// nace sin ella y se vincula en su primer login por coincidencia de email.
   googleId  String?  @unique
@@ -61,7 +61,7 @@ model Tag {
   name   String
   userId String?
 
-  user          User?              @relation(fields: [userId], references: [id])
+  user          User?             @relation(fields: [userId], references: [id])
   clothingItems ClothingItemTag[]
   outfits       OutfitTag[]
 
@@ -190,8 +190,11 @@ enum PlannedStatus {
 model PlannedOutfit {
   id         String        @id @default(uuid())
   userId     String
-  outfitId   String
+  /// Día planeado, a medianoche UTC (ver src/planning/domain/week.ts). Es la clave del plan
+  /// semanal: hay como mucho UN activo (status ≠ cancelled) por (userId, plannedFor).
+  /// Nullable sólo por las filas heredadas del MVP de "un solo próximo outfit".
   plannedFor DateTime?
+  outfitId   String
   status     PlannedStatus @default(planned)
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
@@ -200,5 +203,7 @@ model PlannedOutfit {
   outfit Outfit @relation(fields: [outfitId], references: [id])
 
   @@index([userId, status])
+  // Índice del acceso dominante: la semana de un usuario (rango sobre plannedFor).
+  @@index([userId, plannedFor])
   @@map("planned_outfits")
 }

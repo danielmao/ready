@@ -4,7 +4,8 @@ import type { MainTabParamList } from './types';
 
 /**
  * Íconos del tab bar dibujados con Views (sin assets externos), calcados del diseño
- * Ready.dc §tab bar: Armario = grilla 2×2, Outfits = 3 barras ascendentes, Perfil = persona.
+ * Ready.dc §tab bar: Home = semana (hoja de calendario), Armario = grilla 2×2,
+ * Outfits = 3 barras ascendentes, Perfil = persona.
  * El color lo inyecta React Navigation (activo `#003B4A`, inactivo `#90989C`).
  */
 export function TabBarIcon({
@@ -14,6 +15,30 @@ export function TabBarIcon({
   name: keyof MainTabParamList;
   color: string;
 }) {
+  if (name === 'HomeTab') {
+    // Home — la semana: hoja de calendario (marco + barra de encabezado).
+    return (
+      <View
+        style={{
+          width: 20,
+          height: 20,
+          borderWidth: 2,
+          borderColor: color,
+          borderRadius: 4,
+        }}
+      >
+        <View
+          style={{
+            height: 5,
+            backgroundColor: color,
+            borderTopLeftRadius: 1,
+            borderTopRightRadius: 1,
+          }}
+        />
+      </View>
+    );
+  }
+
   if (name === 'ArmarioTab') {
     return (
       <View
@@ -62,30 +87,6 @@ export function TabBarIcon({
             }}
           />
         ))}
-      </View>
-    );
-  }
-
-  if (name === 'PlanearTab') {
-    // Planear — hoja de calendario (marco + anillas + barra de encabezado).
-    return (
-      <View
-        style={{
-          width: 20,
-          height: 20,
-          borderWidth: 2,
-          borderColor: color,
-          borderRadius: 4,
-        }}
-      >
-        <View
-          style={{
-            height: 5,
-            backgroundColor: color,
-            borderTopLeftRadius: 1,
-            borderTopRightRadius: 1,
-          }}
-        />
       </View>
     );
   }

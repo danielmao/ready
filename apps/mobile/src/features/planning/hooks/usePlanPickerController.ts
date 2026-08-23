@@ -5,11 +5,12 @@ import { useOutfits } from '../../outfits/hooks/useOutfits';
 import { useSetPlannedOutfit } from './usePlanning';
 
 /**
- * Controller hook del selector de outfit a planear: lista los outfits, busca, y al elegir uno
- * lo fija como el próximo y vuelve. La vista (`PlanPickerScreen`) queda presentacional.
+ * Controller hook del selector de outfit: lista los outfits, busca, y al elegir uno lo planea
+ * para el día que trajo la ruta y vuelve. La vista (`PlanPickerScreen`) queda presentacional.
  */
 export function usePlanPickerController(
   navigation: RootStackScreenProps<'PlanPicker'>['navigation'],
+  day: string,
 ) {
   const [search, setSearch] = useState('');
   const { data, isLoading, isError, refetch, isRefetching } = useOutfits({
@@ -21,15 +22,12 @@ export function usePlanPickerController(
   const isFiltering = search.trim().length > 0;
 
   const pick = (outfitId: string) => {
-    setPlanned.mutate(
-      { outfitId },
-      { onSuccess: () => navigation.goBack() },
-    );
+    setPlanned.mutate({ outfitId, day }, { onSuccess: () => navigation.goBack() });
   };
 
   return {
     state: { search },
-    data: { items },
+    data: { items, day },
     actions: {
       setSearch,
       refetch: () => void refetch(),

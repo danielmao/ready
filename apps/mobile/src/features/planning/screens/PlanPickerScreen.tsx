@@ -7,17 +7,22 @@ import type { RootStackScreenProps } from '../../../navigation/types';
 import { colors, fonts } from '../../../theme';
 import { OutfitCard } from '../../outfits/components/OutfitCard';
 import { SearchBar } from '../../clothes/components/SearchBar';
+import { dayOfMonth, longWeekday } from '../../../shared/utils/week';
 import { usePlanPickerController } from '../hooks/usePlanPickerController';
 
 /**
- * Pantalla · Elegir próximo outfit (modal). Lista los outfits del usuario; al tocar uno lo fija
- * como el próximo (cancela el anterior en el backend) y vuelve a la pestaña Planear. Screen
- * presentacional: la lógica vive en `usePlanPickerController`.
+ * Pantalla · Elegir el outfit de un día (modal). Lista los outfits del usuario; al tocar uno lo
+ * planea para el día que trajo la ruta (reemplazando lo que hubiera en ESE día) y vuelve al
+ * home. Screen presentacional: la lógica vive en `usePlanPickerController`.
  */
 export function PlanPickerScreen({
   navigation,
+  route,
 }: RootStackScreenProps<'PlanPicker'>) {
-  const { state, data, actions, flags } = usePlanPickerController(navigation);
+  const { state, data, actions, flags } = usePlanPickerController(
+    navigation,
+    route.params.day,
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
@@ -33,7 +38,7 @@ export function PlanPickerScreen({
 
       <View className="px-6 pb-1 pt-1">
         <Text className="text-sm font-medium uppercase tracking-[3px] text-secondary">
-          Planear
+          {longWeekday(data.day)} {dayOfMonth(data.day)}
         </Text>
         <Text
           className="mt-1.5 text-[38px] leading-none text-text-primary"
@@ -67,7 +72,7 @@ export function PlanPickerScreen({
       ) : flags.isEmpty ? (
         <EmptyState
           title="Todavía no tenés outfits"
-          subtitle="Creá un outfit en la pestaña Outfits para poder planearlo."
+          subtitle="Creá un outfit en la pestaña Outfits para poder planear tu semana."
         />
       ) : (
         <FlatList

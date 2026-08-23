@@ -36,8 +36,8 @@ Ready — app para alistar outfits.
 ### **0.3. Descripción breve del proyecto:**
 
 App móvil + API backend para **preparar con antelación la ropa que vas a usar**. El
-usuario digitaliza su armario, combina prendas en outfits reutilizables y deja fijado
-el **próximo outfit** para revisarlo de un vistazo antes de salir. Proyecto final de
+usuario digitaliza su armario, combina prendas en outfits reutilizables y **arma su semana**:
+elige un outfit para cada día y lo revisa de un vistazo antes de salir. Proyecto final de
 AI4Devs (LIDR Academy); stack **React Native + NestJS + PostgreSQL/Prisma**.
 
 ### **0.4. URL del proyecto:**
@@ -52,7 +52,8 @@ Endpoints navegables sin instalar nada:
 | Catálogo de categorías | https://32-195-76-205.nip.io/api/clothes/categories |
 | Armario (paginado) | https://32-195-76-205.nip.io/api/clothes |
 | Outfits | https://32-195-76-205.nip.io/api/outfits |
-| Próximo outfit | https://32-195-76-205.nip.io/api/planning |
+| Plan de la semana | https://32-195-76-205.nip.io/api/planning/week |
+| Plan de hoy | https://32-195-76-205.nip.io/api/planning |
 
 **App Android:** [`ready-aws.apk`](ready-aws.apk) en la raíz del repo — build de release que
 ya apunta a esa API, listo para instalar por sideload. No hay build de iOS porque distribuir
@@ -70,7 +71,7 @@ https://github.com/danielmao/ready
 
 | Decisión | Resolución para el MVP |
 |----------|------------------------|
-| **Planning** | Un único **"próximo outfit" activo** por usuario (no calendario). |
+| **Planning** | **Plan semanal**: un outfit por día (lunes→domingo), navegable entre semanas. Un solo activo por (usuario, día). |
 | **Sugerencias por clima/ocasión** | **Fuera del MVP** → roadmap (Épica 2/3). |
 | **Autenticación** | ~~Diferida~~ → **implementada**: login con Google (OAuth 2.0 mediado por el backend) + JWT propio. |
 | **Base de datos** | **PostgreSQL + Prisma**. |
@@ -90,8 +91,8 @@ mañana frente al ropero, el usuario:
 
 1. **Digitaliza su armario** — registra cada prenda con foto, categoría, color y ocasiones.
 2. **Arma outfits reutilizables** — combina ≥2 prendas en conjuntos con nombre.
-3. **Deja listo el próximo outfit** — selecciona qué se va a poner en su próxima salida
-   y lo revisa de un vistazo antes de salir.
+3. **Arma su semana** — elige qué se va a poner cada día y lo revisa de un vistazo
+   antes de salir. Es la pantalla de entrada de la app.
 
 **Para quién:** cualquier persona que quiera organizar su ropa y ahorrar tiempo/decisión
 al vestirse. El MVP es de **uso personal** (un solo usuario por dispositivo).
@@ -113,9 +114,10 @@ pesado; es un organizador rápido centrado en el acto de *alistar* el outfit.
 | Listar / filtrar outfits | Catálogo con filtro por ocasión, tags y prendas incluidas. |
 | Detalle de outfit | Preview del conjunto, lista de prendas y acción "planear". |
 | Editar / archivar outfit | Cambiar datos, añadir/quitar prendas, archivar. |
-| Planear próximo outfit | Fijar **un** outfit como el próximo (`PlannedOutfit` activo). |
-| Ver outfit planeado | Vista del outfit listo + checklist de prendas antes de salir. |
-| Cambiar outfit planeado | Reemplazar el outfit activo (el anterior se cancela). |
+| Planear la semana | Elegir un outfit para cada día (lunes→domingo); los días son independientes entre sí. |
+| Ver el día planeado | Outfit del día + checklist de prendas antes de salir. |
+| Cambiar / liberar un día | Reemplazar el outfit de un día (el anterior de ESE día se cancela) o dejarlo libre. |
+| Navegar entre semanas | Ir a la semana anterior/siguiente y volver a la actual. |
 | **Login con Google** | Ingreso con la cuenta de Google; la sesión sobrevive a cerrar la app. Cada usuario ve su propio armario. |
 
 #### Importantes pero no bloqueantes (MVP si alcanza el tiempo)
@@ -142,8 +144,9 @@ pesado; es un organizador rápido centrado en el acto de *alistar* el outfit.
 
 ### **1.3. Diseño y experiencia de usuario:**
 
-La app se organiza en **4 tabs** (bottom tabs) — **Armario · Outfits · Planear · Perfil**, según el diseño
-aprobado (Claude Design `Ready.dc`). Los detalles/altas/ediciones se apilan en el stack raíz
+La app se organiza en **4 tabs** (bottom tabs) — **Home · Armario · Outfits · Perfil**, según el diseño
+aprobado (Claude Design `Ready.dc`). **Home es la pantalla de entrada**: el plan de la semana,
+donde se elige un día y se le asigna un outfit. Los detalles/altas/ediciones se apilan en el stack raíz
 sobre los tabs. El stack raíz actúa además de **gate de sesión**: sin login muestra `Login`;
 con sesión, los tabs. *(Los stacks de Settings/Search son roadmap — Épica 2.)*
 
@@ -151,21 +154,21 @@ con sesión, los tabs. *(Los stacks de Settings/Search son roadmap — Épica 2.
 graph TD
     Root[RootNavigator · gate de sesión] -->|sin sesión| LG[LoginScreen · Google]
     Root -->|con sesión| Tabs[MainTabs]
+    Tabs --> T0[Tab Home]
     Tabs --> T1[Tab Armario]
     Tabs --> T2[Tab Outfits]
-    Tabs --> T3[Tab Planear]
     Tabs --> T4[Tab Perfil]
 
+    T0 --> WP[WeekPlanScreen · la semana]
     T1 --> CL[ClothesListScreen]
     T2 --> OL[OutfitsListScreen]
-    T3 --> PL[PlannedOutfitScreen]
     T4 --> PR[ProfileScreen · cuenta + cerrar sesión]
 
     Root -. stack .-> CD[ClothingDetailScreen]
     Root -. modal .-> CC[Add/Edit ClothingItem]
     Root -. stack .-> OD[OutfitDetailScreen]
     Root -. modal .-> OC[Add/Edit Outfit]
-    Root -. modal .-> PP[PlanPickerScreen]
+    Root -. modal .-> PP["PlanPickerScreen · elegir outfit de un día"]
 ```
 
 **Flujos principales:**
@@ -176,7 +179,8 @@ graph TD
 | Crear prenda | ClothesList → *AddClothingItem (modal)* → vuelve a la lista |
 | Crear outfit | OutfitsList → *AddOutfit (modal)* → vuelve a la lista |
 | Ver detalle | ClothesList/OutfitsList → Detail → *Edit (modal)* |
-| Planear outfit | Planear → *PlanPicker (modal)* → outfit fijado como el próximo |
+| Planear un día | Home → elegir día en la tira → *PlanPicker (modal)* → ese día queda con outfit |
+| Recorrer la semana | Home → ‹ / › cambian de semana; "Hoy" vuelve a la actual |
 | Cerrar sesión | Perfil → confirmación → vuelve a Login |
 
 Detalle de cada pantalla (propósito, componentes, datos que consume/modifica) en
@@ -448,11 +452,12 @@ erDiagram
 | **Occasion** | Contexto de uso | id, name, icon?, isGlobal | Catálogo global + propias del usuario. |
 | **Outfit** | Conjunto de prendas | id, userId, name, isActive | name obligatorio; **mín. 2 OutfitItem**; archivado lógico. |
 | **OutfitItem** | Relación outfit↔prenda | id, outfitId, clothingItemId, order | Única (outfitId, clothingItemId); `order` para orden visual. |
-| **PlannedOutfit** | Próximo outfit listo | id, userId, outfitId, plannedFor?, status | **1 sólo activo** (`status=planned`) por usuario; al crear uno nuevo, el anterior pasa a `cancelled`. |
+| **PlannedOutfit** | Outfit planeado para un día | id, userId, **plannedFor** (el día, medianoche UTC), outfitId, status | **1 sólo activo por (usuario, día)**; planear otro en ese día cancela el anterior en la misma transacción. Días distintos conviven → la semana. |
 
 **Entidades futuras (documentadas, no implementadas):** `OutfitHistory`, `OutfitRating`.
-El campo `PlannedOutfit.plannedFor` (fecha opcional) es el punto de extensión hacia el
-**calendario** de la Épica 2.
+`PlannedOutfit.plannedFor` —que en la primera versión era un punto de extensión sin usar— es
+hoy **la clave del plan semanal**; sigue siendo la puerta abierta al **calendario completo** de
+la Épica 2 (rangos arbitrarios, recurrencias).
 
 Esquema Prisma, tablas pivote N:M y catálogos semilla en
 [`docs/03-DATA-MODEL.md`](docs/03-DATA-MODEL.md).
@@ -537,12 +542,35 @@ paths:
         '400': { description: Menos de 2 prendas, o alguna prenda no existe / no es del usuario }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+  /planning/week:
+    get:
+      summary: El plan de una semana (la home de la app)
+      description: >
+        Devuelve **siempre los 7 días** (lunes→domingo) de la semana que contiene `start`,
+        con los días libres en `null`. `start` puede ser cualquier día de esa semana: el
+        backend lo normaliza al lunes.
+      tags: [Planning]
+      parameters:
+        - in: query
+          name: start
+          schema: { type: string, format: date, example: "2026-08-19" }
+          description: "Cualquier día de la semana buscada. Ausente = la semana de hoy."
+      responses:
+        '200':
+          description: La semana planeada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WeekPlan' }
+        '400': { description: start no es una fecha válida }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
   /planning:
     post:
-      summary: Fijar un outfit como el próximo
+      summary: Planear un outfit para un día
       description: >
-        Sólo puede haber **un** `PlannedOutfit` activo por usuario. Fijar otro cancela el
-        anterior en la misma transacción, así nunca quedan dos "próximos outfits".
+        Sólo puede haber **un** `PlannedOutfit` activo por **(usuario, día)**. Planear otro
+        en ese día cancela el anterior en la misma transacción; el resto de la semana no se
+        toca. El cliente manda el día calculado con su **fecha local**.
       tags: [Planning]
       requestBody:
         required: true
@@ -550,18 +578,37 @@ paths:
           application/json:
             schema:
               type: object
-              required: [outfitId]
+              required: [outfitId, day]
               properties:
-                outfitId:   { type: string, format: uuid }
-                plannedFor:
+                outfitId: { type: string, format: uuid }
+                day:
                   type: string
-                  format: date-time
-                  nullable: true
-                  description: "Punto de extensión para el calendario (Épica 2). En el MVP viaja null."
+                  format: date
+                  example: "2026-08-19"
+                  description: "Día a planear, YYYY-MM-DD. Se persiste a medianoche UTC."
       responses:
-        '201': { description: Outfit fijado como el próximo }
-        '400': { description: outfitId inválido }
-        '404': { description: El outfit no existe o no es del usuario }
+        '201':
+          description: Día planeado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DayPlan' }
+        '400': { description: day ausente o con una fecha inválida }
+        '404': { description: El outfit no existe, está archivado o no es del usuario }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /planning/{day}:
+    delete:
+      summary: Liberar un día del plan
+      tags: [Planning]
+      parameters:
+        - in: path
+          name: day
+          required: true
+          schema: { type: string, format: date, example: "2026-08-19" }
+      responses:
+        '200': { description: "Día liberado — { success: true }" }
+        '400': { description: day no es una fecha válida }
+        '404': { description: Ese día ya estaba libre }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
 components:
@@ -571,6 +618,32 @@ components:
     Unauthorized:
       description: Token ausente (con AUTH_REQUIRED=true), inválido o expirado
   schemas:
+    WeekPlan:
+      type: object
+      properties:
+        weekStart: { type: string, format: date, example: "2026-08-17" }
+        weekEnd:   { type: string, format: date, example: "2026-08-23" }
+        days:
+          type: array
+          minItems: 7
+          maxItems: 7
+          items: { $ref: '#/components/schemas/DayPlan' }
+    DayPlan:
+      type: object
+      description: >
+        Un día del plan. `plannedOutfit` null = día libre. Con `plannedOutfit` presente pero
+        `outfit` null, el outfit fue archivado: el día quedó huérfano y hay que re-elegir.
+      properties:
+        date:          { type: string, format: date, example: "2026-08-19" }
+        plannedOutfit:
+          type: object
+          nullable: true
+          properties:
+            id:         { type: string, format: uuid }
+            status:     { type: string, enum: [planned, confirmed, cancelled] }
+            plannedFor: { type: string, format: date-time }
+        outfit: { type: object, nullable: true }
+        items:  { type: array, items: { type: object } }
     ClothingItem:
       type: object
       properties:
@@ -665,11 +738,11 @@ HTTP/1.1 400 Bad Request
 
 | Método | Ruta | Propósito |
 |--------|------|-----------|
-| GET | `/api/planning` | Obtener el outfit planeado activo |
-| POST | `/api/planning` | Fijar un outfit como próximo (cancela el anterior) |
-| PUT | `/api/planning` | Actualizar el planeado activo |
-| PUT | `/api/planning/confirm` | Confirmar (el usuario sale con el outfit) |
-| DELETE | `/api/planning` | Quitar el outfit planeado |
+| GET | `/api/planning/week?start=YYYY-MM-DD` | El plan de una semana: 7 días, libres incluidos |
+| GET | `/api/planning?day=YYYY-MM-DD` | El plan de un día (sin `day`, hoy) |
+| POST | `/api/planning` | Planear un outfit para un día (reemplaza lo que hubiera en ESE día) |
+| PUT | `/api/planning/confirm` | Confirmar el día (el usuario sale con ese outfit) |
+| DELETE | `/api/planning/:day` | Liberar ese día |
 
 Esquemas de request/response, códigos de error y fragmentos OpenAPI en
 [`docs/04-API-SPECIFICATION.md`](docs/04-API-SPECIFICATION.md).
@@ -700,15 +773,18 @@ Listado priorizado (formato completo con criterios de aceptación en
 - no se puede repetir la misma prenda dentro del mismo outfit.
 - al guardar, el outfit aparece en el listado y puede planearse.
 
-### **Historia de Usuario 3: Planear el próximo outfit**
+### **Historia de Usuario 3: Planear la semana**
 
-> Como usuario quiero fijar un outfit como "el próximo" para tenerlo listo al salir,
-> y revisarlo con un checklist de prendas antes de salir.
+> Como usuario quiero elegir un outfit para cada día de la semana, para dejar mi ropa
+> resuelta con antelación y revisar la del día con un checklist antes de salir.
 
 **Criterios de aceptación:**
-- sólo existe un `PlannedOutfit` activo por usuario.
-- al fijar otro, el anterior pasa a `cancelled`.
-- la vista del planeado muestra el checklist de prendas del outfit.
+- la pantalla de entrada muestra los **7 días** de la semana (lunes→domingo) y cuáles ya tienen outfit.
+- se puede fijar un outfit distinto para cada día; los días son **independientes** entre sí.
+- volver a elegir en un día **reemplaza sólo ese día** (el anterior pasa a `cancelled`).
+- se puede liberar un día sin tocar el resto de la semana.
+- se puede navegar a la semana anterior/siguiente y volver a la actual.
+- el día seleccionado muestra el checklist de prendas de su outfit.
 
 ### **Otras historias (priorización)**
 
@@ -732,7 +808,7 @@ representativa:
 | RDY-2 | Infra | Scaffolding mobile RN + navegación (tabs/stacks/modales) | — | M |
 | RDY-3 | Backend | Módulo `clothes`: CRUD + catálogos | HU-01,02,08 | L |
 | RDY-4 | Backend | Módulo `outfits`: CRUD + items (regla ≥2 prendas) | HU-03,06 | L |
-| RDY-5 | Backend | Módulo `planning`: 1 activo, confirm, cancel | HU-04,05 | M |
+| RDY-5 | Backend | Módulo `planning`: plan semanal (1 activo por día), confirm, liberar | HU-04,05 | M |
 | RDY-6 | Mobile | Tab Prendas: lista + filtros + detalle + alta (modal) | HU-01,02 | L |
 | RDY-9 | QA | Tests unit (dominio) + e2e (flujos HTTP) | — | M |
 
@@ -832,10 +908,20 @@ pantallas de outfits fiel al diseño aprobado.
 
 ### **Pull Request 4 — rama [`finalproject-dmtu`](https://github.com/danielmao/ready/tree/finalproject-dmtu): login con Google**
 
-Última entrega: dominio `auth` con OAuth 2.0 **mediado por el backend** (PKCE S256, `state`
+Dominio `auth` con OAuth 2.0 **mediado por el backend** (PKCE S256, `state`
 firmado, verificación del `id_token`), `UsersFacade`, migración `users.googleId`, sesión
 persistida en el dispositivo y APK de release apuntando al backend desplegado.
 Spec: [`docs/specs/active/google-auth.md`](docs/specs/active/google-auth.md).
+
+### **Pull Request 5 — rama [`finalproject-dmtu`](https://github.com/danielmao/ready/tree/finalproject-dmtu): plan semanal como home**
+
+Convierte el "próximo outfit" único en un **plan por día de la semana** y lo asciende a
+pantalla de entrada. El invariante pasa de "un activo por usuario" a "un activo por
+(usuario, día)" —el mismo `plannedFor` que era un punto de extensión sin usar—, así que la
+migración es sólo un backfill y un índice, sin tablas nuevas. Endpoint nuevo
+`GET /api/planning/week` que devuelve los 7 días completos, y `WeekPlanScreen` con tira de
+días navegable entre semanas.
+Spec: [`docs/specs/active/weekly-plan-home.md`](docs/specs/active/weekly-plan-home.md).
 
 ---
 

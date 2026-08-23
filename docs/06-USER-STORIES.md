@@ -29,19 +29,23 @@ reutilizarlo.
 - Una prenda no se repite dentro del mismo outfit.
 - Al guardar, el outfit aparece en OutfitsList.
 
-### HU-04 — Planear mi próximo outfit
-**Como** usuario **quiero** fijar un outfit como "el próximo" **para** tenerlo listo.
+### HU-04 — Planear mi semana
+**Como** usuario **quiero** elegir un outfit para cada día de la semana **para** dejar mi
+ropa resuelta con antelación.
 **AC:**
-- Sólo existe un planeado activo (`status=planned`).
-- Al fijar otro, el anterior pasa a `cancelled` automáticamente.
-- PlannedOutfitScreen muestra el outfit fijado.
+- La pantalla de entrada (**Home**) muestra los 7 días (lunes→domingo) y cuáles ya tienen outfit.
+- Cada día se planea por separado: existe **un solo planeado activo por (usuario, día)**.
+- Volver a elegir en un día reemplaza **sólo ese día** (el anterior pasa a `cancelled`).
+- Se puede liberar un día sin tocar el resto de la semana.
+- Se puede navegar a la semana anterior/siguiente y volver a la actual.
 
-### HU-05 — Revisar el outfit antes de salir
-**Como** usuario **quiero** ver el outfit planeado con un checklist de prendas **para**
-no olvidarme nada.
+### HU-05 — Revisar el outfit del día antes de salir
+**Como** usuario **quiero** ver el outfit del día elegido con un checklist de prendas
+**para** no olvidarme nada.
 **AC:**
-- TodayOutfitPreview muestra preview grande + lista de prendas.
-- Puedo confirmar (el planeado pasa a `confirmed`).
+- Al seleccionar un día, WeekPlanScreen muestra preview + lista de prendas de su outfit.
+- Puedo confirmar ese día (su planeado pasa a `confirmed`); los demás días no cambian.
+- Si el outfit del día fue archivado, el día se muestra como huérfano y ofrece re-elegir.
 
 ## Importantes (MVP si alcanza el tiempo)
 

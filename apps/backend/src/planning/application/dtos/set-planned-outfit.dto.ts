@@ -1,15 +1,20 @@
-import { IsISO8601, IsOptional, IsUUID, ValidateIf } from 'class-validator';
+import { IsUUID, Matches } from 'class-validator';
 
 /**
- * Body de `POST /api/planning`. Fija un outfit como el próximo. `plannedFor` queda como punto
- * de extensión (calendario, Épica 2); en el MVP siempre viaja `null`/ausente.
+ * Body de `POST /api/planning`. Planea un outfit para un día concreto de la semana. Volver a
+ * postear el mismo día lo reemplaza (cancela el anterior de ESE día, ver el repositorio).
  */
 export class SetPlannedOutfitDto {
   @IsUUID()
   outfitId!: string;
 
-  @IsOptional()
-  @ValidateIf((_o, value) => value !== null)
-  @IsISO8601()
-  plannedFor?: string | null;
+  /**
+   * Día a planear, `YYYY-MM-DD`. Lo manda **siempre** el cliente y lo calcula con su fecha
+   * local: el servidor no puede adivinar el huso del usuario sin equivocarse en los bordes
+   * del día.
+   */
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, {
+    message: 'day debe tener formato YYYY-MM-DD',
+  })
+  day!: string;
 }

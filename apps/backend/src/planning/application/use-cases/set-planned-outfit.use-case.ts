@@ -1,17 +1,20 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 
 import { OutfitsFacade } from '../../../outfits/application/facades/outfits.facade';
+import { parseDay } from '../../domain/week';
 import { SetPlannedOutfitDto } from '../dtos/set-planned-outfit.dto';
-import type { PlanningView } from '../planning.types';
+import type { DayPlanView } from '../planning.types';
 import {
   PLANNED_OUTFIT_REPOSITORY,
   type PlannedOutfitRepository,
 } from '../repositories/planned-outfit.repository.interface';
+import { PlanHydrationService } from '../services/plan-hydration.service';
 
 /**
- * Fija un outfit como el próximo. Valida —vía `OutfitsFacade`, único cruce permitido a
- * `outfits`— que exista, esté activo y sea del usuario, y delega en el repo la cancelación
- * atómica del planeado anterior (invariante "un solo activo").
+ * Planea un outfit para un día de la semana. Valida —vía `OutfitsFacade`, único cruce permitido
+ * a `outfits`— que exista, esté activo y sea del usuario, y delega en el repo la cancelación
+ * atómica de lo que hubiera en ESE día (invariante "un solo activo por día"). El resto de la
+ * semana no se toca.
  */
 @Injectable()
 export class SetPlannedOutfitUseCase {
@@ -19,9 +22,15 @@ export class SetPlannedOutfitUseCase {
     @Inject(PLANNED_OUTFIT_REPOSITORY)
     private readonly repository: PlannedOutfitRepository,
     private readonly outfits: OutfitsFacade,
+    private readonly hydration: PlanHydrationService,
   ) {}
 
-  async execute(dto: SetPlannedOutfitDto, userId: string): Promise<PlanningView> {
+  async execute(dto: SetPlannedOutfitDto, userId: string): Promise<DayPlanView> {
+    const day = parseDay(dto.day);
+    if (!day) {
+      throw new BadRequestException(`Fecha inválida: ${dto.day}`);
+    }
+
     const outfit = await this.outfits.findActiveOutfitById(dto.outfitId, userId);
     if (!outfit) {
       throw new NotFoundException(`Outfit inexistente: ${dto.outfitId}`);
@@ -30,9 +39,9 @@ export class SetPlannedOutfitUseCase {
     const plannedOutfit = await this.repository.create({
       userId,
       outfitId: dto.outfitId,
-      plannedFor: dto.plannedFor ? new Date(dto.plannedFor) : null,
+      plannedFor: day,
     });
 
-    return { plannedOutfit, outfit, items: outfit.items ?? [] };
+    return this.hydration.hydrateDay(day, plannedOutfit, userId);
   }
 }

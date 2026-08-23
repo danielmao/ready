@@ -268,12 +268,11 @@ cd apps/backend && npx depcruise src --config .dependency-cruiser.cjs
 
 ### Dominio `planning`
 
-- **Casos de uso:** `ConfirmPlannedOutfitUseCase`, `GetPlannedOutfitUseCase`, `RemovePlannedOutfitUseCase`, `SetPlannedOutfitUseCase`, `UpdatePlannedOutfitUseCase`
+- **Casos de uso:** `ConfirmPlannedOutfitUseCase`, `GetDayPlanUseCase`, `GetWeekPlanUseCase`, `RemovePlannedOutfitUseCase`, `SetPlannedOutfitUseCase`
 - **Fachada:** —
 - **Contrato `NewPlannedOutfit`** — token: `PLANNED_OUTFIT_REPOSITORY`
 - **Contrato `PlannedOutfitRepository`** — token: `PLANNED_OUTFIT_REPOSITORY`
-- **Contrato `PlannedOutfitUpdate`** — token: `PLANNED_OUTFIT_REPOSITORY`
-- **Services:** —
+- **Services:** `PlanHydrationService`
 - **Emitters:** —
 - **Controllers:** `PlanningController`
 

@@ -23,13 +23,13 @@ RootNavigator (native stack)
 
 | Tab | Pantalla raíz | Ícono |
 |-----|---------------|-------|
+| Home | WeekPlanScreen | 🗓️ |
 | Armario | ClothesListScreen | 👕 |
 | Outfits | OutfitsListScreen | 👔 |
 | Perfil | ProfileScreen | 👤 |
 
-> **Roadmap (Épica 2+).** El tab **Planear** (planning: `PlannedOutfitScreen`,
-> `TodayOutfitPreviewScreen`), los stacks anidados por tab, y `SettingsStack`/`SearchStack`
-> todavía **no están implementados**. La sección "Tab Planear" de abajo describe ese destino.
+> **Home es la pantalla de entrada**: el plan de la semana. Los stacks anidados por tab y
+> `SettingsStack`/`SearchStack` siguen siendo roadmap (Épica 2+).
 
 ## 2. Pantallas (propósito · datos · acciones)
 
@@ -54,20 +54,23 @@ RootNavigator (native stack)
 | **OutfitDetailScreen** | Preview + items + botón "planear" | `GET /outfits/:id` | edita/archiva, add/remove item |
 | **CreateOutfitScreen** (modal) | Alta de outfit (selector de prendas, ≥2) | `GET /clothes` | `POST /outfits` |
 
-### Tab Planear
+### Tab Home — el plan de la semana
 
 | Pantalla | Propósito | Consume | Modifica |
 |----------|-----------|---------|----------|
-| **PlannedOutfitScreen** | Outfit planeado activo; cambiar/confirmar | `GET /planning` | `PUT/DELETE /planning` |
-| **TodayOutfitPreviewScreen** | Vista grande + checklist antes de salir | `GET /planning` | confirm |
-| **SelectOutfitForPlanningScreen** (modal) | Elegir outfit a planear | `GET /outfits` | `POST /planning` |
+| **WeekPlanScreen** | Los 7 días de la semana + el outfit del día elegido (con checklist) | `GET /planning/week?start=` | `PUT /planning/confirm`, `DELETE /planning/:day` |
+| **PlanPickerScreen** (modal) | Elegir el outfit de un día concreto | `GET /outfits` | `POST /planning` |
+
+> **Fechas del lado del cliente.** La app calcula el día con la **fecha local del
+> dispositivo** (`shared/utils/week.ts`) y se lo manda al backend como `YYYY-MM-DD`. Si dejara
+> que el servidor asumiera "hoy" (UTC), en husos negativos el día se correría de noche.
 
 ## 3. Componentes reutilizables clave
 
 - `common/`: Button, Input, Card, EmptyStateIndicator, LoadingIndicator.
 - `clothes/`: ClothesCard, ImageGallery, ImageUploader, ClothesFilterPanel.
 - `outfits/`: OutfitCard, OutfitPreview, OutfitItemsList, ClothingItemSelector.
-- `planning/`: PlannedDateDisplay, OutfitChecklist, LargeOutfitPreview.
+- `planning/`: WeekStrip (la tira de 7 días del home).
 - `filters/`: CategorySelector, ColorPicker, TagSelector, OccasionSelector.
 
 ## 4. Estilos (NativeWind)
