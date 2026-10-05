@@ -7,4 +7,9 @@ export const profileApi = {
     const { data } = await apiClient.get<User>('/users/me');
     return data;
   },
+
+  async updateMe(input: { name: string }): Promise<User> {
+    const { data } = await apiClient.put<User>('/users/me', input);
+    return data;
+  },
 };

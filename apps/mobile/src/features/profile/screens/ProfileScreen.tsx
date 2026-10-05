@@ -1,4 +1,11 @@
-import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { MainTabScreenProps } from '../../../navigation/types';
@@ -10,7 +17,7 @@ import { useProfileController } from '../hooks/useProfileController';
  * permite cerrar sesión. Presentacional: toda la lógica vive en `useProfileController`.
  */
 export function ProfileScreen(_props: MainTabScreenProps<'PerfilTab'>) {
-  const { data, state, actions } = useProfileController();
+  const { data, state, flags, actions } = useProfileController();
   const { user } = data;
 
   return (
@@ -61,12 +68,72 @@ export function ProfileScreen(_props: MainTabScreenProps<'PerfilTab'>) {
                 </Text>
               </View>
             )}
-            <Text
-              className="mt-7 text-center text-[28px] leading-tight text-text-primary"
-              style={{ fontFamily: fonts.serif }}
-            >
-              {user?.name}
-            </Text>
+            {state.isEditing ? (
+              <View className="mt-7 w-full">
+                <TextInput
+                  testID="profile-name-input"
+                  value={state.name}
+                  onChangeText={actions.setName}
+                  editable={!state.isSaving}
+                  autoFocus
+                  autoCapitalize="words"
+                  returnKeyType="done"
+                  onSubmitEditing={actions.save}
+                  className="h-[50px] rounded-2xl border border-border bg-surface px-4 text-center text-[18px] text-text-primary"
+                  placeholder="Tu nombre"
+                  placeholderTextColor={colors.text.muted}
+                />
+                {state.saveError ? (
+                  <Text className="mt-2 text-center text-sm text-error">
+                    {state.saveError}
+                  </Text>
+                ) : null}
+                <View className="mt-4 flex-row gap-3">
+                  <Pressable
+                    testID="profile-cancel"
+                    onPress={actions.cancel}
+                    disabled={state.isSaving}
+                    className="h-11 flex-1 items-center justify-center rounded-2xl border border-border bg-surface"
+                  >
+                    <Text className="text-[15px] font-medium text-text-secondary">
+                      Cancelar
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    testID="profile-save"
+                    onPress={actions.save}
+                    disabled={!flags.canSave || state.isSaving}
+                    className={`h-11 flex-1 items-center justify-center rounded-2xl bg-primary ${
+                      !flags.canSave || state.isSaving ? 'opacity-50' : ''
+                    }`}
+                  >
+                    {state.isSaving ? (
+                      <ActivityIndicator color={colors.text.inverse} />
+                    ) : (
+                      <Text className="text-[15px] font-medium text-text-inverse">
+                        Guardar
+                      </Text>
+                    )}
+                  </Pressable>
+                </View>
+              </View>
+            ) : (
+              <View className="mt-7 items-center">
+                <Text
+                  className="text-center text-[28px] leading-tight text-text-primary"
+                  style={{ fontFamily: fonts.serif }}
+                >
+                  {user?.name}
+                </Text>
+                <Pressable
+                  testID="profile-start-edit"
+                  onPress={actions.startEdit}
+                  className="mt-2 px-3 py-1.5"
+                >
+                  <Text className="text-sm font-medium text-primary">Editar nombre</Text>
+                </Pressable>
+              </View>
+            )}
             <Text className="mt-1.5 text-center text-[15px] text-text-secondary">
               {user?.email}
             </Text>
