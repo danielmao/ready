@@ -3,6 +3,11 @@ import * as WebBrowser from 'expo-web-browser';
 
 import { API_URL } from '../../../config/env';
 
+// En web el login abre un popup que vuelve a cargar la app en `/auth?token=...`: esta llamada
+// es la que le pasa esa URL a la ventana que lo abrió y cierra el popup. Sin ella,
+// `openAuthSessionAsync` nunca resuelve. En nativo no hace nada (ahí cierra el deep link).
+WebBrowser.maybeCompleteAuthSession();
+
 /**
  * Login con Google, mediado por el backend.
  *
