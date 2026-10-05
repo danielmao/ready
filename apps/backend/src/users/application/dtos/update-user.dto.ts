@@ -1,16 +1,21 @@
+import { Transform } from 'class-transformer';
 import {
+  IsNotEmpty,
   IsOptional,
   IsString,
   IsUrl,
   MaxLength,
-  MinLength,
 } from 'class-validator';
 
 /** Body de `PUT /api/users/me`. Actualiza el perfil del usuario único. */
 export class UpdateUserDto {
+  /** Se guarda recortado; vacío o solo espacios → 400. */
   @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
   @IsString()
-  @MinLength(1)
+  @IsNotEmpty({ message: 'El nombre no puede estar vacío' })
   @MaxLength(120)
   name?: string;
 
