@@ -109,7 +109,7 @@ se guarda lo que el usuario marca como importante.
 - ✅ **Entregable 1 (documentación) redactado**: `README.md` raíz (secciones 0–7) +
   `docs/` modular (01–09 + índice). Falta sólo `prompts.md` curado vía `/curate-prompts`.
 
-- ✅ **Backend + mobile scaffoldeados y corriendo** (Expo SDK 54; NestJS + Prisma + Docker
+- ✅ **Backend + mobile scaffoldeados y corriendo** (Expo SDK 57; RN 0.86 / React 19.2; NestJS + Prisma + Docker
   Postgres/MinIO; deploy AWS EC2+Caddy vivo).
 - ✅ **Dominio `clothes`** (armario) completo: backend CRUD + catálogos + imágenes S3 + UI mobile.
 - ✅ **Dominio `outfits`** (crear/modificar/eliminar conjuntos) completo: backend DDD (consume

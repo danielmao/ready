@@ -47,7 +47,7 @@ npm run start                      # Metro / Expo
 > La base URL se resuelve en `src/config/env.ts` desde `EXPO_PUBLIC_API_URL`. En dispositivo
 > físico, exportá la **IP LAN** de tu máquina, p. ej. `EXPO_PUBLIC_API_URL=http://192.168.0.10:3000/api`.
 >
-> **SDK:** el proyecto usa **Expo SDK 54** (RN 0.81 / React 19), compatible con el Expo Go más
+> **SDK:** el proyecto usa **Expo SDK 57** (RN 0.86 / React 19.2), compatible con el Expo Go más
 > reciente de la App Store/Play Store. En **macOS instalá Watchman** (`brew install watchman`)
 > antes de `expo start` para evitar `EMFILE: too many open files` (límite de file descriptors).
 
@@ -158,8 +158,8 @@ curl http://localhost:3000/api/clothes/categories   # debe devolver el catálogo
 | Listados vacíos | Falta seed | `npm run seed` |
 | App no conecta | `EXPO_PUBLIC_API_URL` apunta a `localhost` en device físico | exportar la IP LAN de la máquina |
 | `expo start` muere con `EMFILE: too many open files` | Watcher de Metro vs límite de fds (macOS) | `brew install watchman` |
-| Expo Go dice "incompatible / SDK X" | El Expo Go del store es más nuevo que el SDK del proyecto | el proyecto está en SDK 54 (alineado con el Expo Go actual); si subís el SDK, reinstalá deps con `npx expo install --fix` |
-| `Cannot find module react-native-worklets/plugin` | `babel-preset-expo` (SDK 54) incluye el plugin de worklets | instalar `react-native-reanimated` + `react-native-worklets` (`npx expo install`) |
+| Expo Go dice "incompatible / SDK X" | El Expo Go del store es más nuevo que el SDK del proyecto | el proyecto está en SDK 57 (alineado con el Expo Go actual); si actualizás el SDK, reinstalá deps con `npx expo install --fix` |
+| `Cannot find module react-native-worklets/plugin` | `babel-preset-expo` (SDK 57) incluye el plugin de worklets | instalar las versiones compatibles de `react-native-reanimated` + `react-native-worklets` (`npx expo install`) |
 | `Unable to resolve react-native-css-interop/jsx-runtime` | css-interop no hoisteado (jsxImportSource nativewind) | agregarlo como dep directa: `npm i react-native-css-interop@<ver de nativewind>` |
 | Deploy falla con `compose build requires buildx 0.17.0 or later` | Instancia con buildx viejo | `ready-deploy` cae solo al builder clásico (`DOCKER_BUILDKIT=0`) |
 | Prisma falla en Docker (`Can't write to @prisma/engines`) | Base Alpine (musl/openssl) | imagen sobre `node:20-slim` (ya aplicado) |
